@@ -45,7 +45,7 @@ sub new {
     if (! @ITAG_releases) { return $self; }
 	
     $self->set_release_gff($ITAG_releases[0]->get_file_info('contig_gff3')->{file});
-    print STDERR  "Working with the file ".($self->get_release_gff())."\n";
+    #print STDERR  "Working with the file ".($self->get_release_gff())."\n";
 
     # we need to cache the chromosome length information on the filesystem...
     $self->cache_chromosome_lengths();
@@ -213,7 +213,7 @@ sub cache_chromosome_lengths {
 	    
 	    print $LENCACHE $chr_nr."\t".$c->get_length()."\n";
 	    push @lengths, $c->get_length();
-	    print STDERR "Caching chromosome length for chromosome $chr_nr, ".($c->get_length())."\n";
+	    #print STDERR "Caching chromosome length for chromosome $chr_nr, ".($c->get_length())."\n";
 	}
 
  	while (<$LENCACHE>) { 

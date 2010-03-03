@@ -80,7 +80,7 @@ sub create {
 	die "Need a map_id or map_version_id key in hashref\n";
     }
     
-    print STDERR "Create: Using id = $id\n";
+    ###print STDERR "Create: Using id = $id\n";
 
     my $map = CXGN::Cview::Map::GMOD::Cmap->new($self->get_dbh(), $id);
 

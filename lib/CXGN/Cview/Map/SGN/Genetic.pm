@@ -476,11 +476,11 @@ sub get_chromosome_connections {
     # hard code some connections to agp and fish maps.
     #
     my $tomato_version_id = CXGN::Cview::Map::Tools::find_current_version($self->get_dbh(), CXGN::Cview::Map::Tools::current_tomato_map_id());
-    print STDERR $self->get_id()." VERSUS $tomato_version_id\n\n";
+    ###print STDERR $self->get_id()." VERSUS $tomato_version_id\n\n";
 
     if ($self->get_id() == $tomato_version_id) {
 
-	print STDERR "***** Map ".$self->get_id(). " pushing agp and fish map!\n\n";
+	##print STDERR "***** Map ".$self->get_id(). " pushing agp and fish map!\n\n";
 	push @chr_list, { map_version_id => "agp",
 			  short_name => "Tomato AGP map",
 			  lg_name => $chr_nr,
@@ -493,7 +493,7 @@ sub get_chromosome_connections {
 			  };
     }
     else { 
-	print STDERR $self->get_id()." has no other associated maps...\n\n";
+	warn $self->get_id()." has no other associated maps...\n\n";
     }
 
     return @chr_list;

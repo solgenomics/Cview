@@ -54,7 +54,7 @@ sub get_chromosome {
     #print STDERR "Getting associated markers...\n";
     my $assoc = CXGN::Genomic::BACMarkerAssoc->new($self->get_dbh());
    
-    print STDERR "get_chromosome with $chr_nr. File: ".($self->get_files()->{$chr_nr})."\n";
+    #print STDERR "get_chromosome with $chr_nr. File: ".($self->get_files()->{$chr_nr})."\n";
 
     my $chromosome =  CXGN::Cview::Chromosome::AGP->new($chr_nr, 1, 1, 1, $self->get_files()->{$chr_nr});
     if (!$chromosome->get_markers()) { 
@@ -62,7 +62,7 @@ sub get_chromosome {
     }
 
     my $files = $self->get_files();
-    print STDERR "FILE: $files->{$chr_nr}\n";
+    #print STDERR "FILE: $files->{$chr_nr}\n";
     if ($files->{$chr_nr}=~/sgn/) { 
 	$self->append_messages("This AGP map was automatically generated at SGN because no AGP file was submitted by the sequencing partner. It may be missing BACs or represent the information incorrectly. It is given as an approximate working reference");
     }  
@@ -163,7 +163,7 @@ sub get_files {
 
     foreach my $chr (1..12) { 
 	my $filename = File::Spec->catfile($files_dir, "chr".(sprintf '%02d', $chr).".v*.agp");
-	print STDERR "Unversioned filename: $filename\n";
+	#print STDERR "Unversioned filename: $filename\n";
 	chomp($filename);
 	$unversioned_filenames{$chr}  = $filename;
 	
@@ -174,7 +174,7 @@ sub get_files {
     foreach my $k (keys %unversioned_filenames) { 
 
 	$sgn_files{$k}= File::Spec->catfile($files_dir, "sgn_chr".(sprintf "%02d", $k).".agp");
-	print STDERR "SGN FILE: $sgn_files{$k}\n";
+	#print STDERR "SGN FILE: $sgn_files{$k}\n";
 	$versioned_filenames{$k} = $self->get_filename($unversioned_filenames{$k});
 
 
@@ -185,14 +185,14 @@ sub get_files {
 	if (!-e $versioned_filenames{$k}) { 
 	    if ( -e $sgn_files{$k}) { 
 		$versioned_filenames{$k} = $sgn_files{$k};
-		print STDERR "USING SGN FILE: $sgn_files{$k}\n";
+		#print STDERR "USING SGN FILE: $sgn_files{$k}\n";
 	    }
 	    else { 
-		print STDERR "No file found for chr $k\n"; 
+		#print STDERR "No file found for chr $k\n"; 
 		
 	    }
 	}
-	print STDERR "Final file used: $versioned_filenames{$k}\n";
+	#print STDERR "Final file used: $versioned_filenames{$k}\n";
     }
     
     $self->set_files(\%versioned_filenames);

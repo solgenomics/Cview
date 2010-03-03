@@ -46,7 +46,7 @@ sub set_offset {
     my $self = shift;
     my $offset = shift;
     if (abs($offset)>100) { 
-	print STDERR "CXGN::Cview::Marker::FISH_marker::set_offset: warning, abs(offset) [$offset] > 100\n";
+	warn "CXGN::Cview::Marker::FISH_marker::set_offset: warning, abs(offset) [$offset] > 100\n";
     }
     $self->SUPER::set_offset($offset);
 }

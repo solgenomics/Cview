@@ -205,7 +205,7 @@ sub render {
     }
 
 
-    print STDERR "Length = $length\n";
+    #print STDERR "Length = $length\n";
     # draw tick marks
     #
     my $tick_spacing = 1;
@@ -222,7 +222,7 @@ sub render {
     # the minor ticks need to be at least 10 pixels apart...
     #
     if ($tick_spacing*$self->{scaling_factor}<10) { 
-	print STDERR "tick spacing too small... setting to 10.\n";
+	#print STDERR "tick spacing too small... setting to 10.\n";
 	$tick_spacing=10; 
     }
     my $label_spacing = 2 * $tick_spacing; # the spacing of the labels in map units
@@ -234,7 +234,7 @@ sub render {
 	#otherwise this is an infinite loop....
 	while (($label_spacing * abs($self->{scaling_factor})) < ($self->{font}->height())) { 
 	    $label_spacing +=10; 
-	    print STDERR "Extending label_spacing... $label_spacing scaling: $self->{scaling_factor}\n";
+	    #print STDERR "Extending label_spacing... $label_spacing scaling: $self->{scaling_factor}\n";
         }
     }
     #if ($self->{end_value} < 100) { $label_spacing=10; $tick_spacing=5; }

@@ -97,7 +97,7 @@ sub get_chromosome {
 
     my $map_factory = CXGN::Cview::MapFactory->new($self->get_dbh());
     my $id = get_db_id($self->get_dbh(), $self->get_id());
-    print STDERR "get_chromosome $id.\n";
+    #print STDERR "get_chromosome $id.\n";
     my $genetic_map = $map_factory->create({map_version_id=>$id});
     my $genetic=$genetic_map->get_chromosome($chr_nr);
     my $chromosome = CXGN::Cview::Chromosome::Physical->new();

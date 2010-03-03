@@ -87,7 +87,7 @@ sub render {
     $self->_calculate_scaling_factor();
     $self->_calculate_chromosome_length();
     $self-> set_color(100,100,100);
-    #print STDERR "Rendering ILs...\n";
+
     $self->{font}= GD::Font->Small();
     my $section_x = $self->get_horizontal_offset() - $self->get_width()/2;
 
@@ -115,7 +115,7 @@ sub render {
 
     # render fragments
     #
-    if (!defined($self->{fragments})) { print STDERR "IL: no fragments to render.\n"; return; }
+    if (!defined($self->{fragments})) { warn "IL: no fragments to render.\n"; return; }
     my $max_fragments = @{$self->{fragments}};
 
     foreach my $f (@{$self->{fragments}}) {

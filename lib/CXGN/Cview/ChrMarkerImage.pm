@@ -113,7 +113,7 @@ sub get_image_filename {
     
     my $filename = File::Basename::basename($image_path);
  
-    print STDERR "IMAGE PATH: $image_path\n";
+    #print STDERR "IMAGE PATH: $image_path\n";
    my $image_url = $vhost_conf->get_conf('tempfiles_subdir')."/cview/$filename";
 
     $self -> render_png_file($image_path);

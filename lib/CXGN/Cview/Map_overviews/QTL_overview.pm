@@ -65,7 +65,7 @@ sub new {
 
     my $self = $class -> SUPER::new($map, $force);
 
-    print STDERR "We are in the constructure now\n";
+    #print STDERR "We are in the constructure now\n";
     if (!$map) { exit(); }
     $self->set_qtl_file($qtl_file);
     $self->set_map($map);
@@ -99,14 +99,14 @@ sub render {
 
     my $maximum = -99999;
 
-    print STDERR "Current QTL file is ".$self->get_qtl_file()."\n";
+    #print STDERR "Current QTL file is ".$self->get_qtl_file()."\n";
     open (my $F, "<".$self->get_qtl_file()) || die "Can't open qtl file ".$self->get_qtl_file()."\n"; 
     my $first_line = <$F>;
     while (<$F>) { 
 	chomp;
 	my ($marker, $chr, $pos, $lod) = split /\s+/;
 
-	print STDERR "$marker, $chr, $pos, $lod\n";
+	#print STDERR "$marker, $chr, $pos, $lod\n";
 
 	if ($lod>$maximum) { $maximum = $lod; }
 	if (!exists($graphs[$chr])) { 
@@ -123,9 +123,9 @@ sub render {
 	$graphs[$chr]->add_association("LOD", $pos, $lod);
     }
     
-    print STDERR "The map has ".scalar(@$c)." chromosomes!\n";
+    #print STDERR "The map has ".scalar(@$c)." chromosomes!\n";
     for (my $i=0; $i<@$c; $i++) { 
-	print STDERR "Adding graph to chromosome in slot $i...\n";
+	#print STDERR "Adding graph to chromosome in slot $i...\n";
 	$c->[$i]->set_name($i);
 	$c->[$i]->set_bargraph($graphs[$i+1]);
 	$c->[$i]->show_bargraph();
@@ -148,7 +148,7 @@ sub render_map {
 	return;
     }
     
-    print STDERR "Regenerating the map ".$self->get_map()->get_id()."\n";
+    #print STDERR "Regenerating the map ".$self->get_map()->get_id()."\n";
     $self->render();
   
     $self->get_cache()->set_image_data( $self->{map_image}->render_png_string());

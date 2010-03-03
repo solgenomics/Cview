@@ -32,69 +32,6 @@ sub new {
 }
 
 
-# the following functions were moved to the parent class:
-#
-
-# =head2 functions get_north_position(), set_north_position
-
-#   Synopsis:	$m->set_north_position(57)
-#   Args/returns:	position in pixels that describes the northern limit
-#                 of the marker\'s range
-#   Side effects:	the label is drawn reflecting the uncertainty.
-#   Description:	
-
-# =cut
-
-# sub get_north_position { 
-#     my $self=shift;
-#     return $self->{north_position};
-# }
-
-# sub set_north_position { 
-#     my $self=shift;
-#     my $pos = shift;
-#     $self->{north_position}=$pos;
-# }
-
-# =head2 functions get_south_position(), set_south_position()
-
-#   Synopsis:	$m->set_south_position(78)
-#   Description:	see set_north_position()
-
-# =cut
-
-# sub get_south_position { 
-#     my $self=shift;
-#     return $self->{south_position};
-# }
-
-# sub set_south_position { 
-#     my $self=shift;
-#     my $pos = shift;
-#     $self->{south_position}=$pos;
-
-# }
-
-# =head2 function get_stacking_level(), set_stacking_level()
-
-#   Synopsis:	
-#   Arguments:	
-#   Returns:	
-#   Side effects:	
-#   Description:	
-
-# =cut
-
-# sub get_stacking_level { 
-#     my $self=shift;
-#     return $self->{stacking_level};
-# }
-
-# sub set_stacking_level { 
-#     my $self=shift;
-#     $self->{stacking_level}=shift;
-# }
-
 =head2 function render_line()
 
   Synopsis:	

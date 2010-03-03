@@ -452,10 +452,9 @@ sub render_markers {
 	    if (!$m->isa("CXGN::Cview::Marker::SequencedBAC")) { 
 		if ($m->get_confidence()==$lod) { 
 		    $m -> render($image); 
-		    #print STDERR "lod: $lod. Rendered ".$m->get_name()." confidence=".$m->get_confidence()."\n";
 		}
 		else {
-		    #print STDERR "lod: $lod.Not rendered: ".$m->get_name()." Marker confidence: ".$m->get_confidence()."\n";
+
 		}
 	    }
 	    
@@ -548,7 +547,7 @@ sub get_image_map {
     my $self = shift;
     my $coords = join ",", ($self -> get_enclosing_rect());
     my $string = "";;
-    #print STDERR "get_image_map chromosome\n";
+
     if ($self->get_url()) {  $string =  "<area shape=\"rect\" coords=\"".$coords."\" href=\"".$self->get_url()."\" alt=\"\" />";}
     foreach my $m (($self->get_markers())) {
 	if ($m->is_visible()) { 
@@ -563,7 +562,7 @@ sub get_image_map {
 	my $x = $self->get_horizontal_offset();
 	my $y = $self->get_vertical_offset();
 	my $box_pixel_height = $self->get_height()/$steps;
-	#print STDERR "STEPS: $steps. boxheight: $box_pixel_height\n";
+
 	for (my $i=0; $i<=($steps+1); $i++) {
 	    my $cM = $i*$raster;
 	    my $pixels = $self->mapunits2pixels($cM)+$y;
@@ -618,7 +617,7 @@ sub get_scaling_factor {
     my $self = shift;
     if (!exists($self->{scaling_factor})) { 
 	$self->{scaling_factor}=0; 
-        #print STDERR "[CXGN::Cview::Chromosome] WARNING! Scaling factor is 0.\n"; 
+        warn "[CXGN::Cview::Chromosome] WARNING! Scaling factor is 0.\n"; 
     }
     return $self->{scaling_factor};
 }
@@ -890,7 +889,7 @@ sub _distribute_labels {
 
 	     if (($labelpos-$labelheight)<$lastlabelpos) { 
 		 $labelpos = $lastlabelpos+$labelheight;
-		 if (exists($downwards{$m->get_name()})) { print STDERR "CATASTROPHE: Duplicate marker name ".($m->get_name())."\n"; }
+		 if (exists($downwards{$m->get_name()})) { warn "CATASTROPHE: Duplicate marker name ".($m->get_name())."\n"; }
 		 $downwards{$m->get_name()} = $labelpos;
 	     }
 	     else {
@@ -913,8 +912,8 @@ sub _distribute_labels {
 #	     print STDERR $m->get_name()." offset = $cM ID=".$m->get_id()."\n";
 	     if (($labelpos+$labelheight)>$toplabelpos) {
 		 $labelpos = $toplabelpos-$labelheight;
-		 if (!$m->get_name()) { print STDERR "CATASTROPHE: Didn't get name on marker ".$m->get_id()."\n"; }
-		 if (exists($upwards{$m->get_name})) { print STDERR "CATASTHROPHE: duplicate marker name ".$m->get_name()."\n"; }
+		 if (!$m->get_name()) { warn "CATASTROPHE: Didn't get name on marker ".$m->get_id()."\n"; }
+		 if (exists($upwards{$m->get_name})) { warn "CATASTHROPHE: duplicate marker name ".$m->get_name()."\n"; }
 		 $upwards{$m->get_name()} = $labelpos;
 	     }
 	     else {
@@ -1030,7 +1029,7 @@ sub _distribute_label_stacking {
 	}
     }
     if ($skipped) { 
-	print STDERR "Skipped $skipped because of space constraints (max $TRACK_LIMIT tracks).\n";
+	warn "Skipped $skipped because of space constraints (max $TRACK_LIMIT tracks).\n";
     }
 }
 

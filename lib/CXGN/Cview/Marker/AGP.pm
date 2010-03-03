@@ -201,7 +201,7 @@ sub hilite_chr_region {
     my $left_pixels =  $self->get_chromosome()->get_horizontal_offset()-$self->get_chromosome()->get_width()/2+1;
     my $right_pixels = $self->get_chromosome()->get_horizontal_offset()+$self->get_chromosome()->get_width()/2-1;
  
-    print STDERR  "North: $north_pixels South: $south_pixels. left: $left_pixels. Right: $right_pixels\n";
+    #print STDERR  "North: $north_pixels South: $south_pixels. left: $left_pixels. Right: $right_pixels\n";
        
     $image->filledRectangle($left_pixels, $north_pixels, $right_pixels, $south_pixels, $image->colorAllocate($self->get_region_hilite_color()));
 }

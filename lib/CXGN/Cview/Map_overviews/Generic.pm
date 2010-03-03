@@ -77,7 +77,7 @@ sub render {
     # determine the longest chromosome for proper scaling...
     #
     my @c_len = $self->get_map()->get_chromosome_lengths();
-    print STDERR "chromosome lengths: ".(join " ", @c_len)."\n";
+    #print STDERR "chromosome lengths: ".(join " ", @c_len)."\n";
     my $longest_length = 0; # zero based
     my $longest_chr = undef;
     if (!$self->get_map()->get_chromosome_count()) { 
@@ -110,15 +110,15 @@ sub render {
     my $chr_count = $self->get_map()->get_chromosome_count();
     my @chr_names = $self->get_map()->get_chromosome_names();
 
-    print STDERR "chromosome names: ".(join " ", @chr_names)."\n";
+    #print STDERR "chromosome names: ".(join " ", @chr_names)."\n";
     $self->set_horizontal_spacing(int(($map_width-40)/($chr_count)));
     
-    print STDERR "chromosome count is $chr_count\n";
+    #print STDERR "chromosome count is $chr_count\n";
     my %marker_found = ();
     
     for (my $i=$chr_count-1; $i>=0; $i--) {
 	
-	print STDERR "Instantiating chr $chr_names[$i]... in index $i\n";
+	#print STDERR "Instantiating chr $chr_names[$i]... in index $i\n";
 
 	$c[$i] = $self->get_map()->get_overview_chromosome($chr_names[$i]);
 
@@ -175,7 +175,7 @@ sub render {
 #}
     # get the ruler and add it to the image
     #
-    print STDERR "Setting up the ruler... longest chr is $longest_chr\n";
+    #print STDERR "Setting up the ruler... longest chr is $longest_chr\n";
     my $ruler = $c[$longest_chr]->get_ruler();
     $ruler->set_vertical_offset($top_margin);
     $ruler->set_horizontal_offset(20);
@@ -187,7 +187,7 @@ sub render {
 
     $self->{map_image}->add_ruler($ruler);
     
-    print STDERR "done.\n";
+    #print STDERR "done.\n";
 
     # hilite markers that were requested...
     #
@@ -228,7 +228,7 @@ sub render_map {
 	return;
     }
     
-    print STDERR "Regenerating the map ".$self->get_map()->get_id()."\n";
+    #print STDERR "Regenerating the map ".$self->get_map()->get_id()."\n";
     $self->render();
   
     $self->get_cache()->set_image_data( $self->{map_image}->render_png_string());

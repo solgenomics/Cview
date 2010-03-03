@@ -149,7 +149,7 @@ sub render_map {
 
 	$percent_in_progress += $percent_in_progress_base_level;
 
-	print STDERR "Chromosome $i $percent_htgs3, $percent_available, $percent_finished, $percent_in_progress\n";
+	#print STDERR "Chromosome $i $percent_htgs3, $percent_available, $percent_finished, $percent_in_progress\n";
 
 
 	$c[$i]->set_fill_level(0, $percent_htgs3);

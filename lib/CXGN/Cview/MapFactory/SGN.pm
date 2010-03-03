@@ -233,7 +233,7 @@ sub create {
 	    );
     }
     
-    print STDERR "Map NOT FOUND!!!!!!!!!!!!!!!!!!\n\n";
+    warn "Map NOT FOUND!!!!!!!!!!!!!!!!!!\n\n";
     return undef;
 
 }
@@ -344,7 +344,7 @@ sub get_db_ids {
     }
     if (!$reference_map_id) { $reference_map_id=5; }
     if (!$population_id) { $population_id=6; }
-    print STDERR "Population ID: $population_id, reference_map_id = $reference_map_id\n";
+    #print STDERR "Population ID: $population_id, reference_map_id = $reference_map_id\n";
 
     return ($population_id, $reference_map_id);
 }

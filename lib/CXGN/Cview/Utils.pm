@@ -42,7 +42,7 @@ sub get_chromosome_links {
     
     my $link_list = CXGN::Cview::ChrLinkList->new();
 
-    print STDERR "Finding links between chr ".$chr1->get_caption()." and ".$chr2->get_caption()."\n";
+    #print STDERR "Finding links between chr ".$chr1->get_caption()." and ".$chr2->get_caption()."\n";
 
     foreach my $m1 ($chr1->get_markers()) { 
 	my $name1 = uc($m1->get_marker_name());

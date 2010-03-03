@@ -49,7 +49,7 @@ sub add_link {
     my $self = shift;
     my $marker_name = shift;
     my $link_object = shift;
-    print STDERR "adding link for marker $marker_name...\n";
+    #print STDERR "adding link for marker $marker_name...\n";
     $self->{links}->{$marker_name} = $link_object;
 
 }
@@ -94,7 +94,7 @@ sub get_link_list {
 #    }
     my @link_objects = ();
     foreach my $name (keys(%{$self->{links}})) { 
-	print STDERR "Pushing $name...\n\n";
+	#print STDERR "Pushing $name...\n\n";
 	push @link_objects, $self->{links}->{$name};
     }
 

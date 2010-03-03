@@ -489,7 +489,7 @@ sub calc_coords {
 
 sub set_orientation_vertical { 
     my $self = shift;
-    print STDERR "vertical orientation not yet supported.\n";
+    warn "vertical orientation not yet supported.\n";
 }
 
 sub set_orientation_horizontal { 

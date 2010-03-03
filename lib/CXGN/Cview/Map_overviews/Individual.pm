@@ -27,7 +27,6 @@ This class implements the following functions:
 =cut
 
 use strict;
-#use CXGN::Map::IndividualMap;
 
 package CXGN::Cview::Map_overviews::Individual;
 
@@ -114,7 +113,7 @@ sub render_map {
     $chr_h->execute($individual_id);
     my ($chr_count) = $chr_h->fetchrow_array();
 
-    print STDERR "Individual has $chr_count chromosomes.\n";
+    #print STDERR "Individual has $chr_count chromosomes.\n";
     $self->set_chromosome_count($chr_count);
     if (!$chr_count) { return; }
     
@@ -131,13 +130,13 @@ sub render_map {
                          AND map_version.current_version='t'
                    GROUP BY lg_name, map_version.map_id";
 
-    print STDERR "QUERY: $query\n";
+    #print STDERR "QUERY: $query\n";
 
     my $sth = $self->prepare($query);
     $sth ->execute($self->get_individual_id());
     my $map_id = 0; 
     while (my ($lg_name, $length, $reference_map_id) = $sth->fetchrow_array()) {
-	print STDERR "LENGTHS: $lg_name is $length long.\n";
+	#print STDERR "LENGTHS: $lg_name is $length long.\n";
 	$lengths{$lg_name}=$length;
 	$map_id=$reference_map_id;
     }
@@ -148,7 +147,7 @@ sub render_map {
 #    my %clen = $self->get_map()->get_linkage_group_lengths();
     $self->{map_image}=CXGN::Cview::MapImage->new("", 700, 200);
     foreach my $chr (0..($chr_count-1)) { 
-	print STDERR "Generating chromosome $chr...\n";
+	#print STDERR "Generating chromosome $chr...\n";
 	$c[$chr] = CXGN::Cview::Chromosome->new();
 	$c[$chr]->set_vertical_offset(40);
 	$c[$chr]->set_width(12);
@@ -235,7 +234,7 @@ sub render_map {
 	    
 	    #print STDERR "Fragment: $offset, $top_marker, $bottom_marker\n";
 	}
-	else { print STDERR "[Individual_overviews] $chr1 should be the same as $chr2...\n"; }
+	else { warn "[Individual_overviews] $chr1 should be the same as $chr2...\n"; }
 	
     }
     $self->get_cache()->set_image_data( $self->{map_image}->render_png_string() );

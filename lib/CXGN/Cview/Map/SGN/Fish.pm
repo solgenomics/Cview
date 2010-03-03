@@ -229,7 +229,7 @@ GROUP BY clone_id, shortname, platenum, wellrow, wellcol, percent, marker_id ORD
 	my $factor = 0;
 	$offset = $percent * 100;
 
-	print STDERR "OFFSET $offset \%\n";
+	#print STDERR "OFFSET $offset \%\n";
 
 	my $clone_name = CXGN::Genomic::Clone->retrieve($clone_id)->clone_name();
 	

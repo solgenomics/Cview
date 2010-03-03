@@ -199,7 +199,7 @@ sub get_chromosome {
     my $id = $self->get_id();
 #    $id=~s/^il(\d+)/$1/;
     my ($pop_id, $map_id) = $self->get_db_ids();
-    print STDERR "POP: $pop_id, CHR: $chr_nr, MAP $map_id\n";
+    #print STDERR "POP: $pop_id, CHR: $chr_nr, MAP $map_id\n";
     $sth->execute($chr_nr, $map_id, $pop_id);
     
 #    my $marker_query = "SELECT alias, position FROM sgn.marker_alias join sgn.marker_experiment using(marker_id) join sgn.marker_location on (marker_experiment.location_id=marker_location.location_id) Join sgn.map_version using (map_version_id) WHERE marker_id=? and map_version.map_version_id=? and marker_location.lg_id=?";
@@ -488,7 +488,7 @@ sub get_db_ids {
     }
     if (!$reference_map_id) { $reference_map_id=5; }
     if (!$population_id) { $population_id=6; }
-    print STDERR "Population ID: $population_id, reference_map_id = $reference_map_id\n";
+    #print STDERR "Population ID: $population_id, reference_map_id = $reference_map_id\n";
 
     return ($population_id, $reference_map_id);
 }
