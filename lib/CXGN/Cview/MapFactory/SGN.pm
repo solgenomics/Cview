@@ -61,7 +61,8 @@ package CXGN::Cview::MapFactory::SGN;
 
 use base qw| CXGN::DB::Object |;
 
-use SGN::Context;
+use File::Path ();
+
 use CXGN::Cview::Map::SGN::Genetic;
 #use CXGN::Cview::Map::SGN::User;
 use CXGN::Cview::Map::SGN::Fish;
@@ -105,11 +106,12 @@ sub new {
 sub create { 
     my $self = shift;
     my $hashref = shift;
-    
-    my $c = SGN::Context->new();
-    #print STDERR "Hashref = map_id => $hashref->{map_id}, map_version_id => $hashref->{map_version_id}\n";
-    
-    my $temp_dir =  File::Spec->catfile($c->get_conf('basepath'), $c->get_conf('tempfiles_subdir'), 'cview'); 
+
+    my $temp_dir =  $hashref->{temp_dir}
+        or croak "temp_dir parameter required for SGN Cview backend";
+
+    croak "temp_dir '$temp_dir' does not exist, and could not create"
+        unless -d $temp_dir || File::Path::mkpath( $tempdir );
 
     if (!exists($hashref->{map_id}) && !exists($hashref->{map_version_id})) { 
 	die "[CXGN::Cview::MapFactory] Need either a map_id or map_version_id.\n"; 
