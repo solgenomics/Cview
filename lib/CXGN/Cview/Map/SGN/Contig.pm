@@ -286,19 +286,4 @@ sub get_map_stats {
 
 =cut
 
-# sub get_abstract {
-
-
-
-# #<p>This map shows the contig positions of the Sanger 2006 combined HindIII/MboI contigs, based on the information in the FPC build files. The marker positions are shown as they appear on the most current <a href="/cview/map.pl?map_id=9">EXPEN2000</a> map. </p>
-
-
-
-
-
-# }
-
-
-
-
-return 1;
+1;
