@@ -26,6 +26,8 @@ my $build = Module::Build->new(
         #'Bio::Restriction::Analysis' => 0,
         #'Bio::SeqIO' => 0,
 
+        'Carp' => 0,
+
         #     'CXGN::Configuration' => 0,
         #     'CXGN::Cview' => 0,
         #     'CXGN::Cview::Chromosome::AGP' => 0,
