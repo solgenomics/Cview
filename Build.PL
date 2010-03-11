@@ -3,13 +3,14 @@ use Module::Build;
 
 my $build = Module::Build->new(
     dist_name          => 'Cview',
+
+    # version number comes from this module
+    module_name        => 'CXGN::Cview::MapFactory',
+
     dist_author        => 'Sol Genomics Network',
     dist_abstract      => 'a comparative map viewer',
     license            => 'perl',
     create_makefile_pl => 'passthrough',
-
-    # current version of our core libraries distribution
-    dist_version => '0.1',
 
     recursive_test_files => 1,
 
@@ -49,7 +50,6 @@ my $build = Module::Build->new(
 
         'File::Temp'   => 0,
         'List::Util'   => 0,
-        'SGN::Context' => 0,
     },
 
 );

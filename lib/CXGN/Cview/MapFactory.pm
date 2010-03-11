@@ -41,10 +41,6 @@ The actual map objects returned are defined in the CXGN::Cview::Maps namespace. 
 
 Lukas Mueller (lam87@cornell.edu)
 
-=head1 VERSION
- 
-1.0, March 2007
-
 =head1 LICENSE
 
 Refer to the L<CXGN::LICENSE> file.
@@ -63,6 +59,10 @@ use warnings;
 use Carp;
 
 use base qw| CXGN::DB::Object |;
+
+
+our $VERSION = '2.00';
+$VERSION = eval $VERSION;
 
 =head2 function new()
 
