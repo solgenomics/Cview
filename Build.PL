@@ -15,7 +15,7 @@ my $build = Module::Build->new(
     recursive_test_files => 1,
 
     build_requires => {
-        'CXGN::DB::Connection' => 0,
+        #'CXGN::DB::Connection' => 0,
         'Test::More'           => 0,
     },
     requires => {
