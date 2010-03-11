@@ -21,7 +21,7 @@ my $build = Module::Build->new(
     requires => {
 
         # depend on all of bioperl, because
-        'Bio::Root::Version' => '1.5.2',
+        ### 'Bio::Root::Version' => '1.5.2',
         #'Bio::DB::GFF' => 0,
         #'Bio::Restriction::Analysis' => 0,
         #'Bio::SeqIO' => 0,
