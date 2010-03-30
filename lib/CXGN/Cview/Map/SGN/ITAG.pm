@@ -37,14 +37,17 @@ sub new {
     $self->set_units("MB");
 
     #print STDERR "Caching chromosome lengths...\n";
-    my @ITAG_releases = CXGN::ITAG::Release->find();
+    my ($itag_gff3) =
+        grep -f,
+        map $_->get_file_info('contig_gff3')->{file},
+        CXGN::ITAG::Release->find();
 
     # if we can't find any ITAG releases, just return
     # otherwise the comparative viewer may crash...
     #
-    if (! @ITAG_releases) { return $self; }
+    return $self unless $itag_gff3;
 	
-    $self->set_release_gff($ITAG_releases[0]->get_file_info('contig_gff3')->{file});
+     $self->set_release_gff( $itag_gff3 );
     #print STDERR  "Working with the file ".($self->get_release_gff())."\n";
 
     # we need to cache the chromosome length information on the filesystem...
@@ -287,8 +290,6 @@ sub set_release_gff {
   if (!$file) { die "no release file available."; }
   $self->{release_gff} = $file;
 }
-    
 
 
-
-return 1;
+1;
