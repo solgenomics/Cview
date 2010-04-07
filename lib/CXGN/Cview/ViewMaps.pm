@@ -170,7 +170,7 @@ sub generate_image {
 		$self->{c}{$track}[$i] -> set_height($chr_height);
 		$self->{c}{$track}[$i] -> set_caption( $chr_names[$i] );
 		$self->{c}{$track}[$i] -> set_width(16);
-		$self->{c}{$track}[$i] -> set_url("/cview/view_chromosome.pl?map_version_id=".($self->get_maps())[$track]->get_id()."&amp;chr_nr=$i");
+		$self->{c}{$track}[$i] -> set_url("/cview/view_chromosome.pl?map_version_id=".($self->get_maps())[$track]->get_id()."&amp;chr_nr=$chr_names[$i]");
 		
 		$self->{c}{$track}[$i] -> set_labels_none();       
 		$self->{map}->add_chromosome($self->{c}{$track}[$i]);
