@@ -133,7 +133,7 @@ sub get_chromosome {
 	    $contig->set_name($c);
 
 	    #my $url = "/gbrowse/gbrowse/sanger_tomato_fpc/?name=$c";
-	    my $url = $self->{gbrowse_gff}->view_url({ name => $c });
+	    my $url = $self->{gbrowse_fpc}->view_url({ name => $c });
 	    $contig->set_marker_name($c);
 	    $contig->set_marker_type("contig");
 	    $contig->set_url($url);
