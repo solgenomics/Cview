@@ -69,6 +69,7 @@ use CXGN::Cview::Map::SGN::ProjectStats;
 use CXGN::Cview::Map::SGN::AGP;
 use CXGN::Cview::Map::SGN::ITAG;
 use CXGN::Cview::Map::SGN::Contig;
+use CXGN::Cview::Map::SGN::Scaffold;
 
 =head2 function new()
 
@@ -83,8 +84,14 @@ use CXGN::Cview::Map::SGN::Contig;
 sub new {
     my $class = shift;
     my $dbh = shift;
+    my $context = shift;
 
+    if (!$context) { 
+	$context = SGN::Context->new(); 
+    }
     my $self = $class->SUPER::new($dbh);
+
+    $self->{context}=$context;
 
     return $self;
 }
@@ -103,10 +110,11 @@ sub create {
     my $self = shift;
     my $hashref = shift;
     
-    my $c = SGN::Context->new();
     #print STDERR "Hashref = map_id => $hashref->{map_id}, map_version_id => $hashref->{map_version_id}\n";
     
-    my $temp_dir =  File::Spec->catfile($c->get_conf('basepath'), $c->get_conf('tempfiles_subdir'), 'cview'); 
+    
+
+    my $temp_dir =  File::Spec->catfile($self->{context}->get_conf('basepath'), $self->{context}->get_conf('tempfiles_subdir'), 'cview'); 
 
     if (!exists($hashref->{map_id}) && !exists($hashref->{map_version_id})) {
 	die "[CXGN::Cview::MapFactory] Need either a map_id or map_version_id.\n";
@@ -146,7 +154,7 @@ sub create {
 	}
     }
     elsif ($id =~ /^u/i) {
-	return CXGN::Cview::Map::SGN::User->new($self->get_dbh(), $id);
+	#return CXGN::Cview::Map::SGN::User->new($self->get_dbh(), $id);
     }
     elsif ($id =~ /^il/i) {
 	my $abstract =
@@ -201,17 +209,38 @@ sub create {
 						temp_dir => $temp_dir }
 	    );
     }
+
+    elsif ($id =~ /scaffold/) { 
+	return CXGN::Cview::Map::SGN::Scaffold->new($self->get_dbh(), { 
+	    file=> '/home/mueller/dutch_tomato_assembly/chromosome_defs_v1.03_sorted.txt',
+	    abstract=>'test abstract',
+	    temp_dir=>$temp_dir,
+	    short_name=>'Tomato Scaffold map',
+	    long_name=>'Solanum lycopersicum scaffold map',
+						   } );
+    }
+    
 #    elsif ($id =~ /^u\d+$/i) {
 #	return CXGN::Cview::Map::SGN::User->new($self->get_dbh(), $id);
 #    }
     elsif ($id =~ /^c\d+$/i) {
+	my ($gbrowse_fpc) = map $_->fpc_data_sources, $self->{context}->enabled_feature('gbrowse2');
+	my $path = "";
+	my @dbs;
+
+
+	if ($gbrowse_fpc) {
+	    
+	    (@dbs) = $gbrowse_fpc->databases();
+	    if (@dbs>1) { die "I can handle only one db!"; }
+	}
+	    
 	return CXGN::Cview::Map::SGN::Contig->new($self->get_dbh(), $id, {
-	    berkeley_db_path=>'/data/prod/public/tomato_genome/physical_mapping/fpc/SGN_2009/gbrowse/curr/',
+	    gbrowse_fpc => $gbrowse_fpc, #'/data/prod/public/tomato_genome/physical_mapping/fpc/SGN_2009/gbrowse/curr/',
 	    short_name => "Tomato FPC map SGN2009",
 	    long_name => "Solanum lycopersicum Contig Map SGN2009",
 	    temp_dir => $temp_dir,
-	    marker_link => "/gbrowse/gbrowse/fpc_tomato_sgn_2009/?name=",
-
+	    #marker_link => $gbrowse_fpc->xrefs(), 
 	    abstract => qq|
 
 <p>This map shows the contig positions of the SGN2009 physical map constructed at the Arizona Genome Institute in late 2009. The marker positions shown are from the latest <a href="/cview/map.pl?map_id=9">EXPEN2000 map</a>.</p>

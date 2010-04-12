@@ -65,7 +65,7 @@ sub new {
     $self->set_preferred_chromosome_width(18);
     $self->set_short_name($args->{short_name});
     $self->set_long_name($args->{long_name});
-    $self->{berkeley_db_path} = $args->{berkeley_db_path};
+    $self->{gbrowse_fpc} = $args->{gbrowse_fpc};
     $self->{temp_dir} = $args->{temp_dir} || '/tmp';
     $self->set_abstract($args->{abstract});
     $self->{marker_link} = $args->{marker_link};
@@ -101,11 +101,14 @@ sub get_chromosome {
     my $largest_offset = 0;
 
 
-    my $gff = Bio::DB::GFF->new(
-	-adaptor => 'berkeleydb',
-	-dsn     => $self->{berkeley_db_path},
-	);
-
+#    my $gff = Bio::DB::GFF->new(
+#	-adaptor => 'berkeleydb',
+#	-dsn     => $self->{berkeley_db_path},
+#	);
+    my (@gff) = $self->{gbrowse_fpc}->databases();
+    if (@gff > 1) { die "Can't deal with multiple databases right now..."; }
+    if (!@gff) {    die "No database found!"; }
+    my ($gff) = @gff;
 
     foreach my $m ($genetic->get_markers()) {
 	$m->set_chromosome($chromosome);
@@ -130,10 +133,10 @@ sub get_chromosome {
 	    $contig->set_name($c);
 
 	    #my $url = "/gbrowse/gbrowse/sanger_tomato_fpc/?name=$c";
-	    my $url = $self->{marker_link};
+	    my $url = $self->{gbrowse_gff}->view_url({ name => $c });
 	    $contig->set_marker_name($c);
 	    $contig->set_marker_type("contig");
-	    $contig->set_url("$url$c");
+	    $contig->set_url($url);
 	    $contig->set_offset($m->get_offset());
 	    $contig->get_label()->set_name($c);
 	    $contig->get_label()->set_url($url);
@@ -170,7 +173,6 @@ sub get_overview_chromosome {
 
     foreach my $m ($chromosome->get_markers()) {
 	if ($m->get_marker_type() eq "contig") {
-
 	    my $offset = $m->get_offset();
 	    $bargraph -> add_association("manual", $offset, 1);
 	    if ($offset>$largest_offset) { $largest_offset = $offset; }
@@ -180,15 +182,15 @@ sub get_overview_chromosome {
 }
 
 =head2 function get_chromosome_connections()
-
+    
   Synopsis:
   Arguments:
   Returns:
   Side effects:
   Description:
-
+    
 =cut
-
+    
 sub get_chromosome_connections {
     my $self = shift;
     my $chr_nr = shift;
@@ -261,7 +263,6 @@ sub cache_marker_counts {
     return @lengths;
 }
 
-
 sub get_map_stats {
     my $self = shift;
 
@@ -271,8 +272,6 @@ sub get_map_stats {
     }
 
     return "$count contigs have been assigned to this map";
-
-
 }
 
 =head2 get_abstract
