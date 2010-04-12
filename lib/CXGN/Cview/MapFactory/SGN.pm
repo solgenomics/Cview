@@ -69,7 +69,7 @@ use CXGN::Cview::Map::SGN::ProjectStats;
 use CXGN::Cview::Map::SGN::AGP;
 use CXGN::Cview::Map::SGN::ITAG;
 use CXGN::Cview::Map::SGN::Contig;
-use CXGN::Cview::Map::SGN::Scaffold;
+#use CXGN::Cview::Map::SGN::Scaffold;
 
 =head2 function new()
 
@@ -210,15 +210,15 @@ sub create {
 	    );
     }
 
-    elsif ($id =~ /scaffold/) { 
-	return CXGN::Cview::Map::SGN::Scaffold->new($self->get_dbh(), { 
-	    file=> '/home/mueller/dutch_tomato_assembly/chromosome_defs_v1.03_sorted.txt',
-	    abstract=>'test abstract',
-	    temp_dir=>$temp_dir,
-	    short_name=>'Tomato Scaffold map',
-	    long_name=>'Solanum lycopersicum scaffold map',
-						   } );
-    }
+#    elsif ($id =~ /scaffold/) { 
+#	return CXGN::Cview::Map::SGN::Scaffold->new($self->get_dbh(), { 
+#	    file=> '/home/mueller/dutch_tomato_assembly/chromosome_defs_v1.03_sorted.txt',
+#	    abstract=>'test abstract',
+#	    temp_dir=>$temp_dir,
+#	    short_name=>'Tomato Scaffold map',
+#	    long_name=>'Solanum lycopersicum scaffold map',
+#						   } );
+#    }
     
 #    elsif ($id =~ /^u\d+$/i) {
 #	return CXGN::Cview::Map::SGN::User->new($self->get_dbh(), $id);
