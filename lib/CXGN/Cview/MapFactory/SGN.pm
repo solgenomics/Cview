@@ -58,7 +58,6 @@ package CXGN::Cview::MapFactory::SGN;
 
 use base qw| CXGN::DB::Object |;
 
-use SGN::Context;
 use CXGN::Cview::Map::SGN::Genetic;
 #use CXGN::Cview::Map::SGN::User;
 use CXGN::Cview::Map::SGN::Fish;
@@ -86,8 +85,9 @@ sub new {
     my $dbh = shift;
     my $context = shift;
 
-    if (!$context) { 
-	$context = SGN::Context->new(); 
+    if (!$context) {
+        require SGN::Context;
+	$context = SGN::Context->new();
     }
     my $self = $class->SUPER::new($dbh);
 
@@ -109,12 +109,10 @@ sub new {
 sub create {
     my $self = shift;
     my $hashref = shift;
-    
     #print STDERR "Hashref = map_id => $hashref->{map_id}, map_version_id => $hashref->{map_version_id}\n";
-    
-    
 
-    my $temp_dir =  File::Spec->catfile($self->{context}->get_conf('basepath'), $self->{context}->get_conf('tempfiles_subdir'), 'cview'); 
+    my $c = $self->{context};
+    my $temp_dir = $c->path_to( $c->tempfiles_subdir('cview') );
 
     if (!exists($hashref->{map_id}) && !exists($hashref->{map_version_id})) {
 	die "[CXGN::Cview::MapFactory] Need either a map_id or map_version_id.\n";
@@ -224,44 +222,28 @@ sub create {
 #	return CXGN::Cview::Map::SGN::User->new($self->get_dbh(), $id);
 #    }
     elsif ($id =~ /^c\d+$/i) {
-	my ($gbrowse_fpc) = map $_->fpc_data_sources, $self->{context}->enabled_feature('gbrowse2');
-	my $path = "";
+	my ($gbrowse_fpc) = map $_->fpc_data_sources, $c->enabled_feature('gbrowse2');
 	my @dbs;
-
-
 	if ($gbrowse_fpc) {
-	    
-	    (@dbs) = $gbrowse_fpc->databases();
-	    if (@dbs>1) { die "I can handle only one db!"; }
+	    @dbs = $gbrowse_fpc->databases();
+	    @dbs > 1 and die "I can handle only one db!";
 	}
-	    
+
+        my $gbrowse_view_link = $gbrowse_fpc->view_url;
 	return CXGN::Cview::Map::SGN::Contig->new($self->get_dbh(), $id, {
-	    gbrowse_fpc => $gbrowse_fpc, #'/data/prod/public/tomato_genome/physical_mapping/fpc/SGN_2009/gbrowse/curr/',
-	    short_name => "Tomato FPC map SGN2009",
-	    long_name => "Solanum lycopersicum Contig Map SGN2009",
+	    gbrowse_fpc => $gbrowse_fpc,
+	    short_name => $gbrowse_fpc->description,
+	    long_name => '',
 	    temp_dir => $temp_dir,
 	    #marker_link => $gbrowse_fpc->xrefs(), 
-	    abstract => qq|
+	    abstract => $gbrowse_fpc->extended_description."\n".<<"",
+ <p>This overview shows the counts of contigs along the chromosome. Click on any chromosome to view the individual contigs. More information on each contig can be obtained by by clicking on a specific contig.</p>
+<p>Specific contig IDs, including contigs that are not mapped, can be searched on the <a href="$gbrowse_view_link">FPC viewer page</a>.</p>
 
-<p>This map shows the contig positions of the SGN2009 physical map constructed at the Arizona Genome Institute in late 2009. The marker positions shown are from the latest <a href="/cview/map.pl?map_id=9">EXPEN2000 map</a>.</p>
-
-    <p>This physical map contains clones from the HindIII, EcoRI, MboI and sheared BAC library.</p>
-
-    <p>This overview shows the counts of contigs along the chromosome. Click on any chromosome to view the individual contigs. More information on each contig can be obtained by by clicking on a specific contig.
-
-    <p>Specific contig IDs, including contigs that are not mapped, can be searched on the <a href="/gbrowse/gbrowse/fpc_tomato_sgn_2009/">FPC viewer page</a>.</p>
-    <br />
-
-
-|
-
-						  }
-	    );
+	    });
     }
 
-    warn "Map NOT FOUND!!!!!!!!!!!!!!!!!!\n\n";
-    return undef;
-
+    return;
 }
 
 =head2 function get_all_maps()
