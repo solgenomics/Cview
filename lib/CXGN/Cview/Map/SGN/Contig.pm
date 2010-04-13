@@ -30,7 +30,6 @@ This class implements the following functions:
 package CXGN::Cview::Map::SGN::Contig;
 use strict;
 
-use Bio::DB::GFF;
 use File::Spec;
 use CXGN::Cview::Map::SGN::Genetic;
 use CXGN::Cview::Chromosome::Physical;
