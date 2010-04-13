@@ -8,15 +8,6 @@ CXGN::Cview::Map::SGN::Contig - a class to generate maps of contigs aligned to t
  my $chr = $map->get_chromosome(1);
  # etc...
 
-=head1 DESCRIPTION
-
-The FPC data is currently stored in a berkeleydb database. It is accessed using the following methods:
-
-my $db = Bio::DB::GFF->new( -adaptor => 'berkeleydb',
--dsn => '/data/local/cxgn/core/sgn/documents/gbrowse/databases/fpc/SGN_2009');
-
-and then you can do all the Bio::DB::GFF things with it, do 'perldoc Bio::DB::GFF' to see.
-
 =head1 AUTHOR(S)
 
 Lukas Mueller <lam87@cornell.edu>
