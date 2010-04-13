@@ -24,6 +24,7 @@ sub new {
     $self->set_short_name($args->{short_name} || "ITAG map");
     $self->set_long_name($args->{long_name});
     $self->set_temp_dir($args->{temp_dir});
+    $self->{marker_link} = $args->{marker_link};
 
     $self->set_id($id);
 
@@ -72,7 +73,7 @@ sub get_chromosome {
     foreach my $c ($itag->get_markers()) { 
 	$c->set_show_tick(1);
 	$c->show_label(1);
-
+	$c->set_url( $self->{marker_link}->($c->get_name()) );
     }
   
     $itag->set_name();
