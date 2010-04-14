@@ -208,16 +208,16 @@ sub create {
 	    @dbs > 1 and die "I can handle only one db!";
 	}
 
-        my $gbrowse_view_link = $gbrowse_fpc->view_url;
+        my $gbrowse_view_link = $gbrowse_itag->view_url;
 
+	my $marker_link =  sub { my $id = shift; return "$gbrowse_view_link?name=$id"; };
 	return CXGN::Cview::Map::SGN::ITAG->new($self->get_dbh(), $id, {
 						short_name => "Tomato ITAG map",
 						long_name=>"Tomato (Solanum lycopersicum) ITAG map",
 						abstract=>"<p>The ITAG map shows the contig assembly and the corresponding BACs as used by the most recent annotation from the International Tomato Annotation Group (ITAG, see <a href=\"http://www.ab.wur.nl/TomatoWiki\">ITAG Wiki</a>). Clicking on the contigs will show the ITAG annotation in the genome browser.",
 						temp_dir => $temp_dir,
-						marker_link => " my $id = shift;
-                                                                 return $gbrowse_view_link?$id",
-						}
+						marker_link => $marker_link,
+					    }
 	    );
     }
 

@@ -73,7 +73,7 @@ sub get_chromosome {
     foreach my $c ($itag->get_markers()) { 
 	$c->set_show_tick(1);
 	$c->show_label(1);
-	$c->set_url( $self->{marker_link}->($c->get_name()) );
+	$c->set_url( &{$self->{marker_link}}($c->get_name()) );
     }
   
     $itag->set_name();
