@@ -201,7 +201,8 @@ sub create {
     }
     elsif ($id =~ /^itag$/i) {
 
-	my ($gbrowse_itag) = map $_->data_sources, $c->enabled_feature('gbrowse2');
+	my (@sources) = map $_->data_sources(), $c->enabled_feature('gbrowse2');
+	my ($gbrowse_itag) = grep $_->description()=~/ITAG_devel.+genomic/i, @sources;
 	my @dbs;
 	if ($gbrowse_itag) {
 	    @dbs = $gbrowse_itag->databases();
