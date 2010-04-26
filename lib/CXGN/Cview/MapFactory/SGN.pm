@@ -1,3 +1,4 @@
+
 =head1 NAME
 
 CXGN::Cview::MapFactory - a factory object for CXGN::Cview::Map objects
@@ -68,7 +69,7 @@ use CXGN::Cview::Map::SGN::ProjectStats;
 use CXGN::Cview::Map::SGN::AGP;
 use CXGN::Cview::Map::SGN::ITAG;
 use CXGN::Cview::Map::SGN::Contig;
-#use CXGN::Cview::Map::SGN::Scaffold;
+use CXGN::Cview::Map::SGN::Scaffold;
 
 =head2 function new()
 
@@ -92,6 +93,7 @@ sub new {
     my $self = $class->SUPER::new($dbh);
 
     $self->{context}=$context;
+
 
     return $self;
 }
@@ -221,20 +223,35 @@ sub create {
 					    }
 	    );
     }
-
-#    elsif ($id =~ /scaffold/) { 
-#	return CXGN::Cview::Map::SGN::Scaffold->new($self->get_dbh(), { 
-#	    file=> '/home/mueller/dutch_tomato_assembly/chromosome_defs_v1.03_sorted.txt',
-#	    abstract=>'test abstract',
-#	    temp_dir=>$temp_dir,
-#	    short_name=>'Tomato Scaffold map',
-#	    long_name=>'Solanum lycopersicum scaffold map',
-#						   } );
-#    }
     
-#    elsif ($id =~ /^u\d+$/i) {
-#	return CXGN::Cview::Map::SGN::User->new($self->get_dbh(), $id);
-#    }
+    elsif ($id =~ /scaffold/) { 
+
+	my (@sources) = map $_->data_sources(), $c->enabled_feature('gbrowse2');
+	my ($gbrowse) = grep $_->description()=~/ITAG1.+genomic/i, @sources;
+	if (!$gbrowse) { die "OUCH!!"; }
+	my @dbs;
+	if ($gbrowse) {
+	    @dbs = $gbrowse->databases();
+	    @dbs > 1 and die "I can handle only one db!";
+	}
+
+	my $gbrowse_view_link = $gbrowse->view_url;
+
+	my $marker_link =  sub { my $id = shift; return "$gbrowse_view_link?name=$id"; };
+	return CXGN::Cview::Map::SGN::Scaffold->new($self->get_dbh(), { 
+	    file=> '/home/mueller/dutch_tomato_assembly/chromosome_defs_v1.03_sorted.txt',
+	    abstract=>'test abstract',
+	    temp_dir=>$temp_dir,
+	    short_name=>'Tomato Scaffold map',
+	    long_name=>'Solanum lycopersicum scaffold map',
+	    marker_link => $marker_link,
+						    } );
+    }
+    
+
+    elsif ($id =~ /^u\d+$/i) {
+	return CXGN::Cview::Map::SGN::User->new($self->get_dbh(), $id);
+    }
     elsif ($id =~ /^c\d+$/i) {
 	my ($gbrowse_fpc) = map $_->fpc_data_sources, $c->enabled_feature('gbrowse2');
 	my @dbs;
@@ -242,7 +259,7 @@ sub create {
 	    @dbs = $gbrowse_fpc->databases();
 	    @dbs > 1 and die "I can handle only one db!";
 	}
-
+	
         my $gbrowse_view_link = $gbrowse_fpc->view_url;
 	return CXGN::Cview::Map::SGN::Contig->new($self->get_dbh(), $id, {
 	    gbrowse_fpc => $gbrowse_fpc,
@@ -250,16 +267,21 @@ sub create {
 	    long_name => '',
 	    temp_dir => $temp_dir,
 	    #marker_link => $gbrowse_fpc->xrefs(), 
-	    abstract => $gbrowse_fpc->extended_description."\n".<<"",
- <p>This overview shows the counts of contigs along the chromosome. Click on any chromosome to view the individual contigs. More information on each contig can be obtained by by clicking on a specific contig.</p>
-<p>Specific contig IDs, including contigs that are not mapped, can be searched on the <a href="$gbrowse_view_link">FPC viewer page</a>.</p>
-
-	    });
+	    abstract => $gbrowse_fpc->extended_description."\n". qq{
+	    <p>This overview shows the counts of contigs along the chromosome. Click on any chromosome to view the individual contigs. More information on each contig can be obtained by by clicking on a specific contig.</p>
+		<p>Specific contig IDs, including contigs that are not mapped, can be searched on the <a href="$gbrowse_view_link">FPC viewer page</a>.</p>
+		
+						  }
+	    
+						  });
     }
 
+	  
+						  
+						  
     return;
+    
 }
-
 =head2 function get_all_maps()
 
   Synopsis:
