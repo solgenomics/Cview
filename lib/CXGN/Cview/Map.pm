@@ -292,7 +292,7 @@ sub set_chromosome_names {
   Arguments:	none.
   Returns:	
   Side effects:	
-  Description:	
+  Description:	Note: the first chromosome is in list element 0.
 
 =cut
 
@@ -372,7 +372,7 @@ sub has_linkage_group {
 
 sub get_marker_count {
     my $self = shift;
-    
+    return "?";
 }
 
 =head2 function get_marker_type_stats()
@@ -583,6 +583,24 @@ sub get_preferred_chromosome_width {
 sub can_zoom {
     return 0;
 }
+
+=head2 show_ruler
+
+ Usage:         should return 0 or 1, depending whether the ruler
+                should be shown on a map overview. 
+ Desc:          default is 1, show ruler.
+ Ret:
+ Args:
+ Side Effects:
+ Example:
+
+=cut
+
+sub show_ruler {
+    return 1;
+}
+
+
 
 =head2 function show_stats()
 
