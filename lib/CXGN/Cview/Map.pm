@@ -156,7 +156,9 @@ sub get_linkage_group {
 
 sub get_chromosome_section {
     my $self = shift;   
-    return $self->get_chromosome();
+    my $chr_nr = shift;
+
+    return $self->get_chromosome($chr_nr);
 }
 
 
@@ -591,7 +593,7 @@ sub can_zoom {
  Desc:          default is 1, show ruler.
  Ret:
  Args:
- Side Effects:
+ Side Effects:o
  Example:
 
 =cut
