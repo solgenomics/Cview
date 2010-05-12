@@ -10,7 +10,7 @@ $map = $map_factory->create({map_version_id=>"u1"});
 
 =head1 DESCRIPTION
 
-The MapFactory object is part of a compatibility layer that defines the data sources of the comparative mapviewer. If there are different types of maps that can be distinguished by their ids, the MapFactory should be implemented to return the right map object for the given id. Of course, the corresponding map object also needs to be implemented, using the interface defined in CXGN::Cview::Map .
+see L<CXGN::Cview::MapFactory>.
 
 The MapFactory constructor takes a database handle (preferably constructed using CXGN::DB::Connection object). The map objects can then be constructed using the create function, which takes a hashref as a parameter, containing either map_id or map_version_id as a key (but not both). map_ids will be converted to map_version_ids immediately. Map_version_ids are then analyzed and depending on its format, CXGN::Cview::Map object of the proper type is returned.
 
@@ -224,11 +224,22 @@ sub create {
 	    );
     }
     
-    elsif ($id =~ /scaffold/) { 
+    elsif ($id =~ /scaffold103/) { 
 
+	return CXGN::Cview::Map::SGN::Scaffold->new($self->get_dbh(), $id, { 
+	    file=> '/home/mueller/dutch_tomato_assembly/chromosome_defs_v1.03_sorted.txt',
+	    abstract=>'test abstract',
+	    temp_dir=>$temp_dir,
+	    short_name=>'Tomato scaffold map V1.03',
+	    long_name=>'Solanum lycopersicum scaffold map V1.03',
+	    marker_link => sub {},
+						    } );
+    }
+    
+    elsif ($id =~ /scaffold100/) { 
 	my (@sources) = map $_->data_sources(), $c->enabled_feature('gbrowse2');
 	my ($gbrowse) = grep $_->description()=~/ITAG1.+genomic/i, @sources;
-	if (!$gbrowse) { die "OUCH!!"; }
+	if (!$gbrowse) { die "No such map in GBrowse."; }
 	my @dbs;
 	if ($gbrowse) {
 	    @dbs = $gbrowse->databases();
@@ -238,17 +249,16 @@ sub create {
 	my $gbrowse_view_link = $gbrowse->view_url;
 
 	my $marker_link =  sub { my $id = shift; return "$gbrowse_view_link?name=$id"; };
-	return CXGN::Cview::Map::SGN::Scaffold->new($self->get_dbh(), { 
-	    file=> '/home/mueller/dutch_tomato_assembly/chromosome_defs_v1.03_sorted.txt',
+
+	return CXGN::Cview::Map::SGN::Scaffold->new($self->get_dbh(), $id, { 
+	    file=> '/home/mueller/dutch_tomato_assembly/chromosome_defs_v1.00_sorted.txt',
 	    abstract=>'test abstract',
 	    temp_dir=>$temp_dir,
-	    short_name=>'Tomato Scaffold map',
-	    long_name=>'Solanum lycopersicum scaffold map',
+	    short_name=>'Tomato scaffold map V1.00',
+	    long_name=>'Solanum lycopersicum scaffold map V1.00',
 	    marker_link => $marker_link,
 						    } );
     }
-    
-
     elsif ($id =~ /^u\d+$/i) {
 	return CXGN::Cview::Map::SGN::User->new($self->get_dbh(), $id);
     }
