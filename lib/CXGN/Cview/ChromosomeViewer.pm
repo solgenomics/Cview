@@ -18,7 +18,6 @@ use CXGN::Cview::IL;
 use CXGN::Cview::ChrLink;
 use CXGN::Cview::MapFactory;
 
-
 use base qw | CXGN::DB::Object |;
 
 return 1;
@@ -480,7 +479,7 @@ sub generate_image {
     $self->{c1}->set_horizontal_offset($x_distance * $element_count);
     $self->{c1}->set_caption($self->get_ref_chr());
     $self->{c1}->set_labels_left();
-    $self->{c1}->set_units( $self->get_ref_map()->get_units() );
+    $self->{c1}->set_units( $self->{c1}->get_units() );
     $self->{c1}->set_width( $self->get_ref_map()->get_preferred_chromosome_width() );
     
     $self->append_error($self->get_ref_map()->get_messages());
@@ -594,8 +593,8 @@ sub generate_image {
 	if ($self->get_cM_end()>$self->{c2}->get_length()) {
 	    $self->set_cM_end($self->{c2}->get_length());
 	}
-	$self->{c2} ->set_units( $self->get_ref_map()->get_units() );
-	$self->{c2} ->set_color(255, 220 ,220);
+	$self->{c2}->set_units( $self->{c1}->get_units() );
+	$self->{c2}->set_color(255, 220 ,220);
 	@m2 = $self->{c2}->get_markers();
 
 	# 
@@ -2015,6 +2014,8 @@ w822_pos_start=".$self->get_cM_start()."&amp;w822_pos_end=".$self->get_cM_end().
     $switch_chromosomes_button -> set_property("comp_chr", $self->get_ref_chr());
     $switch_chromosomes_button -> set_property("chr_nr", $self->get_comp_chr());
     $switch_chromosomes_button -> set_property("map_version_id", $self->get_comp_map_version_id());
+    $switch_chromosomes_button -> set_property("", "");
+    $switch_chromosomes_button -> set_property("", "");
     $switch_chromosomes_button -> set_property("comp_map_version_id", $self->get_map_version_id());
     $switch_chromosomes_button -> set_enabled($self->{hide_comparison});
     my $switch_chromosomes_html = $switch_chromosomes_button -> render_string();
@@ -2541,6 +2542,25 @@ sub set_db_backend {
   $self->{db_backend} = shift;
 }
 
+=head2 accessors get_context, set_context
+
+ Usage:        $cv -> set_context( CXGN::Context->new() );
+ Property:     A context object
+ Side Effects: The context object provides things like temp
+               file locations, etc.
+ Example:
+
+=cut
+
+sub get_context {
+  my $self = shift;
+  return $self->{context}; 
+}
+
+sub set_context {
+  my $self = shift;
+  $self->{context} = shift;
+}
 
 
 
@@ -2602,6 +2622,9 @@ sub set_action {
     my $self = shift;
     $self->{action} = shift;
 }
+
+
+
 
 sub get_action { 
     my $self =shift;
