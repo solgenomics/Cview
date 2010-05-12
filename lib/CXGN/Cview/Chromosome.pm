@@ -89,6 +89,7 @@ sub new {
     $self -> set_hilite_color(255, 255, 0);
     $self -> set_outline_color(0,0,0);
     $self -> set_hide_marker_offset();
+    $self -> set_units('cM');
     $self -> set_ruler( CXGN::Cview::Ruler->new($self->get_horizontal_offset(), $self->get_vertical_offset(), $self->get_height(), 0, $self->get_length()) );
 #    don't do this - will cause deep recursion... $self -> set_bargraph( CXGN::Cview::Chromosome::BarGraph->new($self->get_horizontal_offset(), $self->get_vertical_offset(), $self->get_height(), 0, $self->get_length()));
     $self -> hide_bargraph(); # by default, do not show the bar graph.
@@ -153,7 +154,7 @@ sub get_length {
 
 sub get_units { 
     my $self=shift;
-    return $self->get_ruler()->get_units();
+    return $self->{units};
 }
 
 =head2 function set_units()
@@ -169,7 +170,7 @@ sub get_units {
 sub set_units { 
     my $self=shift;
     my $units = shift;
-    $self->get_ruler()->set_units($units);
+    $self->{units} = $units;
 }
 
 =head2 function get_ruler()
@@ -647,6 +648,18 @@ Gets all the markers in the chromosome as an array.
 sub get_markers {
     my $self = shift;
     if (!defined($self->{markers})) { return (); }
+    
+    if (defined($self->get_start_cM()) && defined($self->get_end_cM())) { 
+	my @markers = ();
+	
+	foreach my $m (@{$self->{markers}}) { 
+	    if ( ($m->get_offset() >= $self->get_start_cM()) &&
+		 ($m->get_offset() <= $self->get_end_cM()) ) { 
+		push @markers, $m;
+	    }
+	}
+	return @markers;
+    }
     return @{$self->{markers}};
 }
 
