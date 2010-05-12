@@ -27,11 +27,12 @@ Lukas Mueller (lam87@cornell.edu)
 1;
 
 use strict;
+
 use CXGN::Cview::ImageObject;
 
 package CXGN::Cview::Ruler;
 
-use base qw( CXGN::Cview::ImageObject );
+use base "CXGN::Cview::ImageObject";
 
 =head2 function new()
 
@@ -47,13 +48,12 @@ use base qw( CXGN::Cview::ImageObject );
 
 sub new {
     my $class = shift;
-    my $args ={};
     my $self = $class -> SUPER::new(@_);
     my $x = shift;
     my $y = shift;
     $self ->{height} = shift;
-    $self ->{start_value} = shift;
-    $self ->{end_value} = shift;
+    $self ->set_start_value(shift);
+    $self ->set_end_value(shift);
     $self -> {font} = GD::Font->Small();
     $self -> set_color (50, 50, 50);
     $self -> {label_side} = "left";
@@ -127,7 +127,7 @@ sub get_units {
     return $self->{unit};
 }
 
-=head2 function get_start_value()
+=head2 function get_start_value(), set_start_value()
 
  Synopsis:	accessor for the start_value property
  Arguments:	
@@ -253,7 +253,7 @@ sub render {
 	    } 
 	}
     }
-    my $label = "[".$self->{unit}."]";
+    my $label = "[".$self->get_units()."]";
     $image -> string($self->{font}, $self->get_horizontal_offset()-$self->{font}->width()*length($label)/2, $self->get_vertical_offset()-$self->{font}->height()-3, $label, $color);
 
 }
