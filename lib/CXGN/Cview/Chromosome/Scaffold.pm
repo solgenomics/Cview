@@ -48,9 +48,8 @@ sub new {
     #$chr->set_url($self->{url});
     $self->distribute_labels();
     $self->distribute_label_stacking();
-    $self->set_units("bp");
-    $self->get_ruler()->set_units("bp");
-
+    $self->set_ruler(CXGN::Cview::Ruler::ScaffoldRuler->new());
+    $self->set_units('bp');
     return $self;
 }
 
