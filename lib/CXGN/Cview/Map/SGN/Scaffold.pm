@@ -93,6 +93,10 @@ sub cache_chromosome_lengths {
 
 }
 
+sub can_zoom { 
+    return 1;
+}
+
 sub get_marker_count { 
     my $self = shift;
     my $chr_nr = shift;
