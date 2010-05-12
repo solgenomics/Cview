@@ -479,7 +479,7 @@ sub generate_image {
     $self->{c1}->set_horizontal_offset($x_distance * $element_count);
     $self->{c1}->set_caption($self->get_ref_chr());
     $self->{c1}->set_labels_left();
-    $self->{c1}->set_units( $self->{c1}->get_units() );
+#    $self->{c1}->set_units( $self->{c1}->get_units() );
     $self->{c1}->set_width( $self->get_ref_map()->get_preferred_chromosome_width() );
     
     $self->append_error($self->get_ref_map()->get_messages());
@@ -593,7 +593,7 @@ sub generate_image {
 	if ($self->get_cM_end()>$self->{c2}->get_length()) {
 	    $self->set_cM_end($self->{c2}->get_length());
 	}
-	$self->{c2}->set_units( $self->{c1}->get_units() );
+#	$self->{c2}->set_units( $self->{c1}->get_units() );
 	$self->{c2}->set_color(255, 220 ,220);
 	@m2 = $self->{c2}->get_markers();
 
