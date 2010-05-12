@@ -6,6 +6,7 @@ package CXGN::Cview::Map::SGN::Scaffold;
 use base qw | CXGN::Cview::Map |;
 
 use CXGN::Cview::Chromosome::Scaffold;
+use CXGN::Cview::Ruler::ScaffoldRuler;
 
 sub new { 
     my $class = shift;
@@ -26,6 +27,8 @@ sub new {
     $self->set_short_name($args->{short_name});
     $self->set_long_name($args->{long_name});
     $self->set_abstract($args->{abstract});
+    $self->set_units('bp');
+
 
     return $self;
 }
@@ -36,19 +39,34 @@ sub get_chromosome {
 
     my $INTER_SCAFFOLD_DISTANCE = 10_000;
 
-    if (!exists($self->{chr}->{$chr_nr})) { 
+#    if (!exists($self->{chr}->{$chr_nr})) { 
 	
 	my $chr = CXGN::Cview::Chromosome::Scaffold->new($self->{file}, $chr_nr, $self->{marker_link});
 	$chr->set_height(500);
 	$chr->set_width(20);
 	
-	$self->{chr}->{$chr_nr} = $chr;
+    #$self->{chr}->{$chr_nr} = $chr;
 	
 	
-    }
+   # }
 	
 
-    return $self->{chr}->{$chr_nr};
+    return $chr;
+}
+
+sub get_chromosome_section { 
+     my $self = shift;
+     my $chr_nr = shift;
+     my $start = shift;
+     my $end = shift;
+    
+     my $chr = $self->get_chromosome($chr_nr);
+     $chr->set_section($start, $end);
+     foreach my $m ($chr->get_markers()) { 
+	 print STDERR "currently in zoomed in section: ".$m->get_name()."\n";
+     }
+     return $chr;
+
 }
 
 sub get_overview_chromosome { 
@@ -101,12 +119,20 @@ sub get_marker_count {
     my $self = shift;
     my $chr_nr = shift;
 
-    $self->get_chromosome($chr_nr);
-    return scalar($self->{chr}->{$chr_nr}->get_markers());
+    return $self->get_chromosome($chr_nr)->get_markers();
 }
 
 sub get_marker_type_stats { 
     return "";
+}
+
+sub collapsed_marker_count { 
+    return 20;
+}
+
+sub initial_zoom_height { 
+    return 10_000_000;
+
 }
 
 sub get_map_stats { 
