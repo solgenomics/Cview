@@ -251,7 +251,7 @@ sub create {
 	my $marker_link =  sub { my $id = shift; return "$gbrowse_view_link?name=$id"; };
 
 	return CXGN::Cview::Map::SGN::Scaffold->new($self->get_dbh(), $id, { 
-	    file=> '/data/prod/public/tomato_genome/chromosome_defs_v1.00_sorted.txt',
+	    file=> '/data/prod/public/tomato_genome/wgs/chromosomes/assembly_1.00/chromosome_defs_v1.00_sorted.txt',
 	    abstract=>'test abstract',
 	    temp_dir=>$temp_dir,
 	    short_name=>'Tomato scaffold map V1.00',
