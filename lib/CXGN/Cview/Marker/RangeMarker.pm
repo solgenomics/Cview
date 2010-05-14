@@ -55,8 +55,7 @@ use base qw / CXGN::Cview::Marker /;
 
 sub new {
     my $class = shift;
-    my $chromosome = shift;
-    my $self = $class -> SUPER::new($chromosome);
+    my $self = $class -> SUPER::new(@_);
     
     my $range_label = CXGN::Cview::Label::RangeLabel->new();
     $range_label->set_horizontal_offset($self->get_label()->get_horizontal_offset());
@@ -122,7 +121,6 @@ sub set_south_range {
     
 }
 
-
 sub render { 
     my $self = shift;
     my $image = shift;
@@ -139,12 +137,12 @@ sub render {
 
     $self->get_label()->set_north_position($north_pixels);
     $self->get_label()->set_south_position($south_pixels);
-
+    my $halfwidth = int($self->get_chromosome()->get_width()/2);
     if ($self->get_label_side() eq "right") { 
-	$self->get_label()->set_reference_point($self->get_chromosome()->get_horizontal_offset()+int($self->get_chromosome()->get_width()/2)+$self->get_label()->get_stacking_height()*($self->get_label()->get_stacking_level()), int($north_pixels+$south_pixels)/2);
+	$self->get_label()->set_reference_point($self->get_chromosome()->get_horizontal_offset()+$halfwidth+$self->get_label()->get_stacking_height()*($self->get_label()->get_stacking_level()), int(($north_pixels+$south_pixels)/2));
     }
     elsif ($self->get_label_side() eq "left") { 
-	$self->get_label()->set_reference_point($self->get_chromosome()->get_horizontal_offset()-int($self->get_chromosome()->get_width()/2)-$self->get_label()->get_stacking_height()*$self->get_label()->get_stacking_level(), int($north_pixels+$south_pixels)/2);
+	$self->get_label()->set_reference_point($self->get_chromosome()->get_horizontal_offset()-$halfwidth-$self->get_label()->get_stacking_height()*$self->get_label()->get_stacking_level(), int(($north_pixels+$south_pixels)/2));
     }
     else { 
 	die "[RangeMarker.pm] label_side can either be right or left. Sorry.";
@@ -152,6 +150,25 @@ sub render {
     if ($self->get_hilite_chr_region()) { 
 	$self->hilite_chr_region($image);
     }
+    
+    $self->get_offset_label()->set_label_text($self->get_offset());
+    # draw the offset on the right if label_side eq left, if display_marker
+   #  # offset is true in the chromosome object
+#     #
+#     if ($self->get_chromosome()->{display_marker_offset}) { 
+	
+# 	# define the label's reference point
+# 	#
+# 	my $offset_label = $self->get_offset_label();
+# 	$offset_label->set_reference_point($self->get_chromosome()->get_horizontal_offset()+$halfwidth, int(($north_pixels+$south_pixels)/2));
+# 	$offset_label->set_horizontal_offset($self->get_chromosome()->get_horizontal_offset()+ $self->get_label()->get_label_spacer() );
+# 	$offset_label->set_vertical_offset($self->get_label()->get_vertical_offset());
+# 	$offset_label->set_align_side("left");
+	
+# 	$offset_label->set_hidden($self->get_label()->is_hidden());
+# 	$offset_label->render($image);
+#     }
+    
 
     $self->SUPER::render($image);
 }
