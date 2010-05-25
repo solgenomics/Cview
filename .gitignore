@@ -1,0 +1,9 @@
+*~
+logs/
+!exists
+!.exists
+_build
+Build
+MYMETA.yml
+*.sw?
+*.bak
