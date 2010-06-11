@@ -173,7 +173,7 @@ sub render_jpg_file {
     #print STDERR "cview.pm: render_jpg_file.\n";
     $self ->render();
     #print STDERR "rendering. Now writing file..\n";
-    open (F, ">$filename") || die "Can't open $filename for writing!!! Check write permission in dest directory.";
+    open (F, ">", $filename) || die "Can't open $filename for writing!!! Check write permission in dest directory. : $!";
     print F $self->get_image()->jpeg();
     close(F);
     #print STDERR "done...\n";
@@ -185,7 +185,7 @@ sub render_gif_file {
 
     my $filename = shift;
     $self->render();
-    open(F, ">$filename") || die "Can't open $filename for writing. Check permissions.";
+    open(F, ">",$filename) || die "Can't open $filename for writing. Check permissions: $!";
     print F $self->get_image()->gif();
     close(F);
 }

@@ -559,7 +559,7 @@ sub fetch_IL {
     
     my $vhost_conf=CXGN::VHost->new();
     my $data_folder=$vhost_conf->get_conf('basepath').$vhost_conf->get_conf('documents_subdir');
-    open (F, "$data_folder/cview/IL_defs/$IL_name".".txt") || die "Can't open IL file IL_defs/$IL_name\n";
+    open (F, '<', "$data_folder/cview/IL_defs/$IL_name".".txt") || die "Can't open IL file IL_defs/$IL_name $!\n";
 
     while (<F>) {
 	chomp;
@@ -607,7 +607,7 @@ sub fetch_pachytene_idiogram {
     #print STDERR "Fetching $chromosome_number pachytene\n";
     my $vhost_conf=CXGN::VHost->new();
     my $data_folder=$vhost_conf->get_conf('basepath').$vhost_conf->get_conf('documents_subdir');
-    open (F, "<$data_folder/cview/pachytene/pachytene_tomato_dapi.txt") || die "Can't open pachytene def file";
+    open (F, '<', "<$data_folder/cview/pachytene/pachytene_tomato_dapi.txt") || die "Can't open pachytene def file $!";
     
     while (<F>) { 
 	chomp;

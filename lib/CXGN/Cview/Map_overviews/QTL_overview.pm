@@ -100,7 +100,7 @@ sub render {
     my $maximum = -99999;
 
     #print STDERR "Current QTL file is ".$self->get_qtl_file()."\n";
-    open (my $F, "<".$self->get_qtl_file()) || die "Can't open qtl file ".$self->get_qtl_file()."\n"; 
+    open (my $F, "<", $self->get_qtl_file()) || die "Can't open qtl file ".$self->get_qtl_file()." $!";
     my $first_line = <$F>;
     while (<$F>) { 
 	chomp;

@@ -261,13 +261,13 @@ sub get_image_map {
     my $map_file = ($self->get_temp_file())[1].".map";
 
     if (!$self->has_cache()) { 
-	open (my $FILE, ">$map_file") || 
-	    die "Can't open map file $map_file";
+	open (my $FILE, ">", $map_file) ||
+	    die "Can't open map file $map_file: $!";
 	print $FILE $self->{image_map};
 	close($FILE);
     }
     else { 
-	open (my $FILE, "<$map_file") || 
+	open (my $FILE, "<", $map_file) ||
 	    die "Can't open map file! $map_file";
 	my @FILE = (<$FILE>);
 	close($FILE);

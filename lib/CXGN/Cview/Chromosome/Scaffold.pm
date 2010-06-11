@@ -17,7 +17,7 @@ sub new {
 
     $self->{marker_link} = $marker_link;
     
-    open (my $F, "<$file") || die "Can't find file $file.";
+    open (my $F, "<", $file) || die "Can't open file $file: $!";
 
     my $current_offset = 0;
 
