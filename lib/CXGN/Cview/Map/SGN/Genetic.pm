@@ -18,6 +18,7 @@ This class implements the following functions (for more information, see L<CXGN:
 =cut
 
 use strict;
+use warnings;
 
 package CXGN::Cview::Map::SGN::Genetic;
 

@@ -28,10 +28,10 @@ This class implements the following functions:
 
 =cut
 
-use strict;
-
 package CXGN::Cview::Map::SGN::IL;
 
+use strict;
+use warnings;
 use base qw | CXGN::Cview::Map |;
 
 use GD;

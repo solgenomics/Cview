@@ -1,6 +1,3 @@
-
-
-
 =head1 NAME
 
 CXGN::Cview::Map::SGN::Sequence - a map to display sequence-based maps           
@@ -30,9 +27,10 @@ This class implements the following functions:
 
 =cut
 
-use strict;
-
 package CXGN::Cview::Map::SGN::Sequence;
+
+use strict;
+use warnings;
 
 use CXGN::Cview::Map::SGN::Genetic;
 use base qw | CXGN::Cview::Map::SGN::Genetic | ;

@@ -1,7 +1,7 @@
+package CXGN::Cview::Map::SGN::ProjectStats;
 
 use strict;
-
-package CXGN::Cview::Map::SGN::ProjectStats;
+use warnings;
 
 use base qw | CXGN::Cview::Map |;
 
@@ -31,12 +31,10 @@ sub get_chromosome {
     my $self = shift;
     my $chr_nr = shift;
 
-    #print STDERR "Now dealing with chr $chr_nr !\n";
     my $bac_status_log=CXGN::People::BACStatusLog->new($self->get_dbh());
     my @c_len = $self->get_chromosome_lengths();
     my @c_percent_finished = $bac_status_log->get_chromosomes_percent_finished();
     
-    #print STDERR "Chromosome percent finished: ".(join " ", @c_percent_finished)."\n";
 
     my $c= CXGN::Cview::Chromosome::Glyph -> new(1, 100, 40, 40);
     my $m = CXGN::Cview::Marker->new($c);
@@ -46,7 +44,6 @@ sub get_chromosome {
     $c->set_caption($chr_nr);
     $c->set_height($c_len[$chr_nr-1]);
     
-    #print STDERR "Now generating chr $chr_nr with $c_percent_finished[$chr_nr] \% finished.\n";
     $c->set_fill_level($c_percent_finished[$chr_nr]);
     $c->set_bac_count(0);
     

@@ -1,6 +1,3 @@
-
-
-
 =head1 NAME
            
 CXGN::Cview::Map::SGN::Physical - a class to display physical maps in the SGN comparative viewer
@@ -20,10 +17,11 @@ Lukas Mueller <lam87@cornell.edu>
 This class implements the following functions:
 
 =cut
+package CXGN::Cview::Map::SGN::Physical;
 
 use strict;
+use warnings;
 
-package CXGN::Cview::Map::SGN::Physical;
 
 use CXGN::Cview::Map::SGN::Genetic;
 use CXGN::Cview::Chromosome::Physical;

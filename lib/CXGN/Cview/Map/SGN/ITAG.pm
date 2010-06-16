@@ -1,7 +1,7 @@
+package CXGN::Cview::Map::SGN::ITAG;
 
 use strict;
-
-package CXGN::Cview::Map::SGN::ITAG;
+use warnings;
 
 use File::Spec;
 use CXGN::ITAG::Release;
@@ -29,15 +29,9 @@ sub new {
     $self->set_id($id);
 
     $self->set_chromosome_names( "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12");
-    #print STDERR "ITAG map constructor...\n";
-
-    #print STDERR "FILENAMES = ". (join " ", (map  {$_.":".$self->get_files()->{$_} } keys %{$self->get_files()}) ) ."\n";
-    #print STDERR "Constructor: generating AGP chr ".$self->get_name()."\n";
-
     $self->set_chromosome_count(12);
     $self->set_units("MB");
 
-    #print STDERR "Caching chromosome lengths...\n";
     my ($itag_gff3) =
         grep -f,
         map $_->get_file_info('contig_gff3')->{file},
@@ -49,7 +43,6 @@ sub new {
     return $self unless $itag_gff3;
 	
      $self->set_release_gff( $itag_gff3 );
-    #print STDERR  "Working with the file ".($self->get_release_gff())."\n";
 
     # we need to cache the chromosome length information on the filesystem...
     $self->cache_chromosome_lengths();
@@ -156,7 +149,7 @@ sub get_marker_count {
     my $self = shift;
     my $chr_nr = shift;
     
-    open(my $ITAG, "<".$self->get_release_gff()) || die "Can't open the release file ".$self->get_release_gff();
+    open(my $ITAG, '<', $self->get_release_gff()) || die "Can't open the release file ". $self->get_release_gff() . " : $! ";
 
     my $contig_count=0;
     my $bac_count = 0;
@@ -187,7 +180,6 @@ sub get_filename {
     my $self = shift;
     my $filename = shift;
     my @files = `ls -t $filename`;
-    #print STDERR "unversioned name = $filename. versioned name = $files[0]\n";
     chomp($files[0]);
     return $files[0];
 }
@@ -204,20 +196,18 @@ sub can_zoom {
 sub cache_chromosome_lengths { 
     my $self=shift;
 
-#    my $vh = CXGN::VHost->new();
     my $len_cache_path = File::Spec->catfile($self->get_temp_dir(), "itag_map_chr_len_cache.txt");
     
     my @lengths = ();
       if (! -e $len_cache_path) { 
-  	open (my $LENCACHE, ">$len_cache_path") || die "Can't open the len cache $len_cache_path\n";
+  	open (my $LENCACHE, ">", $len_cache_path) || die "Can't open the len cache $len_cache_path : $!";
 
-	foreach my $chr_nr (1..12) { 
+	for my $chr_nr (1..12) { 
 
 	    my $c = CXGN::Cview::Chromosome::ITAG->new($chr_nr, 100, 10, 10, $self->get_release_gff(), $self->get_dbh(), $self->get_temp_dir());
 	    
 	    print $LENCACHE $chr_nr."\t".$c->get_length()."\n";
 	    push @lengths, $c->get_length();
-	    #print STDERR "Caching chromosome length for chromosome $chr_nr, ".($c->get_length())."\n";
 	}
 
  	while (<$LENCACHE>) { 
@@ -229,7 +219,7 @@ sub cache_chromosome_lengths {
   	$self->set_chromosome_lengths(@lengths);
   	close($LENCACHE);
       } else {
-	open (my $LENCACHE, "<$len_cache_path") || die "Can't open the agp chr len cache file $len_cache_path\n";
+	open (my $LENCACHE, '<', $len_cache_path) || die "Can't open the agp chr len cache file $len_cache_path : $!";
 	while(<$LENCACHE>) { 
 	    chomp;
 	    my ($chr_nr, $len) = split /\t/;

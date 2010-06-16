@@ -27,9 +27,10 @@ This class implements the following functions:
 
 =cut
 
-use strict;
-
 package CXGN::Cview::Map::SGN::User;
+
+use strict;
+use warnings;
 
 use CXGN::Cview::Map;
 use CXGN::People::UserMap;
