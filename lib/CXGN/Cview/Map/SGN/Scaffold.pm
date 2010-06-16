@@ -1,5 +1,6 @@
 
 use strict;
+use warnings;
 
 package CXGN::Cview::Map::SGN::Scaffold;
 
@@ -39,17 +40,9 @@ sub get_chromosome {
 
     my $INTER_SCAFFOLD_DISTANCE = 10_000;
 
-#    if (!exists($self->{chr}->{$chr_nr})) { 
-	
-	my $chr = CXGN::Cview::Chromosome::Scaffold->new($self->{file}, $chr_nr, $self->{marker_link});
-	$chr->set_height(500);
-	$chr->set_width(20);
-	
-    #$self->{chr}->{$chr_nr} = $chr;
-	
-	
-   # }
-	
+    my $chr = CXGN::Cview::Chromosome::Scaffold->new($self->{file}, $chr_nr, $self->{marker_link});
+    $chr->set_height(500);
+    $chr->set_width(20);
 
     return $chr;
 }
@@ -62,9 +55,6 @@ sub get_chromosome_section {
     
      my $chr = $self->get_chromosome($chr_nr);
      $chr->set_section($start, $end);
-     foreach my $m ($chr->get_markers()) { 
-	 print STDERR "currently in zoomed in section: ".$m->get_name()."\n";
-     }
      return $chr;
 
 }
@@ -87,7 +77,7 @@ sub cache_chromosome_lengths {
     my $temp_dir = $self->get_temp_dir();
     my $path = File::Spec->catfile($temp_dir, "chromosome_length_cache.".$self->get_id().".txt");
     if (! -e $path) { 	
-	open my $F, ">".$path || die "Can't open file $path for writing";
+	open my $F, ">", $path or die "Can't open file $path for writing: $!";
 	foreach my $chr_nr ($self->get_chromosome_names()) { 
 	    my $chr = CXGN::Cview::Chromosome::Scaffold->new($self->{file}, $chr_nr, $self->{marker_link});
 	    print STDERR "$chr_nr\t".$chr->get_length()."\n";
@@ -100,7 +90,7 @@ sub cache_chromosome_lengths {
     }
 
     my @lengths = ();
-    open( my $G, "<$path") || die "Cant open file $path for reading...";
+    open( my $G, '<', $path) or die "Cant open file $path for reading: $!";
     while (<$G>) { 
 	chomp;
 	my ($chr, $length) = split /\t/;
