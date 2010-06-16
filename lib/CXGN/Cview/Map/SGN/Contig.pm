@@ -20,6 +20,7 @@ This class implements the following functions:
 
 package CXGN::Cview::Map::SGN::Contig;
 use strict;
+use warnings;
 
 use File::Spec;
 use CXGN::Cview::Map::SGN::Genetic;
@@ -51,7 +52,6 @@ sub new {
     my $db_version_id = get_db_id($dbh, $id);
     my $self = $class -> SUPER::new($dbh, $db_version_id);
 
-#    if (!defined($self)) { return undef; }
     $self->set_preferred_chromosome_width(18);
     $self->set_short_name($args->{short_name});
     $self->set_long_name($args->{long_name});
@@ -60,8 +60,6 @@ sub new {
     $self->set_abstract($args->{abstract});
     $self->{marker_link} = $args->{marker_link};
     $self->set_id($id);
-
-
 
     return $self;
 }
@@ -83,24 +81,18 @@ sub get_chromosome {
 
     my $map_factory = CXGN::Cview::MapFactory->new($self->get_dbh());
     my $id = get_db_id($self->get_dbh(), $self->get_id());
-    #print STDERR "get_chromosome $id.\n";
     my $genetic_map = $map_factory->create({map_version_id=>$id});
     my $genetic=$genetic_map->get_chromosome($chr_nr);
     my $chromosome = CXGN::Cview::Chromosome::Physical->new();
 
     my $largest_offset = 0;
 
-
-#    my $gff = Bio::DB::GFF->new(
-#	-adaptor => 'berkeleydb',
-#	-dsn     => $self->{berkeley_db_path},
-#	);
     my (@gff) = $self->{gbrowse_fpc}->databases();
     if (@gff > 1) { die "Can't deal with multiple databases right now..."; }
     if (!@gff) {    die "No database found!"; }
     my ($gff) = @gff;
 
-    foreach my $m ($genetic->get_markers()) {
+    for my $m ($genetic->get_markers()) {
 	$m->set_chromosome($chromosome);
 	$chromosome->add_marker($m);
 	my $offset = $m->get_offset();
@@ -113,11 +105,11 @@ sub get_chromosome {
 		       -attributes => { Name => $m->get_name() },
 		       );
 	my @contigs = ();
-	foreach my $gm (@gff_markers) {
+	for my $gm (@gff_markers) {
 	    @contigs = $gm->refseq();
 	}
 	my $count = 0;
-	foreach my $c (@contigs) {
+	for my $c (@contigs) {
 	    my $contig = CXGN::Cview::Marker::Physical->new();
 	    $contig->set_chromosome($chromosome);
 	    $contig->set_name($c);
@@ -161,12 +153,12 @@ sub get_overview_chromosome {
 
     my $chromosome = $self->get_chromosome($chr_nr);
 
-    foreach my $m ($chromosome->get_markers()) {
-	if ($m->get_marker_type() eq "contig") {
-	    my $offset = $m->get_offset();
-	    $bargraph -> add_association("manual", $offset, 1);
-	    if ($offset>$largest_offset) { $largest_offset = $offset; }
-	}
+    for my $m ($chromosome->get_markers()) {
+        if ($m->get_marker_type() eq "contig") {
+            my $offset = $m->get_offset();
+            $bargraph -> add_association("manual", $offset, 1);
+            if ($offset>$largest_offset) { $largest_offset = $offset; }
+        }
     }
     return $bargraph;
 }
@@ -227,11 +219,11 @@ sub cache_marker_counts {
     my $temp_file = File::Spec->catfile($self->{temp_dir}, 'contig'.$self->get_id()."_marker_counts.txt");
 
     if (! -e ($temp_file)) {
-	open(my $TEMP, ">$temp_file") || die "Can't open $temp_file for writing.";
+	open(my $TEMP, '>', $temp_file) or die "Can't open $temp_file for writing: $!";
 	for my $c (1..12) {
 	    my $count = 0;
 	    my $chr = $self->get_chromosome($c);
-	    foreach my $m ($chr->get_markers()) {
+	    for my $m ($chr->get_markers()) {
 		if ($m->get_marker_name()=~ /^ctg/) {
 		    $count++;
 		}
@@ -242,7 +234,7 @@ sub cache_marker_counts {
     }
 
     else {
-	open(my $TEMP, "<$temp_file") || die "Can't open $temp_file for reading.";
+	open(my $TEMP, '<', $temp_file) or die "Can't open $temp_file for reading: $!";
 	while (<$TEMP>) {
 	    chomp;
 	    my ($c, $length) = split /\t/;
@@ -257,8 +249,8 @@ sub get_map_stats {
     my $self = shift;
 
     my $count = 0;
-    foreach my $c (1..12) {
-	$count += $self->get_marker_count($c);
+    for my $c (1..12) {
+        $count += $self->get_marker_count($c);
     }
 
     return "$count contigs have been assigned to this map";
