@@ -1,7 +1,9 @@
 
 use strict;
+use warnings;
 
 package CXGN::Cview::Map::SGN::AGP;
+
 
 use File::Spec;
 use CXGN::Cview::Chromosome::AGP;
@@ -223,8 +225,8 @@ sub get_marker_count {
     
     my $marker_count = 0;
     if (exists($self->get_files()->{$chr_nr}) && $self->get_files()->{$chr_nr}) { 
-	open (F, $self->get_files()->{$chr_nr}) || die "Can't open agp definition file for chr $chr_nr [ ".$self->get_files()->{$chr_nr}." ]\n";
-	while (<F>) { 
+	open (my $F, '<', $self->get_files()->{$chr_nr}) || die "Can't open agp definition file for chr $chr_nr [ ".$self->get_files()->{$chr_nr}." ] : $!";
+	while (<$F>) { 
 	    chomp;
 	    my ($project, $start, $end, $count, $dir, $clone_name) = split /\t/;
 
@@ -246,10 +248,9 @@ sub _determine_chromosome_length {
     
     my $longest = 1; # prevent division by zero errors. 1 is very small for practical purposes here.
     if (exists($self->get_files()->{$chr_nr}) && $self->get_files()->{$chr_nr}) { 
-	open (F, $self->get_files()->{$chr_nr}) || die "Can't open agp definition file for chr $chr_nr [ ".$self->get_files()->{$chr_nr}." ]\n";
+	open (my $F, '<', $self->get_files()->{$chr_nr}) || die "Can't open agp definition file for chr $chr_nr [ ".$self->get_files()->{$chr_nr}." ] : $!";
 
-	
-	while (<F>) { 
+	while (<$F>) { 
 	    chomp;
 	     if (/$ENDMARKER/) { 
 		last();
@@ -287,13 +288,12 @@ sub can_zoom {
 
 sub cache_chromosome_lengths { 
     my $self  =shift;
-#    my $vh = CXGN::VHost->new();
     my $chr_len_cache = File::Spec->catfile($self->get_temp_dir(), "agp_chr_len_cache.txt");
 
     my $LENCACHE;
     my @lengths = ();
     if ( -e $chr_len_cache ) { 
-	open($LENCACHE, "<$chr_len_cache") || die "Can't open the agp cache $chr_len_cache";
+	open($LENCACHE, '<', $chr_len_cache) or die "Can't open the agp cache $chr_len_cache: $!";
 	while (<$LENCACHE>) { 
 	    chomp;
 	    my ($chr, $len) = split /\t/;
@@ -303,12 +303,11 @@ sub cache_chromosome_lengths {
 	close($LENCACHE);
 	return;
     }
-    open ($LENCACHE, ">$chr_len_cache") || die "Can't open the agp chr len cache file $chr_len_cache\n";
-    foreach my $chr_nr ($self->get_chromosome_names()) { 
-	my $len = $self->_determine_chromosome_length($chr_nr);
-	print $LENCACHE "$chr_nr\t$len\n";
-	push @lengths, $len;
-	
+    open ($LENCACHE, '>', $chr_len_cache) or die "Can't open the agp chr len cache file $chr_len_cache: $!";
+    for my $chr_nr ($self->get_chromosome_names()) { 
+        my $len = $self->_determine_chromosome_length($chr_nr);
+        print $LENCACHE "$chr_nr\t$len\n";
+        push @lengths, $len;
     }
     close($LENCACHE);
     $self->set_chromosome_lengths(@lengths);
