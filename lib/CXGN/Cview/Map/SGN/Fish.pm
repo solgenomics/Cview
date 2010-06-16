@@ -38,9 +38,9 @@ This class implements the following functions:
 
 =cut
 
-use strict;
-
 package CXGN::Cview::Map::SGN::Fish;
+use strict;
+use warnings;
 
 use CXGN::Cview::Map;
 use CXGN::Cview::Map::Tools;
@@ -101,19 +101,18 @@ sub fetch_pachytene_idiograms {
     }
 	
     my $data_folder=$vhost_conf->get_conf('basepath').$vhost_conf->get_conf('documents_subdir');
-    open (F, "<$data_folder/cview/pachytene/".$file_name) || die "Can't open pachytene def file";
+    open (my $F, '<', "$data_folder/cview/pachytene/".$file_name) || die "Can't open pachytene def file: $!";
     my %chr_len=();;
     @{$self->{pachytene_idiograms}} = ();
-    foreach my $n ($self->get_chromosome_names()) { 
-	#print STDERR "Generatign pachytene idogram $n...\n";
-	push @{$self->{pachytene_idiograms}}, CXGN::Cview::Chromosome::PachyteneIdiogram->new();
+    for my $n ($self->get_chromosome_names()) { 
+        push @{$self->{pachytene_idiograms}}, CXGN::Cview::Chromosome::PachyteneIdiogram->new();
     }
     my $short_arm=0;
     my $long_arm=0;
     
     my $old_chr = "";
     my ($chr, $type, $start, $end) = (undef, undef, undef, undef);
-    while (<F>) { 
+    while (<$F>) { 
 	chomp;
 	
 	# skip comment lines.
@@ -122,7 +121,6 @@ sub fetch_pachytene_idiograms {
 	
 	if ($chr ne $old_chr) { 
 	    $chr_len{$old_chr}=($short_arm + $long_arm);
-	    #print STDERR "Fish map: $old_chr is $chr_len{$old_chr} long...\n";
 	    $short_arm = 0;
 	    $long_arm = 0;
 	    $old_chr = $chr;
@@ -141,7 +139,6 @@ sub fetch_pachytene_idiograms {
     }
     # deal with the last entry
     $chr_len{$chr}=($short_arm + $long_arm);
-    #print STDERR "Fish map: $old_chr is $chr_len{$old_chr} long...\n";
 
     my @chr_len = ();
     foreach my $n ($self->get_chromosome_names()) { 
@@ -171,12 +168,7 @@ sub get_chromosome {
     my $self = shift;
     my $chr_nr = shift;
     
-    #print STDERR "generating fish chromosome $chr_nr...\n";
-
     my $chromosome = $self->get_pachytene_idiogram($chr_nr-1);
-    
-    #print STDERR "Fetching $chromosome_number pachytene\n";
-    
     
     # The following query is a composition of 3 subqueries (look for the 'AS'
     # keywords), joined using the clone_id.  Here's what the subqueries do:
