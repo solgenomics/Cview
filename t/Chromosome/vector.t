@@ -1,16 +1,12 @@
-
 use strict;
+use warnings;
 
-use Test::More qw | no_plan |;
+use Test::More tests => 11;
 
-BEGIN { 
-    use_ok("CXGN::Cview::Chromosome::Vector");
-    use_ok("CXGN::Cview::Marker::VectorFeature");
-
-}
+use_ok("CXGN::Cview::Chromosome::Vector");
+use_ok("CXGN::Cview::Marker::VectorFeature");
 
 my $v = CXGN::Cview::Chromosome::Vector->new();
-
 
 $v->set_length(3000);
 $v->set_height(200);
@@ -52,7 +48,3 @@ $m2->set_range_coords(1500, 2500);
 $v->add_marker($m2);
 
 is($v->get_markers(), 2, "marker test");
-
-
-
-
