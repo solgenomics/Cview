@@ -1,3 +1,4 @@
+package CXGN::Cview::Marker;
 
 =head1 NAME
 
@@ -49,10 +50,9 @@ Original version July 2004
 return 1;
 
 use strict;
+use warnings;
 use CXGN::Cview::ImageObject;
 use CXGN::Cview::Label;
-
-package CXGN::Cview::Marker;
 
 use base qw/ CXGN::Cview::ImageObject /;
 
@@ -114,17 +114,15 @@ sub new {
     $self->hide_mark();
     # the default for this is set in the label object. $self->set_label_spacer(); # the distance between the label and the midline of the chromosome
     $self->set_font(GD::Font->Small());
-    
+
     # the offset label is shown on the opposite side of 
     # the name label
-    #
+
     my $offset_label = CXGN::Cview::Label->new();
     $offset_label->set_text_color(150, 150, 150);
-    $offset_label->set_name( (sprintf "%5.2f", $offset)." ");
+    $offset_label->set_name( (sprintf "%5.2f", ($offset || 0) ) . " ");
     $self->set_offset_label($offset_label);
-    
-    # print STDERR "Marker new: $self->{has_bacs}\n";
-    #
+
     return $self;
 }
 
@@ -1428,3 +1426,4 @@ sub has_range {
     return 0;
 }
 
+1;
