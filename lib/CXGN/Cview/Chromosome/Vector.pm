@@ -1,3 +1,4 @@
+package CXGN::Cview::Chromosome::Vector;
 
 =head1 NAME 
 
@@ -20,10 +21,9 @@ The default map units are bp (set in the constructor).
 Lukas Mueller <lam87@cornell.edu>
 
 =cut
- 
-use strict;
 
-package CXGN::Cview::Chromosome::Vector;
+use strict;
+use warnings;
 
 use CXGN::Cview::Marker::VectorFeature;
 
@@ -345,11 +345,9 @@ sub draw_caption {
     $font = GD::Font->Small;
 
     my $string = "(".$self->get_length()." bp)";
-    my $x = $self->get_X() - $font->width() * length($string)/2 ;
-    my $y = $self->get_Y() + $font->height()/2;
-    
+    $x = $self->get_X() - $font->width() * length($string)/2 ;
+    $y = $self->get_Y() + $font->height()/2;
     $image->string($font, $x, $y, $string, $color);
-    
 }
 
 
