@@ -24,6 +24,7 @@ use CXGN::Cview;
 use CXGN::Cview::Chromosome;
 #use CXGN::Cview::Cview_data_adapter;
 use CXGN::Cview::MapImage;
+use CXGN::VHost;
 use File::Temp qw / tempfile /;
 use File::Basename qw / basename /;
 
