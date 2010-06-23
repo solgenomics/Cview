@@ -42,6 +42,8 @@ package CXGN::Cview::Map::SGN::Fish;
 use strict;
 use warnings;
 
+use CXGN::VHost;
+
 use CXGN::Cview::Map;
 use CXGN::Cview::Map::Tools;
 use CXGN::Cview::Marker::FISHMarker;
