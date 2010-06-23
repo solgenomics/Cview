@@ -1,9 +1,9 @@
 
 
 =head1 NAME
-           
+
 CXGN::Cview::Map::SGN::Fish - a class to generate cytological fish maps.
-           
+
 =head1 SYNOPSYS
 
  my $fish = CXGN::Cview::Map::SGN::Fish->new($dbh, 13);
@@ -21,7 +21,7 @@ A class to generate cytological fish maps. Two idiograms are supported: "stack" 
 Lukas Mueller <lam87@cornell.edu>
 
 =head1 VERSION
- 
+
 1.1
 
 =head1 COPYRIGHT & LICENSE
@@ -84,9 +84,9 @@ sub new {
   Synopsis:	$pi->fetch_pachytene_idiogram
   Arguments:	loads the pachytene idiogram from a standard location.
   Returns:	nothing
-  Side effects:	the idiogram definition fetched will be the 
+  Side effects:	the idiogram definition fetched will be the
                 basis for the chromosome rendering
-  Description:	
+  Description:
 
 =cut
 
@@ -96,80 +96,80 @@ sub fetch_pachytene_idiograms {
 
     my $file_name = "pachytene_stack.txt";
 
-    if (defined($self->{pachytene_version}) && $self->{pachytene_version} =~/dejong/i ) { 
+    if (defined($self->{pachytene_version}) && $self->{pachytene_version} =~/dejong/i ) {
 	$file_name = "pachytene_tomato_dapi.txt";
     }
-	
+
     my $data_folder=$vhost_conf->get_conf('basepath').$vhost_conf->get_conf('documents_subdir');
     open (my $F, '<', "$data_folder/cview/pachytene/".$file_name) || die "Can't open pachytene def file: $!";
     my %chr_len=();;
     @{$self->{pachytene_idiograms}} = ();
-    for my $n ($self->get_chromosome_names()) { 
+    for my $n ($self->get_chromosome_names()) {
         push @{$self->{pachytene_idiograms}}, CXGN::Cview::Chromosome::PachyteneIdiogram->new();
     }
     my $short_arm=0;
     my $long_arm=0;
-    
+
     my $old_chr = "";
     my ($chr, $type, $start, $end) = (undef, undef, undef, undef);
-    while (<$F>) { 
+    while (<$F>) {
 	chomp;
-	
+
 	# skip comment lines.
 	if (/^\#/) { next(); }
 	($chr, $type, $start, $end) = split/\t/;
-	
-	if ($chr ne $old_chr) { 
+
+	if ($chr ne $old_chr) {
 	    $chr_len{$old_chr}=($short_arm + $long_arm);
 	    $short_arm = 0;
 	    $long_arm = 0;
 	    $old_chr = $chr;
 	}
-	
+
 	#print STDERR "Adding feature $type ($start, $end)\n";
 	$self->{pachytene_idiograms}->[$chr-1] -> add_feature($type, $start, $end);
-	
-	if ($type eq "short_arm") { 
+
+	if ($type eq "short_arm") {
 	    $short_arm = abs($start) + abs($end);
 	}
 	if ($type eq "long_arm") {
 	    $long_arm = abs($start) + abs($end);
 	}
-	
+
     }
     # deal with the last entry
     $chr_len{$chr}=($short_arm + $long_arm);
 
     my @chr_len = ();
-    foreach my $n ($self->get_chromosome_names()) { 
+    foreach my $n ($self->get_chromosome_names()) {
 	push @chr_len, $chr_len{$n};
     }
     #print STDERR "Setting chromosome lengths to : ".(join " ", @chr_len)."\n";
     $self->set_chromosome_lengths(@chr_len);
     #print STDERR "Getting chromosome lengths: ".(join " ", $self->get_chromosome_lengths())."\n";
-    
+
 }
 
 
 
-sub get_pachytene_idiogram { 
+sub get_pachytene_idiogram {
     my $self = shift;
     my $chr_index = shift;
     return $self->{pachytene_idiograms}->[$chr_index];
 }
 
 =head2 function get_chromosome()
-    
+
 See parent class for description
-    
+
 =cut
-    
+
 sub get_chromosome {
     my $self = shift;
     my $chr_nr = shift;
-    
+
     my $chromosome = $self->get_pachytene_idiogram($chr_nr-1);
-    
+
     # The following query is a composition of 3 subqueries (look for the 'AS'
     # keywords), joined using the clone_id.  Here's what the subqueries do:
     #
@@ -224,7 +224,7 @@ GROUP BY clone_id, shortname, platenum, wellrow, wellcol, percent, marker_id ORD
 	#print STDERR "OFFSET $offset \%\n";
 
 	my $clone_name = CXGN::Genomic::Clone->retrieve($clone_id)->clone_name();
-	
+
 	my $m = CXGN::Cview::Marker::FISHMarker -> new($chromosome, $marker_id, $clone_name, "", 3, $offset+100, "", $offset );
 	$m -> set_url("/maps/physical/clone_info.pl?id=".$clone_id);
 	$chromosome->add_marker($m);
@@ -245,7 +245,7 @@ sub get_overgo_chromosome {
 
     $chr->set_vertical_offset_centromere();
     return $chr;
-    
+
 }
 
 =head2 function get_chromosome_connections()
@@ -262,7 +262,7 @@ sub get_chromosome_connections {
     #print STDERR "Map_version_id is : $map_version_id. \n";
     push @chr_list, { map_version_id=>$map_version_id, short_name=>"F2-2000", lg_name=>$chr_nr, marker_count=>"?" };
     return @chr_list;
-    
+
 }
 
 
@@ -282,11 +282,11 @@ This function returns a large number (hard-coded) to make sure that no fish expe
 
 =cut
 
-sub collapsed_marker_count { 
+sub collapsed_marker_count {
     return 2000;
 }
 
-sub can_zoom { 
+sub can_zoom {
     return 0;
 }
 
@@ -319,7 +319,7 @@ sub get_marker_count {
     $sth->execute($chr_nr);
     my ($count) = $sth->fetchrow_array();
     return $count;
-    
+
 }
 
 return 1;
