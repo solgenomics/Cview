@@ -15,7 +15,7 @@ Map_overviews.pm - classes to display different kinds of map overviews.
 
 =head1 DESCRIPTION
 
-Map_overviews.pm contains a number of classes designed to display map overview images (chromosomes aligned horizontally) for a given map. The base class is an abstract class called CXGN::Cview::Map_overviews, which inherits from CXGN::DB::Connection for database access and it depends on CXGN::Cview for drawing the chromosomes. The subclasses derived from this class are 
+Map_overviews.pm contains a number of classes designed to display map overview images (chromosomes aligned horizontally) for a given map. The base class is an abstract class called CXGN::Cview::Map_overviews and it depends on CXGN::Cview classes for drawing the chromosomes. The subclasses derived from this class are 
 
 =over 5
 
@@ -25,7 +25,7 @@ CXGN::Cview::Map_overviews::Generic, which displays a generic overview for maps 
 
 =item *
 
-CXGN::Cview::Map_overviews::ProjectStats displays a map showing the progress of the sequencing project. In addition to CXGN::DB::Connection, it also uses CXGN::People, to get the BAC statistics associated to the different chromosomes. 
+CXGN::Cview::Map_overviews::ProjectStats displays a map showing the progress of the sequencing project. It also uses CXGN::People, to get the BAC statistics associated to the different chromosomes. 
 
 =back
 
@@ -45,10 +45,12 @@ The cache can be reset by deleting the contents of the caching directory. The de
 =cut
 
 use strict;
+use warnings;
 
-use CXGN::Page;
-use CXGN::People;
+package CXGN::Cview::Map_overviews;
+
 use File::Spec;
+use CXGN::People;
 use CXGN::Tools::WebImageCache;
 use CXGN::Cview;
 use CXGN::Cview::Chromosome;
@@ -62,14 +64,10 @@ use CXGN::Cview::Ruler;
 use CXGN::Cview::Chromosome::Physical;
 use CXGN::Cview::Label;
 use CXGN::Cview::Map::Tools;
-use CXGN::VHost;
-
 use CXGN::Cview::Map_overviews::Generic;
 use CXGN::Cview::Map_overviews::Physical;
 use CXGN::Cview::Map_overviews::ProjectStats;
 use CXGN::Cview::Map_overviews::Individual;
-
-package CXGN::Cview::Map_overviews;
 
 =head1 CXGN::Cview::Map_overviews
 
@@ -77,9 +75,6 @@ This class implements an abstract interface for drawing map overview images.
 
 =cut
 
-use CXGN::DB::Connection;
-
-use base qw( CXGN::DB::Connection );
 
 # an abstract class from which other overviews inherit.
 
@@ -100,25 +95,24 @@ use base qw( CXGN::DB::Connection );
 
 sub new {
     my $class = shift;
-    my $force = shift;
+    my $map = shift;
+    my $self = bless {}, $class;
 
-    my $self = $class -> SUPER::new("sgn");
-
-    $self->_set_force($force);
+    $self->_set_force($args->{force});
 
     # define some default values
     #
-    @{$self->{c_len}} = (0, 163, 140, 170, 130, 120, 100, 110, 90, 115, 90, 100, 120);
+    ####@{$self->{c_len}} = (0, 163, 140, 170, 130, 120, 100, 110, 90, 115, 90, 100, 120);
 
     $self->set_horizontal_spacing(50);
-    $self->set_vhost(CXGN::VHost->new());
+#    $self->set_vhost(CXGN::VHost->new());
     
     # set up the cache
     #
     my $cache =  CXGN::Tools::WebImageCache->new();
-    $cache->set_force($force);
-    $cache->set_basedir($self->get_vhost()->get_conf("basepath"));
-    $cache->set_temp_dir("/documents/tempfiles/cview");
+    $cache->set_force($args->{force});
+    $cache->set_basedir($args->{basedir});
+    $cache->set_temp_dir($args->{tempdir});
     $self->set_cache($cache);
     $self->set_image_width(700);
     $self->set_image_height(200);
@@ -147,25 +141,25 @@ sub set_map {
     $self->{map}=shift;
 }
 
-=head2 accessors set_vhost(), get_vhost()
+# =head2 accessors set_vhost(), get_vhost()
 
-  Property:	a CXGN::VHost object
-  Description:	This is set to a new CXGN::VHost object
-                in the constructor. The getter is used
-                to obtain configuration information, such
-                as tempfile pathnames and the like.
+#   Property:	a CXGN::VHost object
+#   Description:	This is set to a new CXGN::VHost object
+#                 in the constructor. The getter is used
+#                 to obtain configuration information, such
+#                 as tempfile pathnames and the like.
 
-=cut
+# =cut
 
-sub get_vhost { 
-    my $self=shift;
-    return $self->{vhost};
-}
+# sub get_vhost { 
+#     my $self=shift;
+#     return $self->{vhost};
+# }
 
-sub set_vhost { 
-    my $self=shift;
-    $self->{vhost}=shift;
-}
+# sub set_vhost { 
+#     my $self=shift;
+#     $self->{vhost}=shift;
+# }
 
 =head2 function set_horizontal_spacing()
 
@@ -314,54 +308,26 @@ sub get_image_html {
 
 =head2 accessors get_marker_count(), set_marker_count()
 
- Synopsis:	
- Arguments:	
- Returns:	
- Side effects:	
- Description:	
+ Synopsis:     my $count = $map->get_marker_count($chr)
+ Arguments:    a chromosome name
+ Returns:      the number of markers on that chromosome	
+ Side effects: 
+ Description:  needs to be implemented in a subclass.
 
 =cut
 
 
-# sub get_marker_count { 
-#     my $self = shift;
-#     my $chromosome = shift;
-#     my $query = "";
-#     if ($self->get_map()->get_type() eq "fish") { 
-# 	$query = "SELECT count(distinct(clone_id)) from sgn.fish_result WHERE chromo_num=?";
-# 	my $sth = $self->prepare($query);
-# 	$sth->execute($chromosome);
-# 	my ($count) = $sth->fetchrow_array();
-# 	return $count;
-#     }
-#     else { 
-# 	$query = "SELECT count(distinct(location_id)) FROM sgn.map_version JOIN marker_location using (map_version_id) 
-#                             JOIN linkage_group using (lg_id)
-#                       WHERE linkage_group.lg_name=? and map_version.map_version_id=?";
-# 	my $sth = $self->prepare($query);
-# 	$sth->execute($chromosome, $self->get_map()->get_id());
-# 	my ($count) = $sth->fetchrow_array();
-# 	return $count;
-#     }
-   
-    
-    
-# }
+sub get_marker_count { 
+}
 
-# sub set_marker_count { 
-#     my $self = shift;
-#     my $chromosome =  shift;
-#     $self->{marker_count}->[$chromosome] = shift;
-# }
+sub set_marker_count { 
+}
 
 =head2 accessors set_map_image(), get_map_image()
 
-  Property:	
-  Setter Args:	
-  Getter Args:	
-  Getter Ret:	
+  Property:     the image object (GD::Image)
   Side Effects:	
-  Description:	
+  Description:	this image object is used for drawing the image
 
 =cut
 
@@ -417,125 +383,42 @@ sub get_markers_not_found {
     return ( map ($_, (keys(%{$self->{markers_not_found}}))));
 }
 
+=head2 add_map_items
 
-# =head2 accessors get_cache_key()
+ Usage:
+ Desc:
+ Ret:
+ Args:
+ Side Effects:
+ Example:
 
-#   Property:	
-#   Setter Args:	
-#   Getter Args:	
-#   Getter Ret:	
-#   Side Effects:	
-#   Description:	This function needs to be overridden in
-#                 a subclass to give a reproducible key for 
-#                 a given map. Default value here is:
-#                 the map_version_id + 
+=cut
 
-# =cut
+sub add_map_items {
+    my $self = shift;
+    my @map_items = @_;
 
-# sub get_cache_key { 
-#     my $self=shift;
-#     my $type = ref($self);
-#     return ($self->get_map()->get_id()."-".(join ":", $self->get_hilite_markers())."-".$type."-".$self->get_image_width()."-".$self->get_image_height());
-# }
+    foreach my $mi (@map_items) { 
 
-# =head2 function set_temp_file
+	my ($chr, $offset, $name) = split /\s+/, $mi;
+	
+	my $chr_obj = $self->get_chromosome_by_name($chr);	
+	
+	my $m = CXGN::Cview::Marker->new($chr_obj);
+	
+	$m->get_label()->set_label_text($name);
+	$m->set_offset($offset);
+	$m->get_label()->set_hilited(1);
+	$chr_obj->add_marker($m);
+	
 
-#   Synopsis:	
-#   Arguments:	
-#   Returns:	
-#   Side effects:	
-#   Description:	
+    }
 
-# =cut
-
-# sub set_temp_file {
-#     my $self = shift;
-#     $self->{temp_url} = shift;
-#     $self->{temp_file} = shift;
-# }
-
-
-# =head2 function get_temp_file()
-
-#   Example:      my $file_path = $overview->get_temp_file();
-#   Getter Args:	none
-#   Getter Ret:	a list of 2 strings:
-#                 (1) the url to the image
-#                 (2) the fully qualified path to the image file.
-#   Side Effects:	these are the locations where the image can
-#                 be accessed.
-#   Description:	
-
-# =cut
-
-# sub get_temp_file { 
-#     my $self=shift;
-
-#     if (exists($self->{temp_url})) { return ($self->{temp_url}, $self->{temp_file}); }
-
-#     my $fileurl  = File::Spec->catfile( $self->get_temp_dir(), $self->get_filename());
-#     my $filepath = File::Spec->catfile( $self->get_base_dir(), $self->get_temp_dir(), $self->get_filename()); 
-#     return ($fileurl, $filepath);
-# }
-
-# =head2 function get_temp_dir()
-
-#   Synopsis:	my $temp_dir = $overview->get_temp_dir();
-#   Arguments:	none
-#   Returns:	the tempdir, as defined in the CXGN::VHost 
-#                 tempfiles_subdir property.
-#   Side effects:	this is the temp_dir used to store the image 
-#                 (in conjunction with get_base_dir()).
-#   Description:	there is no setter for this property.
-
-# =cut
-
-# sub get_temp_dir {
-#     my $self = shift;
-#     my $temp_dir  = File::Spec->catfile($self->get_vhost()->get_conf('tempfiles_subdir'), "cview");
-#     return $temp_dir;
-# }
-
-# =head2 function get_base_dir()
-
-#   Synopsis:	my $basedir = $overview->get_base_dir();
-#   Arguments:	none
-#   Returns:	the $basedir (from the CXGN::VHost basepath property)
-#   Side effects:	none
-#   Note:         There is no setter for this property.
-
-# =cut
-
-# sub get_base_dir {
-#     my $self = shift;
-#     my $basedir = $self->get_vhost()->get_conf('basepath');
-#     return $basedir;
-# }
-
-
-# =head2 function get_filename()
-
-#   Synopsis:	$overview->get_filename()
-#   Arguments:	none
-#   Returns:	the filename of the image file for this overview
-#   Side effects:	this file is used to construct the overview page
-#   Implementation: the filename is calculated in this function from 
-#                 the value returned by get_cache_key(), which is 
-#                 fed into the MD5sum function.
-
-# =cut
-
-# sub get_filename { 
-#     my $self=shift;
-#     if (exists($self->{filename})) { return $self->{filename}; }
-#     return Digest::MD5->new()->add($self->get_cache_key())->hexdigest().".png";
-# }
-
-# sub set_filename { 
-#     my $self=shift;
-#     $self->{filename}=shift;
-# }
-
+    foreach my $c ($self->get_chromosomes()) { 
+	$c->order_markers();
+    }
+    
+}
 
 =head2 accessors set_chr_height(), get_chr_height()
 
@@ -658,12 +541,11 @@ sub set_cache {
     $self->{cache}=shift;
 }
 
-=head2 get_chromosomes
+=head2 get_chromosomes(), set_chromosomes()
 
- Usage:
- Desc:
- Ret:
- Args:
+ Usage:        my @c = $map->get_chromosomes();
+ Desc:         returns (sets) a list of Cview chromosome objects for 
+               this map, in the same order as get_chromosome_names().
  Side Effects:
  Example:
 
@@ -675,23 +557,35 @@ sub get_chromosomes {
 
 }
 
-=head2 set_chromosomes
-
- Usage:
- Desc:
- Ret:
- Args:
- Side Effects:
- Example:
-
-=cut
-
 sub set_chromosomes {
   my $self=shift;
   $self->{chromosomes}=shift;
 }
 
+=head2 get_chromosome_by_name
+
+ Usage:        my $c = $map->get_chromosome_by_name("7b")
+ Desc:         returns a Cview chromosome object
+ Args:         the name of the chromosome
+ Side Effects: 
+ Example:
+
+=cut
+
+sub get_chromosome_by_name {
+    my $self = shift;
+    my $name = shift;
+    
+    # a hash would be useful internally...
+    my @chromosomes = $self->get_chromosomes();
+    my @names = $self->get_chromsome_names();
+    for (my $i=0; $i<@chromosomes; $i++) { 
+	if ($name eq $names[$i]) { 
+	    return $chromosomes[$i];
+	}
+    }
+}
 
 
 
-return 1;
+1;

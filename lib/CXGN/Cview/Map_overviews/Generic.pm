@@ -52,10 +52,11 @@ use base qw ( CXGN::Cview::Map_overviews );
 
 sub new {
     my $class = shift;
+    my $dbh = shift;
     my $map = shift;
-    my $force = shift;
+    my $args = shift;
 
-    my $self = $class -> SUPER::new($force);
+    my $self = $class -> SUPER::new($dbh, $args);
 
     if (!$map) { exit(); }
 
@@ -311,4 +312,4 @@ sub new {
 }
 
 
-return 1;
+1;
