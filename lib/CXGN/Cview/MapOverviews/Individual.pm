@@ -27,12 +27,11 @@ This class implements the following functions:
 =cut
 
 use strict;
+use warnings;
 
-package CXGN::Cview::Map_overviews::Individual;
+package CXGN::Cview::MapOverviews::Individual;
 
-use CXGN::Cview::Map_overviews;
-
-use base qw | CXGN::Cview::Map_overviews |;
+use base "CXGN::Cview::MapOverviews";
 
 =head2 function new
 
@@ -282,7 +281,7 @@ sub set_chromosome_count {
 
 package CXGN::Cview::Map_overviews::Individual_overview;
 
-use base qw | CXGN::Cview::Map_overviews::Individual |; 
+use base qw | CXGN::Cview::MapOverviews::Individual |; 
 
 sub new { 
     my $class = shift;
@@ -290,4 +289,5 @@ sub new {
     return $self;
 }
 
-return 1;
+
+1;

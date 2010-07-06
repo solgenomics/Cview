@@ -1,6 +1,4 @@
 
-
-
 =head1 NAME
 
 CXGN::Cview::Map_overviews::Generic - a class to display generic genetic map overviews.
@@ -30,21 +28,19 @@ This class implements the following functions:
 
 =cut
 
-
-
 use strict;
 
-package CXGN::Cview::Map_overviews::QTL_overview;
+package CXGN::Cview::MapOverviews::QTLOverview;
 
 use CXGN::Cview::Map::Tools;
 use CXGN::Marker::Tools qw | clean_marker_name |;
 use CXGN::Cview::Chromosome::LineGraph;
-use base qw ( CXGN::Cview::Map_overviews::Generic );
+use base "CXGN::Cview::MapOverviews::Generic";
 
 
 =head2 function new()
 
- Synopsis:	my $overview = CXGN::Cview::Map_overviews::QTL_overview->
+ Synopsis:	my $overview = CXGN::Cview::MapOverviews::QTLOverview->
                  new(CXGN::Cview::Map::SGN::Genetic->new(9),$qtl_file);
  Arguments:	(1) The a CXGN::Cview::Map object for the map to be 
                     displayed.
@@ -61,9 +57,9 @@ sub new {
     my $class = shift;
     my $map = shift;
     my $qtl_file =shift;
-    my $force = shift;
+    my $args = shift;
 
-    my $self = $class -> SUPER::new($map, $force);
+    my $self = $class -> SUPER::new($map, $args);
 
     #print STDERR "We are in the constructure now\n";
     if (!$map) { exit(); }
@@ -72,17 +68,14 @@ sub new {
     return $self;
 }
 
-    
-# sub render { 
-#     my $self = shift;
-#     my $map_width=$self->get_image_width();
-#     my $image_height = $self->get_image_height();
-#     my $top_margin = 40;
-  
-#     my @c = ();
+=head2 render()
 
-#     $self->set_chromosomes(\@c);
-# }
+ Usage:        $map->render()
+ Desc:         renders the map on the GD::Image
+ Side Effects:
+ Example:
+
+=cut
 
 sub render { 
     my $self = shift;
@@ -165,7 +158,6 @@ sub is_fish_map {
     }
 }
 
-
 =head2 function get_map
 
  Synopsis:	
@@ -196,7 +188,6 @@ sub set_map {
     $self->{map}=shift;
 }
 
-
 =head2 accessors get_qtl_file, set_qtl_file
 
  Usage:
@@ -217,41 +208,4 @@ sub set_qtl_file {
   $self->{qtl_file} = shift;
 }
 
-
-
-# no need to override this function here because the default 
-# in the parent class are fine for our purposes.
-#
-# =head2 function get_cache_key
-
-#   Synopsis:	
-#   Arguments:	
-#   Returns:	
-#   Side effects:	
-#   Description:	
-
-# =cut
-
-# sub get_cache_key {
-#     my $self = shift;
-#     my $key =  $self->get_map()->map_id()."-".(join "-", ($self->get_hilite_markers())).__PACKAGE__;
-#     print STDERR "Setting cache key to : $key\n";
-#     return $key;
-# }
-
-
-# A deprecated package name.
-# but providing a compatibility layer...
-#
-package CXGN::Cview::Map_overviews::generic_map_overview;
-
-use base qw | CXGN::Cview::Map_overviews::Generic | ;
-
-sub new { 
-    my $class = shift;
-    my $self = $class->SUPER::new(@_);
-    return $self;
-}
-
-
-return 1;
+1;

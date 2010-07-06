@@ -3,7 +3,7 @@
 
 =head1 NAME
 
-CXGN::Cview::Map_overviews::Generic - a class to display generic genetic map overviews.
+CXGN::Cview::MapOverviews::Generic - a class to display generic genetic map overviews.
            
 =head1 SYNOPSYS
 
@@ -28,21 +28,18 @@ This class implements the following functions:
 
 =cut
 
-
-
 use strict;
 
-package CXGN::Cview::Map_overviews::Generic;
+package CXGN::Cview::MapOverviews::Generic;
 
 use CXGN::Cview::Map::Tools;
 use CXGN::Marker::Tools qw | clean_marker_name |;
 
-use base qw ( CXGN::Cview::Map_overviews );
-
+use base "CXGN::Cview::MapOverviews";
 
 =head2 function new()
 
- Synopsis:	my $overview = CXGN::Cview::Map_overviews::generic_map_overview->new(CXGN::Cview::Map::SGN::Genetic->new(9));
+ Synopsis:	my $overview = CXGN::Cview::MapOverviews::generic_map_overview->new(CXGN::Cview::Map::SGN::Genetic->new(9));
  Arguments:	The a CXGN::Cview::Map object for the map to be displayed.
  Returns:	an overview object (constructor)
  Side effects:	sets up the overview object.
@@ -303,7 +300,7 @@ sub set_map {
 #
 package CXGN::Cview::Map_overviews::generic_map_overview;
 
-use base qw | CXGN::Cview::Map_overviews::Generic | ;
+use base qw | CXGN::Cview::MapOverviews::Generic | ;
 
 sub new { 
     my $class = shift;

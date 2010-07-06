@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-CXGN::Cview::Map_overviews::Physical - a class to draw physical map representations.           
+CXGN::Cview::MapOverviews::Physical - a class to draw physical map representations.           
            
 =head1 SYNOPSYS
 
@@ -29,18 +29,18 @@ This class implements/overrides the following functions:
 
 
 
-=head1 CXGN::Cview::Map_overviews::physical_overview
+=head1 CXGN::Cview::MapOverviews::Physical;
 
 A class to display a genetic map with the overgo results next to it.
-Inherits from CXGN::Cview::Map_overviews.
+Inherits from CXGN::Cview::MapOverviews.
 
 =cut
 
 use strict;
 
-package CXGN::Cview::Map_overviews::Physical;
+package CXGN::Cview::MapOverviews::Physical;
 
-use base qw( CXGN::Cview::Map_overviews::Generic );
+use base qw( CXGN::Cview::MapOverviews::Generic );
 
 sub hilite_marker { 
     my $self = shift;
@@ -123,15 +123,6 @@ sub render_map {
     $self->set_image_map( $self->{map_image}->get_image_map("#mapmap") );
 }
 
-package CXGN::Cview::Map_overviews::physical_overview;
-
-use base qw | CXGN::Cview::Map_overviews::Physical | ;
-
-sub new { 
-    my $class = shift;
-    my $self = $class->SUPER::new(@_);
-    return $self;
-}
-
-
-return 1;
+###
+1;#
+###

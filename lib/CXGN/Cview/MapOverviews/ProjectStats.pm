@@ -24,15 +24,13 @@ This class implements the following functions:
 
 use strict;
 
-package CXGN::Cview::Map_overviews::ProjectStats;
+package CXGN::Cview::MapOverviews::ProjectStats;
 
-use CXGN::Cview::Map_overviews;
+use base "CXGN::Cview::MapOverviews";
+
 use CXGN::Cview::Map::SGN::ProjectStats;
 use CXGN::People::BACStatusLog;
 use List::Util;
-
-
-use base qw( CXGN::Cview::Map_overviews );
 
 =head2 constructor new()
 
@@ -214,7 +212,7 @@ sub create_mini_overview {
 
 package CXGN::Cview::Map_overviews::project_stats;
 
-use base qw | CXGN::Cview::Map_overviews::ProjectStats |;
+use base qw | CXGN::Cview::MapOverviews::ProjectStats |;
 
 sub new { 
     my $class = shift;
