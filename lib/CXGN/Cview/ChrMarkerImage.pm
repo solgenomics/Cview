@@ -1,10 +1,10 @@
 =head1 NAME
 
-CXGN::Cview::ChrMarkerImage - a class for drawing small  chromosome image wit a specific marker hilited.
+CXGN::Cview::ChrMarkerImage - a class for drawing small chromosome image with a specific marker highlighted
 
 =head1 DESCRIPTION
 
-Inherits from L<CXGN::Cview::MapImage>. 
+Inherits from L<CXGN::Cview::MapImage>.
 
 =head1 AUTHOR(S)
 
@@ -19,10 +19,10 @@ Naama Menda (nm249@cornell.edu)
 1;
 
 use strict;
+use warnings;
 
 use CXGN::Cview;
 use CXGN::Cview::Chromosome;
-#use CXGN::Cview::Cview_data_adapter;
 use CXGN::Cview::MapImage;
 use CXGN::VHost;
 use File::Temp qw / tempfile /;
@@ -67,8 +67,8 @@ sub new {
     $chromosome->set_caption($self->get_lg_name);
     $chromosome->set_width(12);
     my $map_version_id= $self->get_map()->get_id();
-    my $marker_name= $self->get_marker_name();
-    my $lg_name=$self->get_lg_name();
+    $marker_name= $self->get_marker_name();
+    $lg_name=$self->get_lg_name();
     $chromosome->set_url("/cview/view_chromosome.pl?map_version_id=$map_version_id&amp;chr_nr=$lg_name&amp;hilite=$marker_name");
 
     my @markers= $chromosome->get_markers();
