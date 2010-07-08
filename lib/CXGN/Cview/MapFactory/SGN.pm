@@ -268,7 +268,10 @@ sub create {
 	if ($gbrowse_fpc) {
 	    @dbs = $gbrowse_fpc->databases();
 	    @dbs > 1 and die "I can handle only one db!";
-	}
+	} else {
+            warn "no GBrowse FPC data sources available, cannot open map $id";
+            return;
+        }
 	
         my $gbrowse_view_link = $gbrowse_fpc->view_url;
 	return CXGN::Cview::Map::SGN::Contig->new($self->get_dbh(), $id, {
