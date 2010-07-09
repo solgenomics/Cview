@@ -59,6 +59,8 @@ package CXGN::Cview::MapFactory::SGN;
 
 use base qw| CXGN::DB::Object |;
 
+use Scalar::Util qw/blessed/;
+
 use CXGN::Cview::Map::SGN::Genetic;
 #use CXGN::Cview::Map::SGN::User;
 use CXGN::Cview::Map::SGN::Fish;
@@ -86,7 +88,7 @@ sub new {
     my $dbh = shift;
     my $context = shift;
 
-    if (!$context) {
+    unless( blessed($context) && $context->isa('SGN::Context') ) {
         require SGN::Context;
 	$context = SGN::Context->new();
     }
