@@ -42,8 +42,6 @@ package CXGN::Cview::Map::SGN::Fish;
 use strict;
 use warnings;
 
-use CXGN::VHost;
-
 use CXGN::Cview::Map;
 use CXGN::Cview::Map::Tools;
 use CXGN::Cview::Marker::FISHMarker;
@@ -94,7 +92,8 @@ sub new {
 
 sub fetch_pachytene_idiograms {
     my $self = shift;
-    my $vhost_conf=CXGN::VHost->new();
+    require SGN::Context;
+    my $vhost_conf = SGN::Context->new;
 
     my $file_name = "pachytene_stack.txt";
 
