@@ -1,3 +1,4 @@
+package CXGN::Cview::Map::SGN::Genetic;
 
 =head1 NAME
 
@@ -19,8 +20,6 @@ This class implements the following functions (for more information, see L<CXGN:
 
 use strict;
 use warnings;
-
-package CXGN::Cview::Map::SGN::Genetic;
 
 use CXGN::Cview::Legend::Genetic;
 use CXGN::Cview::Map;
@@ -688,9 +687,7 @@ sub get_marker_link {
 sub set_marker_color {
     my $self = shift;
     my $m = shift;
-    my $color_model = shift;
-
-    #print STDERR "COLOR MODEL IS $color_model\n";
+    my $color_model = shift || '';
 
     if ($color_model eq "marker_types") {
 	if ($m->get_marker_type() =~ /RFLP/i) {
@@ -751,5 +748,4 @@ sub set_marker_color {
     }
 }
 
-
-return 1;
+1;
