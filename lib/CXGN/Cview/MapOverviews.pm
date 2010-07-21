@@ -1,12 +1,12 @@
 
 =head1 NAME
 
-Map_overviews.pm - classes to display different kinds of map overviews.
+CXGN::Cview::MapOverviews - classes to display different kinds of map overviews.
 
 =head1 SYNOPSYS
 
- my $overview = CXGN::Map_overview::Generic->new( 
-           CXGN::Cview::Map::SGN::Genetic->new($dbh, 9)
+ my $overview = CXGN::MapOverview::Generic->new( 
+           CXGN::Cview::Map::SGN::Genetic->new($dbh, 9), $args_ref
                                                 );
  $overview->hilite_markers(@marker_names);
  $overview->render_map();
@@ -15,23 +15,23 @@ Map_overviews.pm - classes to display different kinds of map overviews.
 
 =head1 DESCRIPTION
 
-Map_overviews.pm contains a number of classes designed to display map overview images (chromosomes aligned horizontally) for a given map. The base class is an abstract class called CXGN::Cview::Map_overviews and it depends on CXGN::Cview classes for drawing the chromosomes. The subclasses derived from this class are 
+CXGN::Cview::MapOverviews contains a number of classes designed to display map overview images (chromosomes aligned horizontally) for a given map. The base class is an abstract class called CXGN::Cview::MapOverviews and it depends on CXGN::Cview classes for drawing the chromosomes. The subclasses derived from this class are 
 
 =over 5
 
 =item *
 
-CXGN::Cview::Map_overviews::Generic, which displays a generic overview for maps of type "genetic", "fish" or "physical" - or any other map that has an appropriate CXGN::Cview::Map object implemented.
+CXGN::Cview::MapOverviews::Generic, which displays a generic overview for maps of type "genetic", "fish" or "physical" - or any other map that has an appropriate CXGN::Cview::Map object implemented.
 
 =item *
 
-CXGN::Cview::Map_overviews::ProjectStats displays a map showing the progress of the sequencing project. It also uses CXGN::People, to get the BAC statistics associated to the different chromosomes. 
+CXGN::Cview::MapOverviews::ProjectStats displays a map showing the progress of the sequencing project. It also uses CXGN::People, to get the BAC statistics associated to the different chromosomes. 
 
 =back
 
 =head2 Caching implementation
 
-The caching is implemented using CXGN::Tools::WebImageCache, which implements caching on the file system level. Each subclass of Map_overviews can implement its own get_cache_key() function, which should should be set to a distinct key for each map. Map_overviews::Generic concatenates the map_version_id, the hilited markers, and the package name. For more information, see L<CXGN::Tools::WebImageCache>.
+The caching is implemented using CXGN::Tools::WebImageCache, which implements caching on the file system level. Each subclass of MapOverviews can implement its own get_cache_key() function, which should should be set to a distinct key for each map. MapOverviews::Generic concatenates the map_version_id, the hilited markers, and the package name. For more information, see L<CXGN::Tools::WebImageCache>.
 
 =head2 Resetting the cache
 
@@ -47,7 +47,7 @@ The cache can be reset by deleting the contents of the caching directory. The de
 use strict;
 use warnings;
 
-package CXGN::Cview::Map_overviews;
+package CXGN::Cview::MapOverviews;
 
 use File::Spec;
 use CXGN::People;
@@ -56,7 +56,6 @@ use CXGN::Cview;
 use CXGN::Cview::Chromosome;
 use CXGN::Cview::Chromosome::PachyteneIdiogram;
 use CXGN::Cview::Chromosome::Glyph;
-use CXGN::Cview::Cview_data_adapter;
 use CXGN::Cview::MapImage;
 use CXGN::Cview::Marker;
 use CXGN::Cview::Marker::RangeMarker;
@@ -64,12 +63,12 @@ use CXGN::Cview::Ruler;
 use CXGN::Cview::Chromosome::Physical;
 use CXGN::Cview::Label;
 use CXGN::Cview::Map::Tools;
-use CXGN::Cview::Map_overviews::Generic;
-use CXGN::Cview::Map_overviews::Physical;
-use CXGN::Cview::Map_overviews::ProjectStats;
-use CXGN::Cview::Map_overviews::Individual;
+use CXGN::Cview::MapOverviews::Generic;
+use CXGN::Cview::MapOverviews::Physical;
+use CXGN::Cview::MapOverviews::ProjectStats;
+use CXGN::Cview::MapOverviews::Individual;
 
-=head1 CXGN::Cview::Map_overviews
+=head1 CXGN::Cview::MapOverviews
 
 This class implements an abstract interface for drawing map overview images.
 
@@ -80,14 +79,14 @@ This class implements an abstract interface for drawing map overview images.
 
 =head2 function new()
 
- Synopsis:	Constructor for Map_overview object
-  Example:      my $map_overview = CXGN::Cview::Map_overviews::Generic
+ Synopsis:	Constructor for MapOverview object
+  Example:      my $map_overview = CXGN::Cview::MapOverviews::Generic
                                    ->new( $map_object );
  Arguments:	usually a subclass of CXGN::Cview::Map
                 subclasses. Accepts a force parameter that 
                 if set to true, we force the recalculation
                 of the map and stats.
- Returns:	a CXGN::Cview::Map_overview object
+ Returns:	a CXGN::Cview::MapOverview object
  Side effects:	none
  Description:	
 
@@ -96,6 +95,8 @@ This class implements an abstract interface for drawing map overview images.
 sub new {
     my $class = shift;
     my $map = shift;
+    my $args = shift;
+
     my $self = bless {}, $class;
 
     $self->_set_force($args->{force});
@@ -111,8 +112,8 @@ sub new {
     #
     my $cache =  CXGN::Tools::WebImageCache->new();
     $cache->set_force($args->{force});
-    $cache->set_basedir($args->{basedir});
-    $cache->set_temp_dir($args->{tempdir});
+    $cache->set_basedir($args->{basepath});
+    $cache->set_temp_dir($args->{tempfiles_subdir});
     $self->set_cache($cache);
     $self->set_image_width(700);
     $self->set_image_height(200);
@@ -415,7 +416,7 @@ sub add_map_items {
     }
 
     foreach my $c ($self->get_chromosomes()) { 
-	$c->order_markers();
+	#$c->order_markers();
     }
     
 }
@@ -562,6 +563,28 @@ sub set_chromosomes {
   $self->{chromosomes}=shift;
 }
 
+
+=head2 accessors set_chromosome_count, get_chromosome_count
+
+  Property:	
+  Setter Args:	
+  Getter Args:	
+  Getter Ret:	
+  Side Effects:	
+  Description:	
+
+=cut
+
+sub get_chromosome_count { 
+    my $self=shift;
+    return $self->{chromosome_count};
+}
+
+sub set_chromosome_count { 
+    my $self=shift;
+    $self->{chromosome_count}=shift;
+}
+
 =head2 get_chromosome_by_name
 
  Usage:        my $c = $map->get_chromosome_by_name("7b")
@@ -586,6 +609,18 @@ sub get_chromosome_by_name {
     }
 }
 
+=head2 function get_cache_key()
 
+ Usage:        $map->get_cache_key()
+ Desc:         needs to be implemented in subclass and return 
+               a cache key for the current map
+ Side Effects:
+ Example:
+
+=cut
+
+sub get_cache_key {
+    die "get_cache_key is abstract. Please implement in subclass.";
+}
 
 1;

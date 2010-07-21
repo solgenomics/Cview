@@ -40,7 +40,7 @@ use strict;
 
 package CXGN::Cview::MapOverviews::Physical;
 
-use base qw( CXGN::Cview::MapOverviews::Generic );
+use base "CXGN::Cview::MapOverviews::Generic";
 
 sub hilite_marker { 
     my $self = shift;

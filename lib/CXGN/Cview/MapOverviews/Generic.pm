@@ -7,10 +7,11 @@ CXGN::Cview::MapOverviews::Generic - a class to display generic genetic map over
            
 =head1 SYNOPSYS
 
-see L<CXGN::Cview::Map_overviews>.
+see L<CXGN::Cview::MapOverviews> for a definition of the interface.
          
 =head1 DESCRIPTION
 
+This class implements an overview of a genetic map that is stored in the database.
 
 =head1 AUTHOR(S)
 
@@ -35,7 +36,7 @@ package CXGN::Cview::MapOverviews::Generic;
 use CXGN::Cview::Map::Tools;
 use CXGN::Marker::Tools qw | clean_marker_name |;
 
-use base "CXGN::Cview::MapOverviews";
+use base qw | CXGN::Cview::MapOverviews CXGN::DB::Object |;
 
 =head2 function new()
 
@@ -49,14 +50,14 @@ use base "CXGN::Cview::MapOverviews";
 
 sub new {
     my $class = shift;
-    my $dbh = shift;
     my $map = shift;
     my $args = shift;
 
-    my $self = $class -> SUPER::new($dbh, $args);
+    my $self = $class -> SUPER::new($map, $args);
 
     if (!$map) { exit(); }
 
+    $self->set_dbh($args->{dbh});
     $self->set_map($map);
     return $self;
 }
@@ -199,7 +200,7 @@ sub render {
 
     # add a legend if the map is F2-2000.
     #
-    if (CXGN::Cview::Map::Tools::find_map_id_with_version($self, $self->get_map()->get_id()) == CXGN::Cview::Map::Tools::current_tomato_map_id()) { 
+    if (CXGN::Cview::Map::Tools::find_map_id_with_version($self->get_dbh(), $self->get_map()->get_id()) == CXGN::Cview::Map::Tools::current_tomato_map_id()) { 
 	
 	#   $image->string($font,$x,$y,$string,$color)
 	my $legend = CXGN::Cview::Label->new();
@@ -242,71 +243,5 @@ sub is_fish_map {
 	return 0; 
     }
 }
-
-
-=head2 function get_map
-
- Synopsis:	
- Arguments:	
- Returns:       gets the map object to refer to.
- Side effects:	
- Description:	
-
-=cut
-
-sub get_map { 
-    my $self=shift;
-    return $self->{map};
-}
-
-=head2 function set_map
-
- Synopsis:	
- Arguments:	the map object to refer to 
- Returns:	nothing
- Side effects:	the data about map object will be displayed
- Description:	
-
-=cut
-
-sub set_map { 
-    my $self=shift;
-    $self->{map}=shift;
-}
-
-# no need to override this function here because the default 
-# in the parent class are fine for our purposes.
-#
-# =head2 function get_cache_key
-
-#   Synopsis:	
-#   Arguments:	
-#   Returns:	
-#   Side effects:	
-#   Description:	
-
-# =cut
-
-# sub get_cache_key {
-#     my $self = shift;
-#     my $key =  $self->get_map()->map_id()."-".(join "-", ($self->get_hilite_markers())).__PACKAGE__;
-#     print STDERR "Setting cache key to : $key\n";
-#     return $key;
-# }
-
-
-# A deprecated package name.
-# but providing a compatibility layer...
-#
-package CXGN::Cview::Map_overviews::generic_map_overview;
-
-use base qw | CXGN::Cview::MapOverviews::Generic | ;
-
-sub new { 
-    my $class = shift;
-    my $self = $class->SUPER::new(@_);
-    return $self;
-}
-
 
 1;

@@ -44,17 +44,20 @@ use List::Util;
 
 sub new {
     my $class = shift;
-    my $force = shift;
+    my $args = shift;
 
-    my $self = $class->SUPER::new($force);
+    my $map = CXGN::Cview::Map::SGN::ProjectStats->new($args->{dbh});
 
+    my $self = $class->SUPER::new($map, $args);
+    $self->{dbh}= $args->{dbh};
     $self->set_horizontal_spacing(50);
     $self->set_image_width(586);
     $self->set_image_height(160);
     $self->set_chr_height(80);
-
+    $self->{basepath}=$args->{basepath};
+    $self->{tempfiles_subdir} = $args->{tempfiles_subdir};
 #    print STDERR "Generating new map object...\n";
-    $self->set_map(CXGN::Cview::Map::SGN::ProjectStats->new($self));
+    $self->set_map($map);
     return $self;
 }
 
@@ -109,7 +112,7 @@ sub render_map {
 
     if ($self->get_cache()->is_valid()) {  return; }
 
-    my $bac_status_log=CXGN::People::BACStatusLog->new($self);
+    my $bac_status_log=CXGN::People::BACStatusLog->new($self->{dbh});
 
 #    print STDERR "WIDTH=".$self->get_image_width()." HEIGHT ".$self->get_image_height()."\n";
     $self->{map_image}=CXGN::Cview::MapImage->new("", $self->get_image_width(), $self->get_image_height());
@@ -186,38 +189,11 @@ sub create_mini_overview {
     $self->set_horizontal_spacing(30);
     
     my $url = "/documents/tempfiles/frontpage/project_stats_overview.png";
-    my $path = File::Spec->catfile($self->get_vhost()->get_conf("basepath"), $url);
+    my $path = File::Spec->catfile($self->{basepath}, $url);
     
     $self->render_map();
     $self->get_file_png($path);
     
 }
 
-
-=head2 DEPRECATED CLASS CXGN::Cview::Map_overviews::project_stats
-
-  Synopsis:	
-  Arguments:	
-  Returns:	
-  Side effects:	
-  Description:	This class is deprecated. It now inherits from 
-                CXGN::Cview::Map_overviews::ProjectStats 
-                Use CXGN::Cview::Map_overview::ProjectStats 
-                directly.
-
-=cut
-
-
-
-
-package CXGN::Cview::Map_overviews::project_stats;
-
-use base qw | CXGN::Cview::MapOverviews::ProjectStats |;
-
-sub new { 
-    my $class = shift;
-    my $self = $class->SUPER::new(@_);
-    return $self;
-}
-
-return 1; 
+1; 

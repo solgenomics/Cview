@@ -38,9 +38,10 @@ This class implements the following functions:
 
 =cut
 
-package CXGN::Cview::Map::SGN::Fish;
 use strict;
 use warnings;
+
+package CXGN::Cview::Map::SGN::Fish;
 
 use CXGN::Cview::Map;
 use CXGN::Cview::Map::Tools;
@@ -64,12 +65,16 @@ sub new {
     my $class = shift;
     my $dbh = shift;
     my $id = shift;
-    my $pachytene_version = shift;
-
+    my $args = shift;
 
     my $self = $class->SUPER::new($dbh, $id);
     $self->set_id($id);
-    $self->{pachytene_version} = $pachytene_version;
+
+    $self->{pachytene_version} = $args->{pachytene_version};
+    $self->{basepath} = $args->{basepath};
+    $self->{documents_subdir} = $args->{documents_subdir};
+    $self->{pachytene_file} = $args->{pachytene_file};
+
     $self->set_preferred_chromosome_width(12);
     $self->set_chromosome_names("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12");
     $self->set_chromosome_count(12);
@@ -92,16 +97,18 @@ sub new {
 
 sub fetch_pachytene_idiograms {
     my $self = shift;
-    my $vhost_conf=CXGN::VHost->new();
 
-    my $file_name = "pachytene_stack.txt";
+    #my $file_name = "pachytene_stack.txt";
 
-    if (defined($self->{pachytene_version}) && $self->{pachytene_version} =~/dejong/i ) { 
-	$file_name = "pachytene_tomato_dapi.txt";
-    }
+    #if (defined($self->{pachytene_version}) && $self->{pachytene_version} =~/dejong/i ) { 
+#	$file_name = "pachytene_tomato_dapi.txt";
+ #   }
 	
-    my $data_folder=$vhost_conf->get_conf('basepath').$vhost_conf->get_conf('documents_subdir');
-    open (my $F, '<', "$data_folder/cview/pachytene/".$file_name) || die "Can't open pachytene def file: $!";
+   # my $data_folder="../../documents/cview/pachytene";
+
+    #print STDERR "DATA FOLDER: $data_folder\n";
+
+    open (my $F, '<', $self->{pachytene_file}) || die "Can't open pachytene def file: $self->{pachytene_file} ... $!";
     my %chr_len=();;
     @{$self->{pachytene_idiograms}} = ();
     for my $n ($self->get_chromosome_names()) { 
@@ -322,4 +329,4 @@ sub get_marker_count {
     
 }
 
-return 1;
+1;

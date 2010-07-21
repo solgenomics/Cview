@@ -143,10 +143,11 @@ sub create {
 	my ($id, $map_type) = $sth->fetchrow_array();
 	if ($map_type =~ /genetic/i) {
 	    return CXGN::Cview::Map::SGN::Genetic->new($self->get_dbh(), $id);
+	    
 	}
 	elsif ($map_type =~ /fish/) {
 	    #print STDERR "Creating a fish map...\n";
-	    return CXGN::Cview::Map::SGN::Fish->new($self->get_dbh(), $id);
+	    return CXGN::Cview::Map::SGN::Fish->new($self->get_dbh(), $id, { pachytene_file => $self->{context}->get_conf('basepath')."/documents/cview/pachytene/pachytene_stack.txt", });
 	}
 	elsif ($map_type =~ /seq/) {
 	    #print STDERR "Creating a seq map...\n";
@@ -157,7 +158,7 @@ sub create {
 	#return CXGN::Cview::Map::SGN::User->new($self->get_dbh(), $id);
     }
     elsif ($id =~ /^il/i) {
-	my $abstract =
+    my $abstract =
 	"The tomato Introgression lines (ILs) are a set of nearly isogenic lines (NILs) developed by Dani Zamir through a succession of backcrosses, where each line carries a single genetically defined chromosome segment from a divergent genome. The ILs, representing whole-genome coverage of S. pennellii in overlapping segments in the genetic background of S. lycopersicum cv. M82, were first phenotyped in 1993, and presently this library consists of 76 genotypes. ";
 
 	my ($population_id, $map_id) = $self->get_db_ids($id);
@@ -173,9 +174,11 @@ sub create {
 	my $long_name =qq | <i>Solanum lycopersicum</i> Zamir Introgression Lines (IL) based on $ref_map |;
 
 	return CXGN::Cview::Map::SGN::IL->new($self->get_dbh(), $id,
-					      { short_name => "Tomato IL map",
-						long_name => $long_name,
-						abstract => $abstract
+					      { short_name    => "Tomato IL map",
+						long_name     => $long_name,
+						abstract      => $abstract,
+                                                
+						
 					      });
     }
     elsif ($id =~ /^\//) {
@@ -199,7 +202,13 @@ sub create {
 					       short_name => "Tomato AGP map",
 					       long_name => "Tomato (Solanum lycopersicum) Accessioned Golden Path map",
 					       abstract => "<p>The AGP map shows the sequencing progress of the international tomato genome sequencing project by listing all finished clones by estimated physical map position . Each sequencing center generates one or more AGP (Accessioned Golden Path) files and uploads them to SGN. These files contain all the sequenced BACs, their position on the chromosome, the overlaps with other BACs and other information. For a complete specification, please refer to the <a href=\"http://www.sanger.ac.uk/Projects/C_elegans/DOCS/agp_files.shtml\">Sanger AGP specification</a>. The AGP files can also be downloaded from the SGN FTP site, at <a href=\"ftp://ftp.sgn.cornell.edu/tomato_genome/agp/\">ftp://ftp.sgn.cornell.edu/tomato_genome/agp/</a>.</p> <p>Note that this map is in testing (beta), and not all features may be functional.</p>" ,
-					       temp_dir => $temp_dir } );
+					       temp_dir => $temp_dir ,
+					       basedir       => $self->{context}->get_conf("basepath"),
+					       documents_subdir => $self->{context}->get_conf("tempfiles_subdir")."/cview"
+						   
+					       },
+	    );
+
     }
     elsif ($id =~ /^itag$/i) {
 
@@ -218,8 +227,9 @@ sub create {
 						short_name => "Tomato ITAG map",
 						long_name=>"Tomato (Solanum lycopersicum) ITAG map",
 						abstract=>"<p>The ITAG map shows the contig assembly and the corresponding BACs as used by the most recent annotation from the International Tomato Annotation Group (ITAG, see <a href=\"http://www.ab.wur.nl/TomatoWiki\">ITAG Wiki</a>). Clicking on the contigs will show the ITAG annotation in the genome browser.",
-						temp_dir => $temp_dir,
+						temp_dir    => $temp_dir,
 						marker_link => $marker_link,
+                                                
 					    }
 	    );
     }
@@ -233,6 +243,7 @@ sub create {
 	    short_name=>'Tomato scaffold map V1.03',
 	    long_name=>'Solanum lycopersicum scaffold map V1.03',
 	    marker_link => sub {},
+	   
 						    } );
     }
     
@@ -276,12 +287,13 @@ sub create {
 	    short_name => $gbrowse_fpc->description,
 	    long_name => '',
 	    temp_dir => $temp_dir,
+	    
 	    #marker_link => $gbrowse_fpc->xrefs(), 
 	    abstract => $gbrowse_fpc->extended_description."\n". qq{
 	    <p>This overview shows the counts of contigs along the chromosome. Click on any chromosome to view the individual contigs. More information on each contig can be obtained by by clicking on a specific contig.</p>
 		<p>Specific contig IDs, including contigs that are not mapped, can be searched on the <a href="$gbrowse_view_link">FPC viewer page</a>.</p>
 		
-						  }
+						  },
 	    
 						  });
     }
@@ -292,6 +304,7 @@ sub create {
     return;
     
 }
+
 =head2 function get_all_maps()
 
   Synopsis:
