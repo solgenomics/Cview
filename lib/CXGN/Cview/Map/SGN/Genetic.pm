@@ -7,6 +7,8 @@ CXGN::Cview::Map::SGN::Genetic - a class implementing a genetic map
 
 This class implements a genetic map populated from the SGN database. This class inherits from L<CXGN::Cview::Map>. 
 
+Note: the common name (available through get_common_name()) for the map organism is now taken through the following join: sgn.accession -> public.organism -> sgn.organismgroup_member ->sgn.organism_group. 
+
 =head1 AUTHOR(S)
 
 Lukas Mueller <lam87@cornell.edu>
