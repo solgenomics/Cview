@@ -75,11 +75,10 @@ sub new {
 
 sub fetch { 
     my $self = shift;
-    my $sgn = 'sgn';
-
+    
     # get the map metadata
     #
-    my $query = "SELECT map_version_id, map_type, short_name, long_name, abstract, organism_name, common_name.common_name FROM $sgn.map JOIN $sgn.map_version using(map_id) LEFT JOIN $sgn.accession on(parent_1=accession.accession_id) LEFT JOIN $sgn.organism on (organism.organism_id=accession.organism_id) LEFT JOIN $sgn.common_name USING(common_name_id)  WHERE map_version_id=?";
+    my $query = "SELECT map_version_id, map_type, short_name, long_name, abstract, public.organism.common_name, organismgroup.name FROM sgn.map JOIN sgn.map_version using(map_id) LEFT JOIN sgn.accession on(parent_1=accession.accession_id) LEFT JOIN public.organism on (public.organism.organism_id=accession.chado_organism_id) LEFT JOIN sgn.organismgroup_member on (public.organism.organism_id=organismgroup_member.organism_id) join sgn.organismgroup using(organismgroup_id)  WHERE map_version_id=?";
     my $sth = $self->get_dbh()->prepare($query);
     $sth->execute($self->get_id());
     my ($map_version_id, $map_type, $short_name, $long_name, $abstract, $organism_name, $common_name) = $sth->fetchrow_array();
@@ -94,7 +93,7 @@ sub fetch {
 
     # get information about associated linkage_groups
     #
-    my $chr_name_q = "SELECT distinct(linkage_group.lg_name), lg_order FROM $sgn.linkage_group WHERE map_version_id=? ORDER BY lg_order";
+    my $chr_name_q = "SELECT distinct(linkage_group.lg_name), lg_order FROM sgn.linkage_group WHERE map_version_id=? ORDER BY lg_order";
     my $chr_name_h = $self->get_dbh()->prepare($chr_name_q);
     $chr_name_h->execute($self->get_id());
     my @names = ();
@@ -139,7 +138,6 @@ sub get_chromosome {
 
     my %seq_bac = ();
 
-    my $sgn = 'sgn';
     my $physical = 'physical';
 
     if ($self->get_id() == CXGN::Cview::Map::Tools::find_current_version($self->get_dbh(), CXGN::Cview::Map::Tools::current_tomato_map_id())) { 
@@ -155,10 +153,10 @@ sub get_chromosome {
                 $physical.bac_marker_matches.position
             FROM 
                 $physical.bac_marker_matches 
-                LEFT JOIN $sgn.linkage_group USING (lg_id) 
+                LEFT JOIN sgn.linkage_group USING (lg_id) 
                 LEFT JOIN sgn_people.bac_status USING (bac_id) 
             WHERE 
-                $sgn.linkage_group.lg_name=? 
+                sgn.linkage_group.lg_name=? 
                 AND sgn_people.bac_status.status='complete'
         ";
 	my $sth2 = $self->get_dbh->prepare($Sequenced_BAC_query);
@@ -187,14 +185,14 @@ sub get_chromosome {
             position, 
             0
         FROM   
-            $sgn.map_version
-            inner join $sgn.linkage_group using (map_version_id)
-            inner join $sgn.marker_location using (lg_id)
-            inner join $sgn.marker_experiment using (location_id)
-            inner join $sgn.marker_alias using (marker_id)
-            inner join $sgn.marker_confidence using (confidence_id)
-            left join $sgn.marker_collectible using (marker_id)
-            left join $sgn.marker_collection using (mc_id)
+            sgn.map_version
+            inner join sgn.linkage_group using (map_version_id)
+            inner join sgn.marker_location using (lg_id)
+            inner join sgn.marker_experiment using (location_id)
+            inner join sgn.marker_alias using (marker_id)
+            inner join sgn.marker_confidence using (confidence_id)
+            left join sgn.marker_collectible using (marker_id)
+            left join sgn.marker_collection using (mc_id)
         WHERE  
             map_version.map_version_id=? 
             and lg_name=? 
@@ -688,7 +686,7 @@ sub get_marker_link {
 sub set_marker_color {
     my $self = shift;
     my $m = shift;
-    my $color_model = shift;
+    my $color_model = shift || '';
 
     #print STDERR "COLOR MODEL IS $color_model\n";
 
