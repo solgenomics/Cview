@@ -1,11 +1,11 @@
 
-use strict;
-
 package CXGN::Cview::ChromosomeViewer;
+use strict;
+use warnings;
 
-use CXGN::VHost;
-use CXGN::DB::Connection;
 use File::Spec;
+
+use CXGN::DB::Connection;
 use CXGN::Tools::WebImageCache;
 use CXGN::Cview::Map::Tools;
 use CXGN::Cview;
@@ -19,8 +19,6 @@ use CXGN::Cview::ChrLink;
 use CXGN::Cview::MapFactory;
 
 use base qw | CXGN::DB::Object |;
-
-return 1;
 
 =head1 NAME
 
@@ -101,6 +99,7 @@ sub new {
                                     # later on.
     $self->set_temp_dir("/tmp");    # set some default for the temp_dir. However, this
                                     # should be visible by apache (which tmp isn't).
+
     return $self;
 }
 
@@ -2712,3 +2711,5 @@ sub render {
 # 	<INPUT TYPE=hidden NAME=hilite VALUE="$self->{hilite}" />
 # 	<INPUT TYPE=submit VALUE="$size_button" />
 # 	</FORM>
+
+1;
