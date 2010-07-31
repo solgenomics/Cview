@@ -213,6 +213,8 @@ sub create {
 	    @dbs > 1 and die "I can handle only one db!";
 	}
 
+        return unless $gbrowse_itag;
+
         my $gbrowse_view_link = $gbrowse_itag->view_url;
 
 	my $marker_link =  sub { my $id = shift; return "$gbrowse_view_link?name=$id"; };
@@ -247,6 +249,8 @@ sub create {
 	    @dbs = $gbrowse->databases();
 	    @dbs > 1 and die "I can handle only one db!";
 	}
+
+        return unless $gbrowse;
 
 	my $gbrowse_view_link = $gbrowse->view_url;
 
