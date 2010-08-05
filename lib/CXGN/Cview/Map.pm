@@ -38,6 +38,7 @@ use CXGN::Cview::Chromosome;
 use CXGN::Cview::Chromosome::IL;
 use CXGN::Cview::Chromosome::PachyteneIdiogram;
 use CXGN::Cview::Legend;
+use CXGN::Tools::Text qw | trim |;
 
 use base qw | CXGN::DB::Object |;
 
@@ -63,7 +64,7 @@ sub new {
     $self->set_units("cM");
     $self->set_short_name("unknown map");
     $self->set_long_name("");
-    $self->set_chromosome_names("");
+    $self->set_chromosome_names(());
     $self->set_chromosome_lengths(1);
     $self->set_chromosome_count(1);
     $self->set_organism("Solanum lycopersicum");
@@ -120,6 +121,30 @@ sub get_chromosome {
     return $empty_chr;
     
 }
+
+=head2 accessors get_map_items, set_map_items
+
+ Usage:        $map->set_map_items(@map_items);
+ Desc:         provides additional items to be overlayed on the map
+ Property      array of string, of the form "$chr $offset $name"
+ Side Effects: will be displayed as an overlay on the map, if implemented
+               in the map subclass (test with can_overlay())
+ Example:
+
+=cut
+
+sub get_map_items {
+  my $self = shift;
+  if(!exists($self->{map_items}) || !defined($self->{map_items})) { @{$self->{map_items}}=(); }
+  return @{$self->{map_items}};
+}
+
+sub set_map_items {
+  my $self = shift;
+  my @map_items = map { trim($_) } @_;  
+  @{$self->{map_items}} = @map_items;
+}
+
 
 =head2 function get_linkage_group()
 
@@ -285,6 +310,32 @@ sub get_chromosome_names {
 sub set_chromosome_names { 
     my $self=shift;
     @{$self->{chromosome_names}}= @_;
+}
+
+
+=head2 get_chromosome_by_name
+
+ Usage:        my $c = $map->get_chromosome_by_name("7b")
+ Desc:         returns a Cview chromosome object
+ Args:         the name of the chromosome
+ Side Effects: 
+ Example:
+
+=cut
+
+sub get_chromosome_by_name {
+    my $self = shift;
+    my $name = shift;
+    
+    # a hash would be useful internally...
+    my @chromosomes = $self->get_chromosomes();
+    my @names = $self->get_chromosome_names();
+    for (my $i=0; $i<@chromosomes; $i++) { 
+	if ($name eq $names[$i]) { 
+	    return $chromosomes[$i];
+	}
+    }
+    die "The chromosome $name does not exist!\n";
 }
 
 
@@ -880,6 +931,23 @@ sub set_temp_dir {
   $self->{temp_dir} = shift;
 }
 
+
+=head2 function can_overlay()
+
+ Usage:        my $f = $map->can_overlay();
+ Desc:         whether the map implements overlay function.
+               overlay information can be set using the 
+               set_map_items() accessors.
+ Ret:
+ Args:
+ Side Effects:
+ Example:
+
+=cut
+
+sub can_overlay {
+    return 0;
+}
 
 
 

@@ -1,6 +1,4 @@
 
-
-
 =head1 NAME
 
 CXGN::Cview::MapOverviews::Generic - a class to display generic genetic map overviews.
@@ -19,9 +17,7 @@ Lukas Mueller (lam87@cornell.edu)
 
 =head1 VERSION
  
-
-=head1 LICENSE
-
+1.0
 
 =head1 FUNCTIONS
 
@@ -65,7 +61,7 @@ sub new {
     
 sub render { 
     my $self = shift;
-      my $map_width=$self->get_image_width();
+    my $map_width=$self->get_image_width();
     my $image_height = $self->get_image_height();
     my $top_margin = 40;
     $self->{map_image}= CXGN::Cview::MapImage->new("", $map_width, $image_height);
@@ -101,7 +97,10 @@ sub render {
 	my($clean, $suffix) = clean_marker_name($hm);
 	push @clean_markers, $clean;
     }
-    my $hilite_markers = join (" ", @clean_markers);
+
+    my @map_item_names = map { (split /\s+/, $_)[2] } $self->get_map()->get_map_items();
+
+    my $hilite_markers = join (" ", @clean_markers, @map_item_names);
     my $hilite_markers_link = $hilite_markers;
     $hilite_markers_link =~ s/ /\+/g;
 #    my $max_chr_len_units = 0;
@@ -143,7 +142,7 @@ sub render {
 		#print STDERR "MATCH:$match\n";
 		$marker_found{$match}=1;
 		$m->set_label_spacer(15);
-		$m->set_url("/search/markers/markerinfo.pl?marker_id=$marker_id");
+		#$m->set_url("/search/markers/markerinfo.pl?marker_id=$marker_id");
 		$m->show_label();
 		$m->hilite();
 	    }
@@ -156,7 +155,7 @@ sub render {
 	    my $lg_name = $chr_names[$i];
 	    $c[$i]->rasterize(5);
 	    $c[$i]->set_rasterize_link("/cview/view_chromosome.pl?map_version_id=".$self->get_map()->get_id()."&amp;chr_nr=$lg_name&amp;show_offsets=1&amp;show_zoomed=1&amp;show_ruler=1&amp;hilite=$hilite_markers_link&amp;clicked=1&amp;cM=");
-	    warn " done!\n";
+
 	}
 	else { 
 	    $c[$i]->set_url("/cview/view_chromosome.pl?map_version_id=".($self->get_map()->get_id())."&amp;chr_nr=$chr_names[$i]");
@@ -220,7 +219,7 @@ sub render_map {
     my $self = shift;
 
     # set up the cache
-    $self->get_cache()->set_key($self->get_map()->get_id()."-".($self->get_image_height())."-".(join "-", ($self->get_hilite_markers())).__PACKAGE__ );
+    $self->get_cache()->set_key($self->get_map()->get_id()."-".($self->get_image_height())."-".join (".", $self->get_map()->get_map_items())."-".(join "-", ($self->get_hilite_markers())).__PACKAGE__ );
     $self->get_cache()->set_map_name("mapmap");
     
     if ($self->get_cache()->is_valid())  { 
@@ -243,5 +242,7 @@ sub is_fish_map {
 	return 0; 
     }
 }
+
+
 
 1;

@@ -81,11 +81,16 @@ This class implements an abstract interface for drawing map overview images.
 
  Synopsis:	Constructor for MapOverview object
   Example:      my $map_overview = CXGN::Cview::MapOverviews::Generic
-                                   ->new( $map_object );
+                                   ->new( $map_object, $args_ref );
  Arguments:	usually a subclass of CXGN::Cview::Map
-                subclasses. Accepts a force parameter that 
-                if set to true, we force the recalculation
-                of the map and stats.
+                subclasses. 
+                the $args_ref can have the following keys (* means required)
+                force              forces recalculation of the image    
+                basepath*          the basepath to use for tempfile storage
+                tempfiles_subdir*  the subdir, after the basepath, where
+                                   the tempfiles are stored
+                dbh*               a database handle
+
  Returns:	a CXGN::Cview::MapOverview object
  Side effects:	none
  Description:	
@@ -398,26 +403,8 @@ sub get_markers_not_found {
 sub add_map_items {
     my $self = shift;
     my @map_items = @_;
-
-    foreach my $mi (@map_items) { 
-
-	my ($chr, $offset, $name) = split /\s+/, $mi;
-	
-	my $chr_obj = $self->get_chromosome_by_name($chr);	
-	
-	my $m = CXGN::Cview::Marker->new($chr_obj);
-	
-	$m->get_label()->set_label_text($name);
-	$m->set_offset($offset);
-	$m->get_label()->set_hilited(1);
-	$chr_obj->add_marker($m);
-	
-
-    }
-
-    foreach my $c ($self->get_chromosomes()) { 
-	#$c->order_markers();
-    }
+    
+    $self->get_map()->set_map_items(@map_items);
     
 }
 
@@ -585,29 +572,6 @@ sub set_chromosome_count {
     $self->{chromosome_count}=shift;
 }
 
-=head2 get_chromosome_by_name
-
- Usage:        my $c = $map->get_chromosome_by_name("7b")
- Desc:         returns a Cview chromosome object
- Args:         the name of the chromosome
- Side Effects: 
- Example:
-
-=cut
-
-sub get_chromosome_by_name {
-    my $self = shift;
-    my $name = shift;
-    
-    # a hash would be useful internally...
-    my @chromosomes = $self->get_chromosomes();
-    my @names = $self->get_chromsome_names();
-    for (my $i=0; $i<@chromosomes; $i++) { 
-	if ($name eq $names[$i]) { 
-	    return $chromosomes[$i];
-	}
-    }
-}
 
 =head2 function get_cache_key()
 

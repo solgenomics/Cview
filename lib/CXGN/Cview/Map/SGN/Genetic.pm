@@ -7,7 +7,7 @@ CXGN::Cview::Map::SGN::Genetic - a class implementing a genetic map
 
 This class implements a genetic map populated from the SGN database. This class inherits from L<CXGN::Cview::Map>. 
 
-Note: the common name (available through get_common_name()) for the map organism is now taken through the following join: sgn.accession -> public.organism -> sgn.organismgroup_member ->sgn.organism_group. 
+Note: the common name (available through get_common_name()) for the map organism is now taken through the following join: sgn.accession -> public.organism -> sgn.organismgroup_member ->sgn.organism_group (July 2010).
 
 =head1 AUTHOR(S)
 
@@ -224,11 +224,51 @@ sub get_chromosome {
 	    #print STDERR "Adding Sequenced BAC [".($seq_bac{$marker_id}->get_name())."] to map...[$marker_id]\n";
 	    $chromosome->add_marker($seq_bac{$marker_id});
 	}
+    }
 
-    }   
+    
+    foreach my $mi ($self->get_map_items()) { 
+
+	my ($chr, $offset, $name) = split /\s+/, $mi;
+
+
+	if (!$chr || !$offset || !$name) { next; }
+
+	if ($chr ne $chr_nr) { next; }
+
+	my $m = CXGN::Cview::Marker->new($chromosome);
+
+	$m->get_label()->set_label_text($name);
+	$m->set_offset($offset);
+	$m->get_label()->set_hilited(1);
+	$m->show_label();
+	$m->get_label()->set_url(''); 
+	$m->set_marker_name($name); # needed for proper marker ordering in the chromosome
+	$chromosome->add_marker($m);
+
+
+    }
+
+    $chromosome->sort_markers();
+
     $chromosome -> _calculate_chromosome_length();
+
     return $chromosome;
 }
+
+# sub _generate_marker_id { 
+#     my $self = shift;
+#     my $name = shift;
+#     my $id = 0;
+#     my @letters = split //, $name;
+#     for (my $i=0;  $i< @letters; $i++) { 
+# 	$id += (10 ** $i) * ord($letters[$i]);
+#     }
+#     return $id + 100000; # get it out of the range of db markers
+# }
+	
+	
+    
 
 =head2 function get_chromosome_section
 
@@ -749,6 +789,10 @@ sub set_marker_color {
 	    $m->set_text_color(128, 128, 128);
 	}
     }
+}
+
+sub can_overlay { 
+    return 1;
 }
 
 
