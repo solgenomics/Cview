@@ -532,7 +532,6 @@ sub generate_image {
 	    }
 	}
 	
-	#else { $m[$i]->set_url("/search/markers/markerinfo.pl?id=".$m[$i]->get_marker_name()); }
 	set_marker_color($m[$i], $self->get_color_model());
 	if ($m[$i]->get_confidence() < $self->get_confidence()) { $m[$i]->hide_label(); }
     }
@@ -630,13 +629,11 @@ sub generate_image {
 	    # generated that confuses some browsers (such as Explorer).
 	    #
 	    if ($m2[$i]->is_visible()) {
-#		if (!$m2[$i]->get_url()) { # some url's may already be set in the data adapter.
-#		    $m2[$i]->set_url( $self->get_ref_map()->get_marker_link($m2[$i]->get_id()) );
-#		}
+
 		
 	    }
 	    else { 
-		#$m[$i]->set_url("");
+
 		$m[$i]->hide_mark();
 	    }
 	}
@@ -686,7 +683,7 @@ sub generate_image {
 	    
 	    #print STDERR "Marker read:". $m3[$i]->get_name()."\n";
 	    CXGN::Cview::Utils::set_marker_color($m3[$i], $self->get_color_model());
-	    #$m3[$i]->set_url("/search/markers/markerinfo.pl?type=".$m3[$i]->get_marker_type()."&amp;id=".$m3[$i]->get_marker_name());; 
+
 	}
 
 	#print STDERR "Adding the chromosome to the map...\n";
