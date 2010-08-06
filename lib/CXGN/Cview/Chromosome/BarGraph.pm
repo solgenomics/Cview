@@ -116,7 +116,7 @@ sub render {
     }
     # draw the boxes
     # 
-    print STDERR "Largest = $self->{largest} WIDTH= ".$self->get_width()."\n";
+    #print STDERR "Largest = $self->{largest} WIDTH= ".$self->get_width()."\n";
     #print STDERR "Physical connections: ".@{$self->{offset}}."\n";
     foreach my $type ($self->get_types()) { 
 	if (exists($self->{offset}{$type})) { 

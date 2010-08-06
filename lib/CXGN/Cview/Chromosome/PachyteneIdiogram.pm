@@ -337,7 +337,7 @@ sub draw_caption {
 sub layout { 
     my $self=shift;
 
-    print STDERR "EXECUTING layout() in PachyteneIdiogram...\n";
+    ####print STDERR "EXECUTING layout() in PachyteneIdiogram...\n";
     # determine the offset type
     if ($self->{vertical_offset_type} eq "top_edge") { 
 	my $new_offset = $self->get_vertical_offset()-$self->mapunits2pixels(-100);
