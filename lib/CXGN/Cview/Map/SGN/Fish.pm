@@ -326,7 +326,10 @@ sub get_marker_count {
     $sth->execute($chr_nr);
     my ($count) = $sth->fetchrow_array();
     return $count;
-    
+}
+
+sub can_overlay { 
+    return 0;
 }
 
 1;
