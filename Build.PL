@@ -19,7 +19,7 @@ my $build = Module::Build->new(
         'Test::More'           => 0,
     },
     requires => {
-        perl => '5.10',
+        perl => '5.10.0',
         # depend on all of bioperl, because
         ### 'Bio::Root::Version' => '1.5.2',
         #'Bio::DB::GFF' => 0,
