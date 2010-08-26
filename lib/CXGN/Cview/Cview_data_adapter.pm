@@ -3,14 +3,15 @@
 # --LUKAS, APR 2007.
 #
 use strict;
-return 1;
+use warnings;
 
 use CXGN::Cview::Marker;
 use CXGN::Cview::Marker::SequencedBAC;
 use CXGN::Cview::Marker::FISHMarker;
-use CXGN::VHost;
 use CXGN::Genomic::Clone;
 use CXGN::Map::Tools;
+use CatalystX::GlobalContext '$c';
+our $c;
 
 package CXGN::Cview::Cview_data_adapter;
 
@@ -554,11 +555,10 @@ sub fetch_IL {
     my @m2 = $IL -> get_markers();
     foreach my $m (@m2) {
 	$marker_pos{$m->get_name()} = $m-> get_offset();
-	#print STDERR $m->get_name()." ".$m->get_offset()." \n";
     }
     
-    my $vhost_conf=CXGN::VHost->new();
-    my $data_folder=$vhost_conf->get_conf('basepath').$vhost_conf->get_conf('documents_subdir');
+    my $data_folder= $c->config->{'basepath'} . $c->config->{'documents_subdir'};
+
     open (F, '<', "$data_folder/cview/IL_defs/$IL_name".".txt") || die "Can't open IL file IL_defs/$IL_name $!\n";
 
     while (<F>) {
@@ -624,4 +624,4 @@ sub fetch_pachytene_idiogram {
     }
 }
 
-
+1;
