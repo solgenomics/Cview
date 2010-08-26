@@ -1,3 +1,4 @@
+package CXGN::Cview::Map_overviews;
 
 =head1 NAME
 
@@ -62,14 +63,14 @@ use CXGN::Cview::Ruler;
 use CXGN::Cview::Chromosome::Physical;
 use CXGN::Cview::Label;
 use CXGN::Cview::Map::Tools;
-use CXGN::VHost;
 
 use CXGN::Cview::Map_overviews::Generic;
 use CXGN::Cview::Map_overviews::Physical;
 use CXGN::Cview::Map_overviews::ProjectStats;
 use CXGN::Cview::Map_overviews::Individual;
+use CatalystX::GlobalContext '$c';
+our $c;
 
-package CXGN::Cview::Map_overviews;
 
 =head1 CXGN::Cview::Map_overviews
 
@@ -111,13 +112,13 @@ sub new {
     @{$self->{c_len}} = (0, 163, 140, 170, 130, 120, 100, 110, 90, 115, 90, 100, 120);
 
     $self->set_horizontal_spacing(50);
-    $self->set_vhost(CXGN::VHost->new());
+    $self->set_vhost($c);
     
     # set up the cache
     #
     my $cache =  CXGN::Tools::WebImageCache->new();
     $cache->set_force($force);
-    $cache->set_basedir($self->get_vhost()->get_conf("basepath"));
+    $cache->set_basedir($self->get_vhost()->config->{"basepath"});
     $cache->set_temp_dir("/documents/tempfiles/cview");
     $self->set_cache($cache);
     $self->set_image_width(700);
@@ -417,126 +418,6 @@ sub get_markers_not_found {
     return ( map ($_, (keys(%{$self->{markers_not_found}}))));
 }
 
-
-# =head2 accessors get_cache_key()
-
-#   Property:	
-#   Setter Args:	
-#   Getter Args:	
-#   Getter Ret:	
-#   Side Effects:	
-#   Description:	This function needs to be overridden in
-#                 a subclass to give a reproducible key for 
-#                 a given map. Default value here is:
-#                 the map_version_id + 
-
-# =cut
-
-# sub get_cache_key { 
-#     my $self=shift;
-#     my $type = ref($self);
-#     return ($self->get_map()->get_id()."-".(join ":", $self->get_hilite_markers())."-".$type."-".$self->get_image_width()."-".$self->get_image_height());
-# }
-
-# =head2 function set_temp_file
-
-#   Synopsis:	
-#   Arguments:	
-#   Returns:	
-#   Side effects:	
-#   Description:	
-
-# =cut
-
-# sub set_temp_file {
-#     my $self = shift;
-#     $self->{temp_url} = shift;
-#     $self->{temp_file} = shift;
-# }
-
-
-# =head2 function get_temp_file()
-
-#   Example:      my $file_path = $overview->get_temp_file();
-#   Getter Args:	none
-#   Getter Ret:	a list of 2 strings:
-#                 (1) the url to the image
-#                 (2) the fully qualified path to the image file.
-#   Side Effects:	these are the locations where the image can
-#                 be accessed.
-#   Description:	
-
-# =cut
-
-# sub get_temp_file { 
-#     my $self=shift;
-
-#     if (exists($self->{temp_url})) { return ($self->{temp_url}, $self->{temp_file}); }
-
-#     my $fileurl  = File::Spec->catfile( $self->get_temp_dir(), $self->get_filename());
-#     my $filepath = File::Spec->catfile( $self->get_base_dir(), $self->get_temp_dir(), $self->get_filename()); 
-#     return ($fileurl, $filepath);
-# }
-
-# =head2 function get_temp_dir()
-
-#   Synopsis:	my $temp_dir = $overview->get_temp_dir();
-#   Arguments:	none
-#   Returns:	the tempdir, as defined in the CXGN::VHost 
-#                 tempfiles_subdir property.
-#   Side effects:	this is the temp_dir used to store the image 
-#                 (in conjunction with get_base_dir()).
-#   Description:	there is no setter for this property.
-
-# =cut
-
-# sub get_temp_dir {
-#     my $self = shift;
-#     my $temp_dir  = File::Spec->catfile($self->get_vhost()->get_conf('tempfiles_subdir'), "cview");
-#     return $temp_dir;
-# }
-
-# =head2 function get_base_dir()
-
-#   Synopsis:	my $basedir = $overview->get_base_dir();
-#   Arguments:	none
-#   Returns:	the $basedir (from the CXGN::VHost basepath property)
-#   Side effects:	none
-#   Note:         There is no setter for this property.
-
-# =cut
-
-# sub get_base_dir {
-#     my $self = shift;
-#     my $basedir = $self->get_vhost()->get_conf('basepath');
-#     return $basedir;
-# }
-
-
-# =head2 function get_filename()
-
-#   Synopsis:	$overview->get_filename()
-#   Arguments:	none
-#   Returns:	the filename of the image file for this overview
-#   Side effects:	this file is used to construct the overview page
-#   Implementation: the filename is calculated in this function from 
-#                 the value returned by get_cache_key(), which is 
-#                 fed into the MD5sum function.
-
-# =cut
-
-# sub get_filename { 
-#     my $self=shift;
-#     if (exists($self->{filename})) { return $self->{filename}; }
-#     return Digest::MD5->new()->add($self->get_cache_key())->hexdigest().".png";
-# }
-
-# sub set_filename { 
-#     my $self=shift;
-#     $self->{filename}=shift;
-# }
-
-
 =head2 accessors set_chr_height(), get_chr_height()
 
   Property:	the height of the chromosome in pixels.
@@ -614,31 +495,6 @@ sub _set_force {
     $self->{force}=shift;
 }
 
-
-
-
-# =head2 function has_cache()
-
-#   Synopsis:	$overview->has_cache()
-#   Arguments:	none
-#   Returns:	true if there is a cached web image for the 
-#                 given cache key (as returned by get_cache_key()).
-#   Side effects:	none
-#   Description:	
-
-# =cut
-
-# sub has_cache {
-#     my $self = shift;
-#     if ($self->_get_force()) { return 0; }
-#     if (-e ($self->get_temp_file())[1] && -e (($self->get_temp_file())[1].".map")) { 
-# 	return 1;
-#     }
-#     else { 
-# 	return 0;
-#     }
-# }
-
 =head2 accessors set_cache(), get_cache()
 
   Property:	a CXGN::Tools::WebImageCache object
@@ -691,7 +547,4 @@ sub set_chromosomes {
   $self->{chromosomes}=shift;
 }
 
-
-
-
-return 1;
+1;

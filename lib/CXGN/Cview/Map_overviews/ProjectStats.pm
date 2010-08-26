@@ -1,3 +1,4 @@
+package CXGN::Cview::Map_overviews::ProjectStats;
 
 
 =head1 NAME
@@ -23,8 +24,8 @@ This class implements the following functions:
 =cut
 
 use strict;
+use warnings;
 
-package CXGN::Cview::Map_overviews::ProjectStats;
 
 use CXGN::Cview::Map_overviews;
 use CXGN::Cview::Map::SGN::ProjectStats;
@@ -188,7 +189,7 @@ sub create_mini_overview {
     $self->set_horizontal_spacing(30);
     
     my $url = "/documents/tempfiles/frontpage/project_stats_overview.png";
-    my $path = File::Spec->catfile($self->get_vhost()->get_conf("basepath"), $url);
+    my $path = File::Spec->catfile($self->get_vhost()->config->{"basepath"}, $url);
     
     $self->render_map();
     $self->get_file_png($path);
@@ -222,4 +223,4 @@ sub new {
     return $self;
 }
 
-return 1; 
+1; 
