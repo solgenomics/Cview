@@ -1,15 +1,14 @@
-
-use strict;
-
 package CXGN::Cview::Chromosome_viewer;
 
-use CXGN::VHost;
+use strict;
+use warnings;
 use CXGN::DB::Connection;
 use File::Spec;
 use CXGN::Tools::WebImageCache;
 use CXGN::Cview::Map::Tools;
 use CXGN::Cview;
-use CXGN::Cview::Utils qw | set_marker_color get_maps_select get_chromosome_links|; 
+use CXGN::Cview::Utils
+  qw | set_marker_color get_maps_select get_chromosome_links|;
 use CXGN::Cview::MapImage;
 use CXGN::Cview::Chromosome;
 use CXGN::Cview::Chromosome::Physical;
@@ -17,7 +16,6 @@ use CXGN::Cview::Chromosome::PachyteneIdiogram;
 use CXGN::Cview::IL;
 use CXGN::Cview::ChrLink;
 use CXGN::Cview::MapFactory;
-
 
 use base qw | CXGN::DB::Object |;
 
@@ -75,7 +73,6 @@ The following functions are defined in the class:
 
 =cut
 
-
 =head2 function new()
 
   Synopsis:     generates a new chromosome_viewer object
@@ -88,20 +85,21 @@ The following functions are defined in the class:
 
 =cut
 
-
-sub new { 
+sub new {
     my $class = shift;
-    my $dbh = shift;
+    my $dbh   = shift;
 
-    if (! $dbh) { die "Chromosome_viewer now takes a dbh parameter."; }
-    my $self = $class->SUPER::new($dbh, @_);
+    if ( !$dbh ) { die "Chromosome_viewer now takes a dbh parameter."; }
+    my $self = $class->SUPER::new( $dbh, @_ );
 
-    $self -> {unzoomedheight} = 20; # how many cM are seen at zoom level 1    
-#    $self -> {raster_size} = 5;    # the default raster size for genetic maps
-                                    # for sequence-based maps this will be changed to 1
-                                    # later on.
-    $self->set_temp_dir("/tmp");    # set some default for the temp_dir. However, this
-                                    # should be visible by apache (which tmp isn't).
+    $self->{unzoomedheight} = 20;    # how many cM are seen at zoom level 1
+
+  #    $self -> {raster_size} = 5;    # the default raster size for genetic maps
+  # for sequence-based maps this will be changed to 1
+  # later on.
+    $self->set_temp_dir("/tmp")
+      ;    # set some default for the temp_dir. However, this
+           # should be visible by apache (which tmp isn't).
     return $self;
 }
 
@@ -118,222 +116,270 @@ sub new {
 
 =cut
 
-sub _adjust_parameters { 
+sub _adjust_parameters {
     my $self = shift;
 
     # initialize some variables to prevent undefined blabla errors
-    $self->{fatal_errors}="";
-    if (!$self->get_ref_chr()) { $self->set_ref_chr(1); }
-    if (!$self->get_hilite()) { $self->set_hilite(""); }
-    if (!($self->get_cM_start())) { $self->set_cM_start(0); }
+    $self->{fatal_errors} = "";
+    if ( !$self->get_ref_chr() )      { $self->set_ref_chr(1); }
+    if ( !$self->get_hilite() )       { $self->set_hilite(""); }
+    if ( !( $self->get_cM_start() ) ) { $self->set_cM_start(0); }
 
-#    print STDERR "\n *** Map ID is : ".($self->get_map_id())." ***\n";
+    #    print STDERR "\n *** Map ID is : ".($self->get_map_id())." ***\n";
 
-    # It's possible for our objects to have empty strings for map_id attributes. 
-    # The following weirdness preserves the interface invariant that get_map_id sets
-    # a desirable default map_id.
+# It's possible for our objects to have empty strings for map_id attributes.
+# The following weirdness preserves the interface invariant that get_map_id sets
+# a desirable default map_id.
 
     my $map_id = $self->get_map_id();
 
-    if ($self->get_map_version_id()) { 
-	$self->set_map_id(0);
-    }
-    
-    if ($self->get_comp_map_version_id()) { 
-	$self->set_comp_map_id(0);
+    if ( $self->get_map_version_id() ) {
+        $self->set_map_id(0);
     }
 
-    if (!$self->get_map_version_id() && $map_id eq '') { 
-	$self->set_map_id(undef); 
-	$map_id = $self->get_map_id(); 
+    if ( $self->get_comp_map_version_id() ) {
+        $self->set_comp_map_id(0);
+    }
+
+    if ( !$self->get_map_version_id() && $map_id eq '' ) {
+        $self->set_map_id(undef);
+        $map_id = $self->get_map_id();
     }
 
     # generate the map objects
     #
-    my $map_factory = CXGN::Cview::MapFactory->new($self->get_dbh(), $self->get_db_backend());
+    my $map_factory =
+      CXGN::Cview::MapFactory->new( $self->get_dbh(), $self->get_db_backend() );
+
 #    print STDERR "Generating MapFactory with id ".$self->get_map_version_id()."\n";
 #    print STDERR "IS A ".ref($map_factory)."\n";
 
-    $self->set_ref_map( $map_factory->create( {map_version_id => $self->get_map_version_id(), map_id => $self->get_map_id()} ));
+    $self->set_ref_map(
+        $map_factory->create(
+            {
+                map_version_id => $self->get_map_version_id(),
+                map_id         => $self->get_map_id()
+            }
+        )
+    );
 
-    if (!$self->get_ref_map()) { 
-	# if an illegal map id was supplied, create a default map.
-	$self->set_ref_map( $map_factory->create({map_id=> CXGN::Cview::Map::Tools::current_tomato_map_id()}) );
-	$self->append_error("Note: Displaying default map, F2-2000.");
-    }
-    
-    $self->{ref_map_name}=$self->get_ref_map()->get_short_name();
-    $self->set_map_version_id($self->get_ref_map()->get_id());
-    $self->{ref_map_type}=$self->get_ref_map()->get_type();
-    
-    if ($self->get_comp_map_id() || $self->get_comp_map_version_id()) { 
-	$self->set_comp_map( $map_factory->create( { map_version_id =>$self->get_comp_map_version_id(), map_id => $self->get_comp_map_id() } ) );
-					    #   { map_id => $self->get_comp_map_id(),
-					#	 map_version_id => $self->get_comp_map_version_id(),
-					 #    }
-					  #     ));
+    if ( !$self->get_ref_map() ) {
+
+        # if an illegal map id was supplied, create a default map.
+        $self->set_ref_map(
+            $map_factory->create(
+                { map_id => CXGN::Cview::Map::Tools::current_tomato_map_id() }
+            )
+        );
+        $self->append_error("Note: Displaying default map, F2-2000.");
     }
 
+    $self->{ref_map_name} = $self->get_ref_map()->get_short_name();
+    $self->set_map_version_id( $self->get_ref_map()->get_id() );
+    $self->{ref_map_type} = $self->get_ref_map()->get_type();
+
+    if ( $self->get_comp_map_id() || $self->get_comp_map_version_id() ) {
+        $self->set_comp_map(
+            $map_factory->create(
+                {
+                    map_version_id => $self->get_comp_map_version_id(),
+                    map_id         => $self->get_comp_map_id()
+                }
+            )
+        );
+
+        #   { map_id => $self->get_comp_map_id(),
+        #	 map_version_id => $self->get_comp_map_version_id(),
+        #    }
+        #     ));
+    }
 
     # define the comparison map
     #
-    if ($self->get_comp_map()) { 
-	$self->{comp_map_name} = $self->get_comp_map()->get_short_name();
-	$self->set_comp_map_version_id($self->get_comp_map()->get_id());
-	$self->{comp_map_type} = $self->get_comp_map()->get_type();
+    if ( $self->get_comp_map() ) {
+        $self->{comp_map_name} = $self->get_comp_map()->get_short_name();
+        $self->set_comp_map_version_id( $self->get_comp_map()->get_id() );
+        $self->{comp_map_type} = $self->get_comp_map()->get_type();
+
 #    @{$self->{comp_chromo_names}} = $self->get_chr_names($self->get_comp_map_id());
-	@{$self->{comp_chromo_names}} = $self->get_comp_map()->get_chromosome_names();
-	#$self->{comp_max_chr} = $self->get_chr_count($self->get_comp_map_id());
-	$self->{comp_max_chr} = scalar(@{$self->{comp_chromo_names}});
+        @{ $self->{comp_chromo_names} } =
+          $self->get_comp_map()->get_chromosome_names();
+
+        #$self->{comp_max_chr} = $self->get_chr_count($self->get_comp_map_id());
+        $self->{comp_max_chr} = scalar( @{ $self->{comp_chromo_names} } );
     }
 
     # test if the supplied chromosome is a legal chromosome on the specific map.
     # if not, try to find a close match.
     #
-    #if (!$self->is_ok_chr($self->get_map_id(), $self->get_ref_chr())) { 
-    if (!$self->get_ref_map()->has_linkage_group($self->get_ref_chr())) { 
-#	print STDERR "chr ".$self->get_ref_chr()." is not a valid chromosome\n";
-	my $old_chr = $self->get_ref_chr();
-	my $chr = $old_chr;
-	$chr =~ s/.*(\d{1,2}.*)/$1/;
-	#if (!$self->is_ok_chr($self->get_map_id(), $chr)) { 
-	if (!$self->get_ref_map()->has_linkage_group($chr)) { 
-	    $chr =~ s/.*(\d).*/$1/;
-	}      
-	if (!$self->get_ref_map()->has_linkage_group($chr)) { 
-	    #$self->append_errors("The specified chromosome ($old_chr) was not found on map $self->{ref_map_name}!<br /><br />");
-	    $self->set_ref_chr(1);
-	}
-	else {
-	    $self->set_ref_chr($chr);
-	    $self->append_error("The chromosome/linkage group $old_chr does not seem to exist on map ".$self->get_ref_map()->get_short_name().". The closest we could find was $chr, displayed below.<br /><br />");
-	}
-    }
+    #if (!$self->is_ok_chr($self->get_map_id(), $self->get_ref_chr())) {
+    if ( !$self->get_ref_map()->has_linkage_group( $self->get_ref_chr() ) ) {
 
+      #	print STDERR "chr ".$self->get_ref_chr()." is not a valid chromosome\n";
+        my $old_chr = $self->get_ref_chr();
+        my $chr     = $old_chr;
+        $chr =~ s/.*(\d{1,2}.*)/$1/;
+
+        #if (!$self->is_ok_chr($self->get_map_id(), $chr)) {
+        if ( !$self->get_ref_map()->has_linkage_group($chr) ) {
+            $chr =~ s/.*(\d).*/$1/;
+        }
+        if ( !$self->get_ref_map()->has_linkage_group($chr) ) {
+
+#$self->append_errors("The specified chromosome ($old_chr) was not found on map $self->{ref_map_name}!<br /><br />");
+            $self->set_ref_chr(1);
+        }
+        else {
+            $self->set_ref_chr($chr);
+            $self->append_error(
+"The chromosome/linkage group $old_chr does not seem to exist on map "
+                  . $self->get_ref_map()->get_short_name()
+                  . ". The closest we could find was $chr, displayed below.<br /><br />"
+            );
+        }
+    }
 
     # if no map_id was supplied, we show the F2.2000 as default
     #
-    if (!$self->get_map_id()) { $self->set_map_id(CXGN::Cview::Map::Tools::current_tomato_map_id()); }
+    if ( !$self->get_map_id() ) {
+        $self->set_map_id( CXGN::Cview::Map::Tools::current_tomato_map_id() );
+    }
 
-#    @{$self->{chromo_names}} = $self->get_chr_names($self->{map_id});
-    @{$self->{chromo_names}} = $self->get_ref_map()->get_chromosome_names();
+    #    @{$self->{chromo_names}} = $self->get_chr_names($self->{map_id});
+    @{ $self->{chromo_names} } = $self->get_ref_map()->get_chromosome_names();
 
     #$self->{max_chr} = $self->get_chr_count($self->get_map_id());;
     # get the number of chromosomes of the map.
     #
-    $self->{max_chr} = scalar($self->get_ref_map()->get_chromosome_count());
+    $self->{max_chr} = scalar( $self->get_ref_map()->get_chromosome_count() );
 
-    if ($self->get_ref_chr()<0) { $self->set_ref_chr(abs($self->get_ref_chr())); }
-
-     # set the default zoom size in MB for sequence maps
-     #
-    $self->{unzoomedheight}=$self->get_ref_map()->initial_zoom_height();
-# 	$self->{unzoomedheight}=4; 
-#     }
-
-    #
-    # adjust cM_start and cM_end if the chromosome was clicked.
-    #
-#    if ((($self->get_cM_start()==0) && ($self->get_cM_end()==0)) || ($self->get_cM_end()-$self->get_cM_start()==0)) { 
-
-    $self->set_ref_chr_len($self->get_ref_map()->get_chr_len_by_name($self->get_ref_chr()));
-    if ($self->get_cM_start() > $self->get_cM_end()) { 
-	$self->set_cM_start($self->get_cM_end());
-	$self->set_cM_end($self->get_cM_start() + $self->get_ref_map()->initial_zoom_height());
+    if ( $self->get_ref_chr() < 0 ) {
+        $self->set_ref_chr( abs( $self->get_ref_chr() ) );
     }
-	
+
+    # set the default zoom size in MB for sequence maps
+    #
+    $self->{unzoomedheight} = $self->get_ref_map()->initial_zoom_height();
+
+    # 	$self->{unzoomedheight}=4;
+    #     }
+
+#
+# adjust cM_start and cM_end if the chromosome was clicked.
+#
+#    if ((($self->get_cM_start()==0) && ($self->get_cM_end()==0)) || ($self->get_cM_end()-$self->get_cM_start()==0)) {
+
+    $self->set_ref_chr_len(
+        $self->get_ref_map()->get_chr_len_by_name( $self->get_ref_chr() ) );
+    if ( $self->get_cM_start() > $self->get_cM_end() ) {
+        $self->set_cM_start( $self->get_cM_end() );
+        $self->set_cM_end( $self->get_cM_start() +
+              $self->get_ref_map()->initial_zoom_height() );
+    }
+
     $self->{zoom_length} = $self->get_cM_end() - $self->get_cM_start();
 
-    if ($self->{zoom_length} == 0) { 
-	$self->{zoom_length} = $self->get_ref_map()->initial_zoom_height(); 
+    if ( $self->{zoom_length} == 0 ) {
+        $self->{zoom_length} = $self->get_ref_map()->initial_zoom_height();
     }
 
-    if ($self->get_clicked()) { 
+    if ( $self->get_clicked() ) {
 
+#die "Was going to reset cM_start and cM_end (cM defined... ".($self->get_cM()).")\n";
+        my $start = $self->get_cM() - ( $self->{zoom_length} / 2 );
+        my $end   = $self->get_cM() + ( $self->{zoom_length} / 2 );
 
-	#die "Was going to reset cM_start and cM_end (cM defined... ".($self->get_cM()).")\n";
-	my $start = $self->get_cM()-($self->{zoom_length}/2);
-	my $end = $self->get_cM()+($self->{zoom_length}/2);
-	
-	if ($start < 0 ) { 
-	    $start = 0;
-	    $end = $self->{zoom_length};
-	}
+        if ( $start < 0 ) {
+            $start = 0;
+            $end   = $self->{zoom_length};
+        }
 
-#	print STDERR "REF CHR: ".$self->get_ref_chr()."\n";
+        #	print STDERR "REF CHR: ".$self->get_ref_chr()."\n";
 
-	if ($end > $self->get_ref_chr_len()) { 
-	    $end = $self->get_ref_chr_len();
-	    $start = $end - $self->{zoom_length};
-	}
-	
-	$self->set_cM_start($start);
-	$self->set_cM_end($end);
-	
+        if ( $end > $self->get_ref_chr_len() ) {
+            $end   = $self->get_ref_chr_len();
+            $start = $end - $self->{zoom_length};
+        }
+
+        $self->set_cM_start($start);
+        $self->set_cM_end($end);
+
     }
-#    $self->set_clicked(0);
-    
-    # adjust the cM start value if it is below zero. This could (but shouldn't) happen 
-    # during scrolling and zooming operations.
+
+    #    $self->set_clicked(0);
+
+# adjust the cM start value if it is below zero. This could (but shouldn't) happen
+# during scrolling and zooming operations.
+#
+    if ( $self->get_cM_start() < 0 ) {
+        $self->set_cM_start(0);
+        $self->set_cM_end( $self->{zoom_length} );
+        $self->set_cM( ( $self->get_cM_start() + $self->get_cM_end() ) / 2 );
+    }
+    if ( $self->get_cM_end() > $self->get_ref_chr_len() ) {
+        my $end = $self->get_ref_chr_len();
+        $self->set_cM_end($end);
+        $self->set_cM_start( $end - $self->{zoom_length} );
+    }
+
+    if ( !$self->{ref_map_name} ) {
+        $self->{fatal_errors} .=
+          "Fatal error: The map id you entered is invalid.<br />";
+    }
+
+    if ( $self->get_show_physical()
+        && ( !$self->get_ref_map()->has_physical() ) )
+    {
+        $self->append_error(
+"Note: You selected to show physical maps for a map that does not have an associated physical map. The physical map has been turned off.<p /> "
+        );
+        $self->set_show_physical(0);
+    }
+
+    my $message = "";
+    if ( $self->get_confidence() == 0 ) {
+        $message = "I(LOD<2) and above [all]";
+    }
+    elsif ( $self->get_confidence() == 1 ) { $message = "I(LOD2) and above"; }
+    elsif ( $self->get_confidence() == 2 ) { $message = "CF(LOD3) and above"; }
+    elsif ( $self->get_confidence() == 3 ) { $message = "F(LOD>=3)"; }
+    if    ( $self->get_confidence() > -2 ) {
+        $self->append_error("Only showing confidence of $message\n<p />");
+    }
+
+    # note: the force parameter is not part of the state hashref, because it
+    # would change the key and thus the cache file name.
     #
-    if ($self->get_cM_start() < 0) { 
-	$self->set_cM_start(0); 
-	$self->set_cM_end($self->{zoom_length});
-	$self->set_cM(($self->get_cM_start()+$self->get_cM_end())/2);
-    }  
-    if ($self->get_cM_end() > $self->get_ref_chr_len()) { 
-	my $end =  $self->get_ref_chr_len();
-	$self->set_cM_end($end);
-	$self->set_cM_start($end-$self->{zoom_length});
-    }
-    
-    if (!$self->{ref_map_name}) { $self->{fatal_errors} .= "Fatal error: The map id you entered is invalid.<br />"; }
+    my $state_hashref = {
+        chr_nr              => $self->get_ref_chr(),
+        map_version_id      => $self->get_map_version_id(),
+        cM                  => $self->{cM},
+        show_ruler          => $self->{show_ruler},
+        show_IL             => $self->{show_IL},
+        show_offsets        => $self->get_show_offsets(),
+        comp_map_version_id => $self->get_comp_map_version_id(),
+        comp_chr            => $self->{comp_chr},
+        color_model         => $self->{color_model},
+        show_physical       => $self->{show_physical},
+        size                => $self->{size},
+        show_zoomed         => $self->{show_zoomed},
+        confidence          => $self->{confidence},
+        hilite              => $self->{hilite},
+        marker_type         => $self->{display_marker_type},
+        cM_start            => $self->get_cM_start(),
+        cM_end              => $self->get_cM_end(),
 
-    if ($self->get_show_physical() && (!$self->get_ref_map()->has_physical())) { 
-	$self->append_error("Note: You selected to show physical maps for a map that does not have an associated physical map. The physical map has been turned off.<p /> ");
-	$self->set_show_physical(0);
-    }
-    
-    my $message="";
-    if ($self->get_confidence()==0) { $message= "I(LOD<2) and above [all]"; }
-    elsif ($self->get_confidence()==1) { $message = "I(LOD2) and above"; }
-    elsif ($self->get_confidence()==2) { $message = "CF(LOD3) and above"; }
-    elsif ($self->get_confidence()==3) { $message = "F(LOD>=3)"; }
-    if ($self->get_confidence()>-2) { $self->append_error("Only showing confidence of $message\n<p />"); } 
+        #clicked => $self->get_clicked(),
 
-    # note: the force parameter is not part of the state hashref, because it 
-    # would change the key and thus the cache file name. 
-    #
-    my $state_hashref = {  
-	                 chr_nr => $self->get_ref_chr(),
-		         map_version_id => $self->get_map_version_id(),
-			 cM     => $self->{cM},
-			 show_ruler => $self->{show_ruler},
-			 show_IL => $self->{show_IL},
-			 show_offsets => $self->get_show_offsets(),
-			 comp_map_version_id => $self->get_comp_map_version_id(),
-			 comp_chr => $self->{comp_chr},
-			 color_model => $self->{color_model},
-			 show_physical => $self->{show_physical},
-			 size => $self->{size},
-			 show_zoomed => $self->{show_zoomed},
-			 confidence => $self->{confidence},
-			 hilite => $self->{hilite},
-			 marker_type => $self->{display_marker_type},
-			 cM_start => $self->get_cM_start(),
-			 cM_end => $self->get_cM_end(),
-			 #clicked => $self->get_clicked(),
+    };
 
-		     };
-
-#    print STDERR "STATE HASHREF CONTENTS: \n";
-#    foreach my $k (%$state_hashref) { 
+    #    print STDERR "STATE HASHREF CONTENTS: \n";
+    #    foreach my $k (%$state_hashref) {
 ##	print STDERR "$k = $$state_hashref{$k}.\n";
-#    } 
+    #    }
     $self->set_state_hashref($state_hashref);
-    
-}
 
+}
 
 =head2 function generate_page()
 
@@ -346,9 +392,9 @@ sub _adjust_parameters {
 
 =cut
 
-sub generate_page { 
+sub generate_page {
     my $self = shift;
-   if ($self->{fatal_errors}) { return; }
+    if ( $self->{fatal_errors} ) { return; }
 
     $self->_adjust_parameters();
 
@@ -371,390 +417,471 @@ sub generate_page {
 sub get_image {
     my $self = shift;
 
-    my $cache = CXGN::Tools::WebImageCache->new();
+    my $cache         = CXGN::Tools::WebImageCache->new();
     my $state_hashref = $self->get_state_hashref();
-#    my $vhost_conf=CXGN::VHost->new();
     my @sorted_values = map { $state_hashref->{$_} } sort keys %$state_hashref;
-    my $key = join "-", @sorted_values;
-#    print STDERR "USING KEY: $key\n";
+    my $key           = join "-", @sorted_values;
     $cache->set_key($key);
     $cache->set_expiration_time(86400);
-    $cache->set_basedir($self->get_basedir()); 
+    $cache->set_basedir( $self->get_basedir() );
+
     #vhost_conf->get_conf('basepath'));
-    $cache->set_temp_dir($self->get_temp_dir());
-#File::Spec->catfile($vhost_conf->get_conf('tempfiles_subdir'), "/cview"));
+    $cache->set_temp_dir( $self->get_temp_dir() );
+
+    #File::Spec->catfile($vhost_conf->get_conf('tempfiles_subdir'), "/cview"));
     $cache->set_map_name("imagemap");
     $cache->set_force( $self->get_force() );
 
-    if (! $cache->is_valid()) { 
-	$self->generate_image();
-	$cache->set_image_data( $self->{map}->render_png_string() );
-	$cache->set_image_map_data( $self->{map}->get_image_map("imagemap") );
+    if ( !$cache->is_valid() ) {
+        $self->generate_image();
+        $cache->set_image_data( $self->{map}->render_png_string() );
+        $cache->set_image_map_data( $self->{map}->get_image_map("imagemap") );
     }
-    $self->{image_html}= $cache->get_image_html();
+    $self->{image_html} = $cache->get_image_html();
 }
 
-
-
-sub generate_image { 
+sub generate_image {
     my $self = shift;
-    
-    my $x_distance = 120; # the number of pixels the different elements are spaced
-    my $element_count = 0.5; # the number of elements currently placed
+
+    my $x_distance =
+      120;    # the number of pixels the different elements are spaced
+    my $element_count = 0.5;    # the number of elements currently placed
 
     my $map_width = 500;
 
-    if ($self->get_show_zoomed()) {
-	$map_width+=$x_distance; 
+    if ( $self->get_show_zoomed() ) {
+        $map_width += $x_distance;
     }
-    if ($self->get_show_IL()) { $map_width+=$x_distance; }
-    
+    if ( $self->get_show_IL() ) { $map_width += $x_distance; }
+
     #print STDERR "Size requested: $self->{size}\n";
-    if ($self->get_size() =~ /small/i) { 
-	$self->{map_height} = 300;
-	$self->set_chr_height(230);
+    if ( $self->get_size() =~ /small/i ) {
+        $self->{map_height} = 300;
+        $self->set_chr_height(230);
     }
-    elsif ($self->get_size()=~ /large/i) { 
-	$self->{map_height} = 800;
-	$self->set_chr_height(650);
+    elsif ( $self->get_size() =~ /large/i ) {
+        $self->{map_height} = 800;
+        $self->set_chr_height(650);
     }
-    else { 
-	$self->{map_height} = 470;
-	$self->set_chr_height(400);
+    else {
+        $self->{map_height} = 470;
+        $self->set_chr_height(400);
     }
-    
+
     #print STDERR "Chr height: $self->{chr_height}\n";
-    $self->{map} = CXGN::Cview::MapImage -> new("", $map_width, $self->{map_height});
-    
+    $self->{map} =
+      CXGN::Cview::MapImage->new( "", $map_width, $self->{map_height} );
+
     # show IL lines if requested
-    #    
-    if ($self->get_show_IL() && $self->get_ref_map()->has_IL()) { 
-	my $map_factory = CXGN::Cview::MapFactory->new($self->get_dbh(), $self->get_db_backend());
-	#print STDERR "Current map_id = ".$self->get_map_id()."\n";
-	my $IL_map = $map_factory->create({ map_version_id=>"il6.".($self->get_map_id()) });
-	$self->{IL} = $IL_map->get_chromosome($self->get_ref_chr());
-	
-	$self->{IL} -> set_height($self->get_chr_height());
-	$self->{IL} -> set_horizontal_offset($x_distance*$element_count, 40);
-	$self->{IL} -> set_vertical_offset(40);
-	$self->{IL} -> set_caption("IL");
-	
-	$self->{map}->add_chromosome($self->{IL});
-	$element_count=$element_count+0.95;
+    #
+    if ( $self->get_show_IL() && $self->get_ref_map()->has_IL() ) {
+        my $map_factory =
+          CXGN::Cview::MapFactory->new( $self->get_dbh(),
+            $self->get_db_backend() );
+
+        #print STDERR "Current map_id = ".$self->get_map_id()."\n";
+        my $IL_map = $map_factory->create(
+            { map_version_id => "il6." . ( $self->get_map_id() ) } );
+        $self->{IL} = $IL_map->get_chromosome( $self->get_ref_chr() );
+
+        $self->{IL}->set_height( $self->get_chr_height() );
+        $self->{IL}->set_horizontal_offset( $x_distance * $element_count, 40 );
+        $self->{IL}->set_vertical_offset(40);
+        $self->{IL}->set_caption("IL");
+
+        $self->{map}->add_chromosome( $self->{IL} );
+        $element_count = $element_count + 0.95;
     }
-    
-    elsif ($self->get_show_IL() && !$self->get_ref_map()->has_IL()) { 
-	$self->append_error("You chose to display the IL information for a map that has no associated IL information. 
-                           The IL display has been turned off.<P>");
-	$self->set_show_IL(0); 
+
+    elsif ( $self->get_show_IL() && !$self->get_ref_map()->has_IL() ) {
+        $self->append_error(
+"You chose to display the IL information for a map that has no associated IL information. 
+                           The IL display has been turned off.<P>"
+        );
+        $self->set_show_IL(0);
     }
-    
+
     # show the physical map if requested
     #
-    if ($self->get_show_physical()) {
-	my $map_factory = CXGN::Cview::MapFactory->new($self->get_dbh(), $self->get_db_backend());
-	
-	my $physical_map = $map_factory -> create ( {map_version_id => "p9"});
-	
-	# we get the overview chromosome, because it is more compact for the comparison
-	#
-	$self->{p} = $physical_map->get_overview_chromosome($self->get_ref_chr()); 
-	$self->{p}->set_horizontal_offset($x_distance*$element_count);
-	$self->{p}->set_vertical_offset(40);
-	$self->{p}->set_height($self->get_chr_height());
-	
-	$self->{map}->add_physical($self->{p});
+    if ( $self->get_show_physical() ) {
+        my $map_factory =
+          CXGN::Cview::MapFactory->new( $self->get_dbh(),
+            $self->get_db_backend() );
+
+        my $physical_map = $map_factory->create( { map_version_id => "p9" } );
+
+ # we get the overview chromosome, because it is more compact for the comparison
+ #
+        $self->{p} =
+          $physical_map->get_overview_chromosome( $self->get_ref_chr() );
+        $self->{p}->set_horizontal_offset( $x_distance * $element_count );
+        $self->{p}->set_vertical_offset(40);
+        $self->{p}->set_height( $self->get_chr_height() );
+
+        $self->{map}->add_physical( $self->{p} );
     }
-    
+
     # add the chromosome
     #
     $element_count++;
-    
-    $self->{c1} = $self->get_ref_map()->get_chromosome($self->get_ref_chr());
-    #if ($self->get_show_offsets()) { $self->{c1}->set_display_marker_offset(); }
-    #
-    # adjust the appearance of the chromosome
-    #
-    $self->{c1}->set_height($self->get_chr_height());
+
+    $self->{c1} = $self->get_ref_map()->get_chromosome( $self->get_ref_chr() );
+
+   #if ($self->get_show_offsets()) { $self->{c1}->set_display_marker_offset(); }
+   #
+   # adjust the appearance of the chromosome
+   #
+    $self->{c1}->set_height( $self->get_chr_height() );
     $self->{c1}->set_vertical_offset(40);
-    $self->{c1}->set_horizontal_offset($x_distance * $element_count);
-    $self->{c1}->set_caption($self->get_ref_chr());
+    $self->{c1}->set_horizontal_offset( $x_distance * $element_count );
+    $self->{c1}->set_caption( $self->get_ref_chr() );
     $self->{c1}->set_labels_left();
     $self->{c1}->set_units( $self->get_ref_map()->get_units() );
-    $self->{c1}->set_width( $self->get_ref_map()->get_preferred_chromosome_width() );
-    
-    $self->append_error($self->get_ref_map()->get_messages());
-    my @m = $self->{c1}->get_markers();    
+    $self->{c1}
+      ->set_width( $self->get_ref_map()->get_preferred_chromosome_width() );
+
+    $self->append_error( $self->get_ref_map()->get_messages() );
+    my @m = $self->{c1}->get_markers();
+
     #
     # get the markers and determine the highest confidence level
     #
     my $highest = -1;
     foreach my $m (@m) {
-	if ($m->get_confidence()>$highest) { $highest = $m->get_confidence(); }
+        if ( $m->get_confidence() > $highest ) {
+            $highest = $m->get_confidence();
+        }
     }
     my @fm = ();
     foreach my $m (@m) {
-	if ($m->get_confidence() == $highest) { push @fm, $m; }
+        if ( $m->get_confidence() == $highest ) { push @fm, $m; }
 
     }
-    
+
     my $interval = 0;
-    if ($self->get_ref_map()->collapsed_marker_count()) { 
-	$interval = @fm/$self->get_ref_map()->collapsed_marker_count();
+    if ( $self->get_ref_map()->collapsed_marker_count() ) {
+        $interval = @fm / $self->get_ref_map()->collapsed_marker_count();
     }
-   
-   
-    if (@m<$self->get_ref_map()->collapsed_marker_count()) { $interval=1; }
-    my $frame_marker_count =0;
-    for (my $i=0; $i<@m; $i++) {
-	$m[$i]->hide_label();
-	#
-	# show label if it is hilited...
-	#
-	my $marker_name = $m[$i]->get_name();
-	if ($self->get_hilite()=~ /\b$marker_name\b/i) {
-	    $m[$i]->show_label();
-	    $m[$i]->hilite();
-	}
-	#
-	# otherwise only show one in $interval markers of the
-	# highest confidence
-	#
-	if ($interval >0) { 
-	    if ($m[$i]->get_confidence() == $highest) {
-		if ($interval > 1) { 
-		    if ($frame_marker_count % $interval==0) { 
-			$m[$i] -> show_label();
-		    } 
-		    
-		}
-		else { $m[$i]->show_label(); }
-		$frame_marker_count++;
-	    }
-	}
-	
-	#else { $m[$i]->set_url("/search/markers/markerinfo.pl?id=".$m[$i]->get_marker_name()); }
-	set_marker_color($m[$i], $self->get_color_model());
-	if ($m[$i]->get_confidence() < $self->get_confidence()) { $m[$i]->hide_label(); }
+
+    if ( @m < $self->get_ref_map()->collapsed_marker_count() ) {
+        $interval = 1;
     }
-    
+    my $frame_marker_count = 0;
+    for ( my $i = 0 ; $i < @m ; $i++ ) {
+        $m[$i]->hide_label();
+
+        #
+        # show label if it is hilited...
+        #
+        my $marker_name = $m[$i]->get_name();
+        if ( $self->get_hilite() =~ /\b$marker_name\b/i ) {
+            $m[$i]->show_label();
+            $m[$i]->hilite();
+        }
+
+        #
+        # otherwise only show one in $interval markers of the
+        # highest confidence
+        #
+        if ( $interval > 0 ) {
+            if ( $m[$i]->get_confidence() == $highest ) {
+                if ( $interval > 1 ) {
+                    if ( $frame_marker_count % $interval == 0 ) {
+                        $m[$i]->show_label();
+                    }
+
+                }
+                else { $m[$i]->show_label(); }
+                $frame_marker_count++;
+            }
+        }
+
+#else { $m[$i]->set_url("/search/markers/markerinfo.pl?id=".$m[$i]->get_marker_name()); }
+        set_marker_color( $m[$i], $self->get_color_model() );
+        if ( $m[$i]->get_confidence() < $self->get_confidence() ) {
+            $m[$i]->hide_label();
+        }
+    }
+
     #
-    # make the chromosome clickable using the rasterize function and 
-    # add the url 
+    # make the chromosome clickable using the rasterize function and
+    # add the url
     #
     #my $raster_size = int($self->{c1}->get_length() / 20) || 2;
-    if ($self->get_ref_map()->can_zoom()) { 
-	$self->{c1}->rasterize(1); #$raster_size);
-	$self->{c1}->set_rasterize_link("view_chromosome.pl?map_version_id=".($self->get_map_version_id())."&amp;chr_nr=".($self->get_ref_chr())."&amp;show_physical=".($self->get_show_physical())."&amp;show_IL=".($self->get_show_IL())."&amp;show_ruler=".($self->get_show_ruler())."&amp;show_offsets=".($self->get_show_offsets())."&amp;color_model=".($self->get_color_model())."&amp;comp_map_version_id=".($self->get_comp_map_version_id())."&amp;comp_chr=".($self->get_comp_chr())."&amp;zoom=".($self->get_zoom())."&amp;size=".($self->get_size())."&amp;hilite=".($self->get_hilite())."&amp;confidence=".($self->get_confidence())."&amp;show_zoomed=1&amp;marker_type=".($self->get_display_marker_type())."&amp;cM_start=".($self->get_cM_start())."&amp;cM_end=".($self->get_cM_end())."&amp;clicked=1&amp;cM=");
+    if ( $self->get_ref_map()->can_zoom() ) {
+        $self->{c1}->rasterize(1);    #$raster_size);
+        $self->{c1}->set_rasterize_link( "view_chromosome.pl?map_version_id="
+              . ( $self->get_map_version_id() )
+              . "&amp;chr_nr="
+              . ( $self->get_ref_chr() )
+              . "&amp;show_physical="
+              . ( $self->get_show_physical() )
+              . "&amp;show_IL="
+              . ( $self->get_show_IL() )
+              . "&amp;show_ruler="
+              . ( $self->get_show_ruler() )
+              . "&amp;show_offsets="
+              . ( $self->get_show_offsets() )
+              . "&amp;color_model="
+              . ( $self->get_color_model() )
+              . "&amp;comp_map_version_id="
+              . ( $self->get_comp_map_version_id() )
+              . "&amp;comp_chr="
+              . ( $self->get_comp_chr() )
+              . "&amp;zoom="
+              . ( $self->get_zoom() )
+              . "&amp;size="
+              . ( $self->get_size() )
+              . "&amp;hilite="
+              . ( $self->get_hilite() )
+              . "&amp;confidence="
+              . ( $self->get_confidence() )
+              . "&amp;show_zoomed=1&amp;marker_type="
+              . ( $self->get_display_marker_type() )
+              . "&amp;cM_start="
+              . ( $self->get_cM_start() )
+              . "&amp;cM_end="
+              . ( $self->get_cM_end() )
+              . "&amp;clicked=1&amp;cM=" );
     }
 
-    $self->{map} -> add_chromosome($self->{c1});
+    $self->{map}->add_chromosome( $self->{c1} );
+
     #
     # show the ruler if requested
     #
-    if ($self->get_show_ruler()) { 
-	$self->{r} = $self->{c1}->get_ruler();
-	$self->{r}->set_horizontal_offset($x_distance/6);
-	$self->{r}->set_vertical_offset(40);
-	$self->{r}->set_height($self->get_chr_height());
-	$self->{r}->set_start_value(0);
-	$self->{r}->set_end_value($self->{c1}->get_length());			     
-	$self->{map}->add_ruler($self->{r});
+    if ( $self->get_show_ruler() ) {
+        $self->{r} = $self->{c1}->get_ruler();
+        $self->{r}->set_horizontal_offset( $x_distance / 6 );
+        $self->{r}->set_vertical_offset(40);
+        $self->{r}->set_height( $self->get_chr_height() );
+        $self->{r}->set_start_value(0);
+        $self->{r}->set_end_value( $self->{c1}->get_length() );
+        $self->{map}->add_ruler( $self->{r} );
     }
+
     #
-    # draw the chromosome section if a chromosome section was requested 
+    # draw the chromosome section if a chromosome section was requested
     # (that is, if cM is defined)
     #
-    
+
     my $x_offset = 200;
-    my @m2; # the markers on c2. Keep for later use.
-    if ($self->{show_zoomed} && $self->get_ref_map()->can_zoom()) { 
+    my @m2;    # the markers on c2. Keep for later use.
+    if ( $self->{show_zoomed} && $self->get_ref_map()->can_zoom() ) {
 
-	$element_count++;
+        $element_count++;
 
-	#$self->{c2} = CXGN::Cview::Chromosome -> new ($self->get_ref_chr(), $self->get_chr_height(), $x_distance*$element_count, 40);
-	$self->{c2} = $self->get_ref_map()->get_chromosome_section($self->get_ref_chr(), $self->get_cM_start(), $self->get_cM_end(), $self->get_comp_chr());
-	if ($self->get_show_offsets()) { $self->{c2}->set_display_marker_offset(); }
-	$self->{c2}->set_height($self->get_chr_height());
-	$self->{c2}->set_vertical_offset(40);
-	$self->{c2}->set_hilite($self->get_hilite_zoomed());
-	$self->{c2}->set_horizontal_offset($x_distance*$element_count);
+#$self->{c2} = CXGN::Cview::Chromosome -> new ($self->get_ref_chr(), $self->get_chr_height(), $x_distance*$element_count, 40);
+        $self->{c2} = $self->get_ref_map()->get_chromosome_section(
+            $self->get_ref_chr(), $self->get_cM_start(),
+            $self->get_cM_end(),  $self->get_comp_chr()
+        );
+        if ( $self->get_show_offsets() ) {
+            $self->{c2}->set_display_marker_offset();
+        }
+        $self->{c2}->set_height( $self->get_chr_height() );
+        $self->{c2}->set_vertical_offset(40);
+        $self->{c2}->set_hilite( $self->get_hilite_zoomed() );
+        $self->{c2}->set_horizontal_offset( $x_distance * $element_count );
 
+        # because we have incomplete length information from the query above,
+        # we set the length of the zoomed in chromosome
+        # to be the same as the comparison chromosome (the length is simply
+        # the marker position of the bottom marker)
+        #
+        $self->{c2}->set_length( $self->{c1}->get_length() );
 
-	# because we have incomplete length information from the query above, 
-	# we set the length of the zoomed in chromosome
-	# to be the same as the comparison chromosome (the length is simply 
-	# the marker position of the bottom marker)
-	#
-	$self->{c2}->set_length($self->{c1}->get_length());
-	# 
-	# correct the cM_start and cM_end if out of range
-	#
-	#if ($self->get_cM_start() < 0) { $self->set_cM_start(0); }
-	if ($self->get_cM_end()>$self->{c2}->get_length()) {
-	    $self->set_cM_end($self->{c2}->get_length());
-	}
-	$self->{c2} ->set_units( $self->get_ref_map()->get_units() );
-	$self->{c2} ->set_color(255, 220 ,220);
-	@m2 = $self->{c2}->get_markers();
+        #
+        # correct the cM_start and cM_end if out of range
+        #
+        #if ($self->get_cM_start() < 0) { $self->set_cM_start(0); }
+        if ( $self->get_cM_end() > $self->{c2}->get_length() ) {
+            $self->set_cM_end( $self->{c2}->get_length() );
+        }
+        $self->{c2}->set_units( $self->get_ref_map()->get_units() );
+        $self->{c2}->set_color( 255, 220, 220 );
+        @m2 = $self->{c2}->get_markers();
 
-	# 
-	# go through the markers and show them according to confidence filter,
-	# add mark for overgo information etc.
-	#
-	for (my $i=0; $i<@m2; $i++) {
-	    #
-	    # hilite markers to be hilited
-	    #
-	    my $marker_name = $m2[$i]->get_name();
-	    if ($self->get_hilite()=~/\b$marker_name\b/i) {
-		$m2[$i]->hilite();
-		$m2[$i]->get_label()->set_hidden(0);
-	    }
-	    #
-	    # hide markers with confidence below confidence threshold
-	    #
-	    if ($m2[$i]->get_confidence() < $self->{confidence}) { 
-		$m2[$i]->hide_label(); 
-	    }
-	    #
-	    # hide markers that are not of the type that should be displayed
-	    #
-	    my $marker_type = $self->get_display_marker_type();
-	    if ($self->get_display_marker_type() && ($m2[$i]->get_marker_type()!~/$marker_type/i)) {
-		$m2[$i]->hide_label();
-	    }
-	   set_marker_color($m2[$i], $self->get_color_model());
-	    
-	    #
-	    # set the url only if the marker is visible (otherwise imagemap outside the image will be 
-	    # generated that confuses some browsers (such as Explorer).
-	    #
-	    if ($m2[$i]->is_visible()) {
+        #
+        # go through the markers and show them according to confidence filter,
+        # add mark for overgo information etc.
+        #
+        for ( my $i = 0 ; $i < @m2 ; $i++ ) {
+
+            #
+            # hilite markers to be hilited
+            #
+            my $marker_name = $m2[$i]->get_name();
+            if ( $self->get_hilite() =~ /\b$marker_name\b/i ) {
+                $m2[$i]->hilite();
+                $m2[$i]->get_label()->set_hidden(0);
+            }
+
+            #
+            # hide markers with confidence below confidence threshold
+            #
+            if ( $m2[$i]->get_confidence() < $self->{confidence} ) {
+                $m2[$i]->hide_label();
+            }
+
+            #
+            # hide markers that are not of the type that should be displayed
+            #
+            my $marker_type = $self->get_display_marker_type();
+            if ( $self->get_display_marker_type()
+                && ( $m2[$i]->get_marker_type() !~ /$marker_type/i ) )
+            {
+                $m2[$i]->hide_label();
+            }
+            set_marker_color( $m2[$i], $self->get_color_model() );
+
+#
+# set the url only if the marker is visible (otherwise imagemap outside the image will be
+# generated that confuses some browsers (such as Explorer).
+#
+            if ( $m2[$i]->is_visible() ) {
+
 #		if (!$m2[$i]->get_url()) { # some url's may already be set in the data adapter.
 #		    $m2[$i]->set_url( $self->get_ref_map()->get_marker_link($m2[$i]->get_id()) );
 #		}
-		
-	    }
-	    else { 
-		#$m[$i]->set_url("");
-		$m[$i]->hide_mark();
-	    }
-	}
-	#
-	# set up the section and connections to the left hand chromosome
-	#
-	$self->{c2} -> set_section($self->get_cM_start(), $self->get_cM_end());
-	$self->{c1} -> set_hilite_color(255, 220,220);
-	$self->{c1} -> set_hilite($self->get_cM_start(), $self->get_cM_end());
-	$self->{link1} = CXGN::Cview::ChrLink -> new ($self->{c1}, $self->get_cM_start(), $self->{c2}, $self->get_cM_start());
-	$self->{link1} -> set_color(10, 10, 10);
-	$self->{link2} = CXGN::Cview::ChrLink -> new ($self->{c1}, $self->get_cM_end(), $self->{c2}, $self->get_cM_end());
-	$self->{link2} -> set_color(10, 10, 10);
-	$self->{map}->add_chr_link($self->{link1});
-	$self->{map}->add_chr_link($self->{link2});
-    
-	$self->{map} -> add_chromosome($self->{c2});
+
+            }
+            else {
+
+                #$m[$i]->set_url("");
+                $m[$i]->hide_mark();
+            }
+        }
+
+        #
+        # set up the section and connections to the left hand chromosome
+        #
+        $self->{c2}->set_section( $self->get_cM_start(), $self->get_cM_end() );
+        $self->{c1}->set_hilite_color( 255, 220, 220 );
+        $self->{c1}->set_hilite( $self->get_cM_start(), $self->get_cM_end() );
+        $self->{link1} = CXGN::Cview::ChrLink->new(
+            $self->{c1}, $self->get_cM_start(),
+            $self->{c2}, $self->get_cM_start()
+        );
+        $self->{link1}->set_color( 10, 10, 10 );
+        $self->{link2} = CXGN::Cview::ChrLink->new(
+            $self->{c1}, $self->get_cM_end(),
+            $self->{c2}, $self->get_cM_end()
+        );
+        $self->{link2}->set_color( 10, 10, 10 );
+        $self->{map}->add_chr_link( $self->{link1} );
+        $self->{map}->add_chr_link( $self->{link2} );
+
+        $self->{map}->add_chromosome( $self->{c2} );
     }
-    #
-    # draw the map comparison if the map comparison was requested (comp_map comp_chr will be defined).
-    #
+
+#
+# draw the map comparison if the map comparison was requested (comp_map comp_chr will be defined).
+#
     my @m3;
-    if ($self->get_comp_map() && $self->get_comp_chr()) {
+    if ( $self->get_comp_map() && $self->get_comp_chr() ) {
 
-	#print STDERR "Generating the comparative map...\n";
+        #print STDERR "Generating the comparative map...\n";
 
-	$element_count++;
+        $element_count++;
 
-	#$self->{c3} = CXGN::Cview::chromosome -> new ($self->get_comp_chr(), $self->{chr_height}, $x_distance * $element_count, 40);
+#$self->{c3} = CXGN::Cview::chromosome -> new ($self->get_comp_chr(), $self->{chr_height}, $x_distance * $element_count, 40);
 
-	$self->{c3}=$self->get_comp_map()->get_chromosome($self->get_comp_chr());
+        $self->{c3} =
+          $self->get_comp_map()->get_chromosome( $self->get_comp_chr() );
 
-	$self->{c3}->set_height($self->get_chr_height());
-	$self->{c3}->set_horizontal_offset($x_distance * $element_count);
-	$self->{c3}->set_vertical_offset(40);
-	$self->{c3}->set_units( $self->get_comp_map()->get_units() );
-	
-	#print STDERR "Fetching map $self->{comp_map} chr $self->{comp_chr} from the database...\n"; 
-	
-	#print STDERR "Adjusting colors etc...\n";
-	$self->{c3} ->set_color(150, 150 ,200);
-	$self->{c3} ->set_caption($self->get_comp_chr());
-	
-	@m3 = $self->{c3}->get_markers();
-	#print STDERR "$self->{comp_chr} has ".@m3." markers...\n";
-	for (my $i=0; $i<@m3; $i++) {
-	    
-	    #print STDERR "Marker read:". $m3[$i]->get_name()."\n";
-	    CXGN::Cview::Utils::set_marker_color($m3[$i], $self->get_color_model());
-	    #$m3[$i]->set_url("/search/markers/markerinfo.pl?type=".$m3[$i]->get_marker_type()."&amp;id=".$m3[$i]->get_marker_name());; 
-	}
+        $self->{c3}->set_height( $self->get_chr_height() );
+        $self->{c3}->set_horizontal_offset( $x_distance * $element_count );
+        $self->{c3}->set_vertical_offset(40);
+        $self->{c3}->set_units( $self->get_comp_map()->get_units() );
 
-	#print STDERR "Adding the chromosome to the map...\n";
-	$self->{map}->add_chromosome($self->{c3});
-	#
-	# determine if the magnified section exists -- then draw the correspondence lines to that chromosome object (c2)
-	# else draw them to the original chromosome object (c1).
-	#
-	if (exists($self->{c2})) {
-	    $self->{c2}->set_labels_left();
+#print STDERR "Fetching map $self->{comp_map} chr $self->{comp_chr} from the database...\n";
 
-	    my $link_list = get_chromosome_links($self->{c2}, $self->{c3});
-	    foreach my $clink ($link_list->get_link_list()) { 
-		$self->{map}->add_chr_link($clink);
-	    }
-		    
-	    foreach my $m3 (@m3) {
-		$m3->hide_label();
-		if ($link_list->has_link($m3->get_marker_name())) { 
-		    $m3->show_label();
-		}
-		
-		if ($m3->get_confidence < $self->{confidence}) { $m3->hide_label(); }
-		my $marker_name = $m3->get_name();
-		if ($self->get_hilite()=~/\b$marker_name\b/i) {
-		    $m3->show_label();
-		    $m3->hilite();
-		}
-	    }
-	}
-	else {
-	    #print STDERR "LINKS:::::::::::::::\n";
-	    my $link_list = get_chromosome_links($self->{c1}, $self->{c3});
-	    foreach my $clink ($link_list->get_link_list()) { 
-		#print STDERR "  adding link...\n";
-		$self->{map}->add_chr_link($clink);
-	    }
-	    foreach my $m3 (@m3) {
-		$m3->hide_label();
-		set_marker_color($m3, $self->get_color_model());
+        #print STDERR "Adjusting colors etc...\n";
+        $self->{c3}->set_color( 150, 150, 200 );
+        $self->{c3}->set_caption( $self->get_comp_chr() );
 
- 		if ($link_list->has_link($m3->get_marker_name())) { 
- 		    $m3->show_label();
- 		}
-		if ($m3->get_confidence < $self->{confidence}) { $m3->hide_label(); }
-		if ($m3->get_name() eq $self->get_hilite()) {
-		    $m3->show_label();
-		    $m3->hilite();
-		}
-	    }
-	}
-	$element_count++;
-	if ($self->get_show_ruler()) { 
-	    $self->{r3} = $self->{c3}->get_ruler();
-	    $self->{r3}->set_horizontal_offset($element_count*$x_distance);
-	    $self->{r3}->set_vertical_offset(40);
-	    $self->{r3}->set_height($self->get_chr_height());
-	    $self->{r3}->set_start_value(0);
-	    $self->{r3}->set_end_value($self->{c3}->get_length());
+        @m3 = $self->{c3}->get_markers();
 
-	    $self->{map}->add_ruler($self->{r3});
-	}
-    }	
+        #print STDERR "$self->{comp_chr} has ".@m3." markers...\n";
+        for ( my $i = 0 ; $i < @m3 ; $i++ ) {
+
+            #print STDERR "Marker read:". $m3[$i]->get_name()."\n";
+            CXGN::Cview::Utils::set_marker_color( $m3[$i],
+                $self->get_color_model() );
+
+#$m3[$i]->set_url("/search/markers/markerinfo.pl?type=".$m3[$i]->get_marker_type()."&amp;id=".$m3[$i]->get_marker_name());;
+        }
+
+        #print STDERR "Adding the chromosome to the map...\n";
+        $self->{map}->add_chromosome( $self->{c3} );
+
+#
+# determine if the magnified section exists -- then draw the correspondence lines to that chromosome object (c2)
+# else draw them to the original chromosome object (c1).
+#
+        if ( exists( $self->{c2} ) ) {
+            $self->{c2}->set_labels_left();
+
+            my $link_list = get_chromosome_links( $self->{c2}, $self->{c3} );
+            foreach my $clink ( $link_list->get_link_list() ) {
+                $self->{map}->add_chr_link($clink);
+            }
+
+            foreach my $m3 (@m3) {
+                $m3->hide_label();
+                if ( $link_list->has_link( $m3->get_marker_name() ) ) {
+                    $m3->show_label();
+                }
+
+                if ( $m3->get_confidence < $self->{confidence} ) {
+                    $m3->hide_label();
+                }
+                my $marker_name = $m3->get_name();
+                if ( $self->get_hilite() =~ /\b$marker_name\b/i ) {
+                    $m3->show_label();
+                    $m3->hilite();
+                }
+            }
+        }
+        else {
+
+            #print STDERR "LINKS:::::::::::::::\n";
+            my $link_list = get_chromosome_links( $self->{c1}, $self->{c3} );
+            foreach my $clink ( $link_list->get_link_list() ) {
+
+                #print STDERR "  adding link...\n";
+                $self->{map}->add_chr_link($clink);
+            }
+            foreach my $m3 (@m3) {
+                $m3->hide_label();
+                set_marker_color( $m3, $self->get_color_model() );
+
+                if ( $link_list->has_link( $m3->get_marker_name() ) ) {
+                    $m3->show_label();
+                }
+                if ( $m3->get_confidence < $self->{confidence} ) {
+                    $m3->hide_label();
+                }
+                if ( $m3->get_name() eq $self->get_hilite() ) {
+                    $m3->show_label();
+                    $m3->hilite();
+                }
+            }
+        }
+        $element_count++;
+        if ( $self->get_show_ruler() ) {
+            $self->{r3} = $self->{c3}->get_ruler();
+            $self->{r3}->set_horizontal_offset( $element_count * $x_distance );
+            $self->{r3}->set_vertical_offset(40);
+            $self->{r3}->set_height( $self->get_chr_height() );
+            $self->{r3}->set_start_value(0);
+            $self->{r3}->set_end_value( $self->{c3}->get_length() );
+
+            $self->{map}->add_ruler( $self->{r3} );
+        }
+    }
 }
-
-
-
 
 =head2 function get_chr_height()
 
@@ -766,8 +893,8 @@ sub generate_image {
 
 =cut
 
-sub get_chr_height { 
-    my $self=shift;
+sub get_chr_height {
+    my $self = shift;
     return $self->{chr_height};
 }
 
@@ -782,9 +909,9 @@ sub get_chr_height {
 
 =cut
 
-sub set_chr_height { 
-    my $self=shift;
-    $self->{chr_height}=shift;
+sub set_chr_height {
+    my $self = shift;
+    $self->{chr_height} = shift;
 }
 
 =head2 accessors get_ref_map(), set_ref_map()
@@ -800,15 +927,15 @@ sub set_chr_height {
 =cut
 
 sub get_ref_map {
-  my $self=shift;
-  if (!exists($self->{ref_map})) { $self->{ref_map}=undef; }
-  return $self->{ref_map};
+    my $self = shift;
+    if ( !exists( $self->{ref_map} ) ) { $self->{ref_map} = undef; }
+    return $self->{ref_map};
 
 }
 
 sub set_ref_map {
-  my $self=shift;
-  $self->{ref_map}=shift;
+    my $self = shift;
+    $self->{ref_map} = shift;
 }
 
 =head2 accessors get_comp_map(), set_comp_map()
@@ -823,19 +950,16 @@ sub set_ref_map {
 =cut
 
 sub get_comp_map {
-  my $self=shift;
-  if (!exists($self->{comp_map})) { $self->{comp_map}=undef; }
-  return $self->{comp_map};
+    my $self = shift;
+    if ( !exists( $self->{comp_map} ) ) { $self->{comp_map} = undef; }
+    return $self->{comp_map};
 
 }
 
 sub set_comp_map {
-  my $self=shift;
-  $self->{comp_map}=shift;
+    my $self = shift;
+    $self->{comp_map} = shift;
 }
-
-
-
 
 =head2 accessors set_map_id(), get_map_id()
 
@@ -850,13 +974,14 @@ sub set_comp_map {
 
 sub set_map_id {
     my $self = shift;
-    $self->{map_id}=shift;
+    $self->{map_id} = shift;
 }
 
 sub get_map_id {
     my $self = shift;
-#    if (!exists($self->{map_id})) { $self->{map_id}=0; }
-    if (!exists($self->{map_id})) { $self->{map_id}=0; }
+
+    #    if (!exists($self->{map_id})) { $self->{map_id}=0; }
+    if ( !exists( $self->{map_id} ) ) { $self->{map_id} = 0; }
     return $self->{map_id};
 }
 
@@ -872,14 +997,14 @@ sub get_map_id {
 =cut
 
 sub get_map_version_id {
-  my $self=shift;
-  return $self->{map_version_id};
+    my $self = shift;
+    return $self->{map_version_id};
 
 }
 
 sub set_map_version_id {
-  my $self=shift;
-  $self->{map_version_id}=shift;
+    my $self = shift;
+    $self->{map_version_id} = shift;
 }
 
 =head2 accessors get_comp_map_version_id(), set_comp_map_version_id()
@@ -894,14 +1019,14 @@ sub set_map_version_id {
 =cut
 
 sub get_comp_map_version_id {
-  my $self=shift;
-  return $self->{comp_map_version_id};
+    my $self = shift;
+    return $self->{comp_map_version_id};
 
 }
 
 sub set_comp_map_version_id {
-  my $self=shift;
-  $self->{comp_map_version_id}=shift;
+    my $self = shift;
+    $self->{comp_map_version_id} = shift;
 }
 
 =head2 function set_comp_map_id()
@@ -917,7 +1042,7 @@ sub set_comp_map_version_id {
 
 sub set_comp_map_id {
     my $self = shift;
-    $self->{comp_map_id}=shift;
+    $self->{comp_map_id} = shift;
 }
 
 =head2 function get_comp_map_id()
@@ -933,7 +1058,7 @@ sub set_comp_map_id {
 
 sub get_comp_map_id {
     my $self = shift;
-    if (!exists($self->{comp_map_id})) { $self->{comp_map_id}=0; }
+    if ( !exists( $self->{comp_map_id} ) ) { $self->{comp_map_id} = 0; }
     return $self->{comp_map_id};
 }
 
@@ -952,7 +1077,7 @@ sub get_comp_map_id {
 
 sub set_ref_chr {
     my $self = shift;
-    $self->{chr_nr}=shift;
+    $self->{chr_nr} = shift;
 }
 
 =head2 function get_ref_chr()
@@ -969,7 +1094,9 @@ sub set_ref_chr {
 
 sub get_ref_chr {
     my $self = shift;
-    if (!exists($self->{chr_nr}) || !defined($self->{chr_nr})) { $self->{chr_nr}=0; }
+    if ( !exists( $self->{chr_nr} ) || !defined( $self->{chr_nr} ) ) {
+        $self->{chr_nr} = 0;
+    }
     return $self->{chr_nr};
 }
 
@@ -987,7 +1114,7 @@ sub get_ref_chr {
 
 sub set_comp_chr {
     my $self = shift;
-    $self->{comp_chr}=shift;
+    $self->{comp_chr} = shift;
 }
 
 =head2 function get_comp_chr()
@@ -1003,7 +1130,7 @@ sub set_comp_chr {
 
 sub get_comp_chr {
     my $self = shift;
-    if (!exists($self->{comp_chr})) { $self->{comp_chr}=0; }
+    if ( !exists( $self->{comp_chr} ) ) { $self->{comp_chr} = 0; }
     return $self->{comp_chr};
 }
 
@@ -1018,16 +1145,14 @@ sub get_comp_chr {
 =cut
 
 sub get_ref_chr_len {
-  my $self = shift;
-  return $self->{ref_chr_len}; 
+    my $self = shift;
+    return $self->{ref_chr_len};
 }
 
 sub set_ref_chr_len {
-  my $self = shift;
-  $self->{ref_chr_len} = shift;
+    my $self = shift;
+    $self->{ref_chr_len} = shift;
 }
-
-
 
 =head2 function set_cM_start()
 
@@ -1041,11 +1166,12 @@ sub set_ref_chr_len {
 =cut
 
 sub set_cM_start {
-    my $self = shift;
+    my $self     = shift;
     my $cM_start = shift;
-   $cM_start =~ s/[^0-9.]//g;
+    $cM_start =~ s/[^0-9.]//g;
+
     #$cM_start =~ s/.*?(\d+\.?\d*).*/$1/;
-    $self->{cM_start}=abs($cM_start);
+    $self->{cM_start} = abs($cM_start);
 }
 
 =head2 function get_cM_start()
@@ -1061,8 +1187,10 @@ sub set_cM_start {
 
 sub get_cM_start {
     my $self = shift;
-    if (!exists($self->{cM_start}) || !defined($self->{cM_start})) { $self->{cM_start}=0; }
-    
+    if ( !exists( $self->{cM_start} ) || !defined( $self->{cM_start} ) ) {
+        $self->{cM_start} = 0;
+    }
+
     return sprintf "%.2f", $self->{cM_start};
 }
 
@@ -1080,11 +1208,11 @@ sub get_cM_start {
 =cut
 
 sub set_cM_end {
-    my $self = shift;
+    my $self   = shift;
     my $cM_end = shift;
-   $cM_end =~ s/[^0-9.]//g;
-    if ($cM_end eq "" || !$cM_end) { $cM_end=0; }
-    $self->{cM_end}=abs(($cM_end));
+    $cM_end =~ s/[^0-9.]//g;
+    if ( $cM_end eq "" || !$cM_end ) { $cM_end = 0; }
+    $self->{cM_end} = abs( ($cM_end) );
 }
 
 =head2 function get_cM_end()
@@ -1100,7 +1228,9 @@ sub set_cM_end {
 
 sub get_cM_end {
     my $self = shift;
-    if (!exists($self->{cM_end}) || !defined($self->{cM_end})) { $self->{cM_end}=0; }
+    if ( !exists( $self->{cM_end} ) || !defined( $self->{cM_end} ) ) {
+        $self->{cM_end} = 0;
+    }
     return sprintf "%.2f", $self->{cM_end};
 }
 
@@ -1119,7 +1249,7 @@ sub get_cM_end {
 
 sub set_cM {
     my $self = shift;
-    $self->{cM}=shift;
+    $self->{cM} = shift;
 }
 
 =head2 function get_cM()
@@ -1135,7 +1265,7 @@ sub set_cM {
 
 sub get_cM {
     my $self = shift;
-    if (!exists($self->{cM})) { $self->{cM}=0; }
+    if ( !exists( $self->{cM} ) ) { $self->{cM} = 0; }
     return $self->{cM};
 }
 
@@ -1154,10 +1284,12 @@ sub get_cM {
 
 sub set_zoom {
     my $self = shift;
-    $self->{zoom}=shift;
-    if (!exists($self->{zoom}) || $self->{zoom} eq "") { $self->{zoom}=0; }
-    if ($self->{zoom}==0) { $self->{zoom} =1; }
-    if ($self->{zoom} > 10) { $self->{zoom} =10; }
+    $self->{zoom} = shift;
+    if ( !exists( $self->{zoom} ) || $self->{zoom} eq "" ) {
+        $self->{zoom} = 0;
+    }
+    if ( $self->{zoom} == 0 ) { $self->{zoom} = 1; }
+    if ( $self->{zoom} > 10 ) { $self->{zoom} = 10; }
 }
 
 =head2 function get_zoom()
@@ -1172,8 +1304,8 @@ sub set_zoom {
 =cut
 
 sub get_zoom {
-    my $self=shift;
-    if (!exists($self->{zoom})) { $self->{zoom}=1; }
+    my $self = shift;
+    if ( !exists( $self->{zoom} ) ) { $self->{zoom} = 1; }
     return $self->{zoom};
 }
 
@@ -1192,15 +1324,13 @@ sub get_zoom {
 
 sub get_clicked {
     my $self = shift;
-    return $self->{clicked}; 
+    return $self->{clicked};
 }
 
 sub set_clicked {
     my $self = shift;
     $self->{clicked} = shift;
 }
-
-
 
 =head2 function get_show_ruler()
 
@@ -1215,7 +1345,7 @@ sub set_clicked {
 
 sub get_show_ruler {
     my $self = shift;
-    if (!exists($self->{show_ruler})) { $self->{show_ruler}=0; }
+    if ( !exists( $self->{show_ruler} ) ) { $self->{show_ruler} = 0; }
     return $self->{show_ruler};
 }
 
@@ -1250,7 +1380,7 @@ sub set_show_ruler {
 
 sub set_show_IL {
     my $self = shift;
-    $self->{show_IL}=shift;
+    $self->{show_IL} = shift;
 }
 
 =head2 function get_show_IL()
@@ -1266,8 +1396,8 @@ sub set_show_IL {
 
 sub get_show_IL {
     my $self = shift;
-    if (!exists($self->{show_IL})) { $self->{show_IL}=0; }
-    return $self ->{show_IL};
+    if ( !exists( $self->{show_IL} ) ) { $self->{show_IL} = 0; }
+    return $self->{show_IL};
 }
 
 =head2 function set_show_physical()
@@ -1284,7 +1414,7 @@ sub get_show_IL {
 
 sub set_show_physical {
     my $self = shift;
-    $self->{show_physical}=shift;
+    $self->{show_physical} = shift;
 }
 
 =head2 function get_show_physical()
@@ -1301,7 +1431,7 @@ sub set_show_physical {
 
 sub get_show_physical {
     my $self = shift;
-    if (!exists($self->{show_physical})) { $self->{show_physical}=0; }
+    if ( !exists( $self->{show_physical} ) ) { $self->{show_physical} = 0; }
     return $self->{show_physical};
 }
 
@@ -1315,18 +1445,15 @@ sub get_show_physical {
 
 =cut
 
-sub get_show_offsets { 
-    my $self=shift;
+sub get_show_offsets {
+    my $self = shift;
     return $self->{show_offsets};
 }
 
-sub set_show_offsets { 
-    my $self=shift;
-    $self->{show_offsets}=shift;
+sub set_show_offsets {
+    my $self = shift;
+    $self->{show_offsets} = shift;
 }
-
-
-
 
 =head2 function get_size()
 
@@ -1341,7 +1468,7 @@ sub set_show_offsets {
 
 sub get_size {
     my $self = shift;
-    if (!exists($self->{size})) { $self->{size}=0; }
+    if ( !exists( $self->{size} ) ) { $self->{size} = 0; }
     return $self->{size};
 }
 
@@ -1362,7 +1489,7 @@ sub get_size {
 
 sub set_size {
     my $self = shift;
-    $self->{size}=shift;
+    $self->{size} = shift;
 }
 
 =head2 function set_hilite()
@@ -1379,13 +1506,13 @@ sub set_size {
 
 =cut
 
-sub set_hilite { 
-    my $self = shift;
+sub set_hilite {
+    my $self   = shift;
     my $hilite = shift;
     $hilite =~ tr/\,\.\:\;\// /;
     $hilite =~ s/\s+/ /;
     $self->{hilite} = $hilite;
-   
+
 }
 
 =head2 function get_hilite()
@@ -1401,7 +1528,7 @@ sub set_hilite {
 
 sub get_hilite {
     my $self = shift;
-    if (!exists($self->{hilite})) { $self->{hilite}=""; }
+    if ( !exists( $self->{hilite} ) ) { $self->{hilite} = ""; }
     return $self->{hilite};
 }
 
@@ -1418,11 +1545,11 @@ sub get_hilite {
 =cut
 
 sub set_confidence {
-    my $self = shift;
+    my $self       = shift;
     my $confidence = shift;
     $confidence =~ s/[A-Za-z]//g;
-    if ($confidence eq "" || $confidence == undef ) { $confidence =-2; }
-    $confidence = $confidence +0;
+    if ( $confidence eq "" || $confidence == undef ) { $confidence = -2; }
+    $confidence = $confidence + 0;
     $self->{confidence} = $confidence;
 }
 
@@ -1448,10 +1575,9 @@ sub set_confidence {
 
 sub get_confidence {
     my $self = shift;
-    if (!exists($self->{confidence})) { $self->{confidence}=-2; }
+    if ( !exists( $self->{confidence} ) ) { $self->{confidence} = -2; }
     return $self->{confidence};
 }
-
 
 =head2 functions set_display_marker_type(), get_display_marker_type()
 
@@ -1469,18 +1595,21 @@ sub get_confidence {
 sub set_display_marker_type {
     my $self = shift;
     my $type = shift;
-    if ($type && ("RFLP CAPS COS SSR"=~ /\b$type\b/)) {
-	$self->{display_marker_type}=$type;
-	$self->append_error("Only markers of the type $self->{display_marker_type} are shown on the zoomed map.<br />");
+    if ( $type && ( "RFLP CAPS COS SSR" =~ /\b$type\b/ ) ) {
+        $self->{display_marker_type} = $type;
+        $self->append_error(
+"Only markers of the type $self->{display_marker_type} are shown on the zoomed map.<br />"
+        );
     }
 }
 
-sub get_display_marker_type { 
+sub get_display_marker_type {
     my $self = shift;
-    if (!exists($self->{display_marker_type})) { $self->{display_marker_type}=""; }
+    if ( !exists( $self->{display_marker_type} ) ) {
+        $self->{display_marker_type} = "";
+    }
     return $self->{display_marker_type};
 }
-
 
 =head2 function set_show_zoomed()
 
@@ -1499,7 +1628,6 @@ sub set_show_zoomed {
     $self->{show_zoomed} = shift;
 }
 
-
 =head2 function get_show_zoomed()
 
   Synopsis:     accessor function for the show_zoomed property 
@@ -1511,10 +1639,9 @@ sub set_show_zoomed {
 
 =cut
 
-
 sub get_show_zoomed {
     my $self = shift;
-    if (!exists($self->{show_zoomed})) { $self->{show_zoomed}=0; }
+    if ( !exists( $self->{show_zoomed} ) ) { $self->{show_zoomed} = 0; }
     return $self->{show_zoomed};
 }
 
@@ -1533,16 +1660,15 @@ sub get_show_zoomed {
 =cut
 
 sub set_hilite_zoomed {
-    my $self= shift;
-    $self->{hilite_zoom_start}= shift;
-    $self->{hilite_zoom_end} = shift;
-
+    my $self = shift;
+    $self->{hilite_zoom_start} = shift;
+    $self->{hilite_zoom_end}   = shift;
 
 }
 
 sub get_hilite_zoomed {
     my $self = shift;
-    return ($self->{hilite_zoom_start}, $self->{hilite_zoom_end});
+    return ( $self->{hilite_zoom_start}, $self->{hilite_zoom_end} );
 }
 
 =head2 function get_color_model()
@@ -1555,7 +1681,6 @@ sub get_hilite_zoomed {
   Example:
 
 =cut
-
 
 sub set_color_model {
     my $self = shift;
@@ -1575,10 +1700,9 @@ sub set_color_model {
 
 sub get_color_model {
     my $self = shift;
-    if (!exists($self->{color_model})) { $self->{color_model}=""; }
+    if ( !exists( $self->{color_model} ) ) { $self->{color_model} = ""; }
     return $self->{color_model};
 }
-
 
 =head2 function get_color_legend()
 
@@ -1592,24 +1716,54 @@ sub get_color_model {
 =cut
 
 sub get_color_legend {
-    my $self= shift;
+    my $self   = shift;
     my $string = "";
-    my $link = "view_chromosome.pl?map_version_id=".$self->get_map_version_id()."&amp;chr_nr=".$self->get_ref_chr()."&amp;show_physical=".$self->get_show_physical."&amp;show_IL=".$self->get_show_IL()."&amp;show_offsets=".$self->get_show_offsets()."&amp;show_ruler=".$self->get_show_ruler()."&amp;color_model=".$self->get_color_model()."&amp;comp_map_version_id=".$self->get_comp_map_version_id()."&amp;comp_chr=".$self->get_comp_chr()."&amp;zoom=".$self->get_zoom()."&amp;size=".$self->get_size()."&amp;cM=".$self->get_cM()."&amp;cM_start=".$self->get_cM_start()."&amp;cM_end=".$self->get_cM_end()."&amp;hilite=".$self->get_hilite()."&amp;show_zoomed=".$self->get_show_zoomed()."";
-    if ($self->{color_model} eq "marker_types") {
+    my $link =
+        "view_chromosome.pl?map_version_id="
+      . $self->get_map_version_id()
+      . "&amp;chr_nr="
+      . $self->get_ref_chr()
+      . "&amp;show_physical="
+      . $self->get_show_physical
+      . "&amp;show_IL="
+      . $self->get_show_IL()
+      . "&amp;show_offsets="
+      . $self->get_show_offsets()
+      . "&amp;show_ruler="
+      . $self->get_show_ruler()
+      . "&amp;color_model="
+      . $self->get_color_model()
+      . "&amp;comp_map_version_id="
+      . $self->get_comp_map_version_id()
+      . "&amp;comp_chr="
+      . $self->get_comp_chr()
+      . "&amp;zoom="
+      . $self->get_zoom()
+      . "&amp;size="
+      . $self->get_size()
+      . "&amp;cM="
+      . $self->get_cM()
+      . "&amp;cM_start="
+      . $self->get_cM_start()
+      . "&amp;cM_end="
+      . $self->get_cM_end()
+      . "&amp;hilite="
+      . $self->get_hilite()
+      . "&amp;show_zoomed="
+      . $self->get_show_zoomed() . "";
+    if ( $self->{color_model} eq "marker_types" ) {
 
-	
-
-	$string = "<b>Marker color by type:</b> 
+        $string = "<b>Marker color by type:</b> 
                    <a href=\"$link\&marker_type=RFLP\" style=\"color:#FF0000\">RFLP</a> | 
                    <a href=\"$link\&marker_type=SSR\" style=\"color:#00FF00\">SSR</a> | 
                    <a href=\"$link\&marker_type=CAPS\" style=\"color:#0000FF\">CAPS</a> | 
                    <a href=\"$link\&marker_type=COS\" style=\"color:#FF00FF\">COS</a> | 
                    <font color=#000000>other</font>
 	                   [<a href=\"$link\&marker_type=\" style=\"color:#111111\">show all</a>]";
-    
+
     }
     else {
-	$string = "<b>Marker color by LOD score:</b> 
+        $string = "<b>Marker color by LOD score:</b> 
                    <a href=\"$link\&amp;confidence=3\" style=\"color:#FF0000\">F(LOD3)</a> |
                    <a href=\"$link\&amp;confidence=2\" style=\"color:#00FF00\">CF(LOD>=3</a> | 
                    <a href=\"$link\&amp;confidence=1\" style=\"color:#0000FF\">I(LOD2)</a> | 
@@ -1636,69 +1790,95 @@ sub get_color_legend {
 =cut
 
 sub get_marker_map_links {
-    my $self=shift;
-    #print STDERR "get_marker_map_links...\n";
-    # query the database for maps and chromosome that any of the markers of the current chromosome lie on.
-    #
-    my $chr_nr = $self->get_ref_chr();
-    my $F2_2000 = CXGN::Cview::Map::SGN::Genetic->new($self->get_dbh(), CXGN::Cview::Map::Tools::find_current_version( $self->get_dbh(), CXGN::Cview::Map::Tools::current_tomato_map_id()));
+    my $self = shift;
+
+#print STDERR "get_marker_map_links...\n";
+# query the database for maps and chromosome that any of the markers of the current chromosome lie on.
+#
+    my $chr_nr  = $self->get_ref_chr();
+    my $F2_2000 = CXGN::Cview::Map::SGN::Genetic->new(
+        $self->get_dbh(),
+        CXGN::Cview::Map::Tools::find_current_version(
+            $self->get_dbh(), CXGN::Cview::Map::Tools::current_tomato_map_id()
+        )
+    );
 
     my $F2_2000_version_id = $F2_2000->get_id();
 
-    my $form="<form style=\"margin-bottom:0\" action=\"/cview/view_chromosome.pl\">
-	<input type=\"hidden\" name=\"chr_nr\" value=\"".($self->get_ref_chr())."\" />
-	<input type=\"hidden\" name=\"map_version_id\" value=\"".($self->get_map_version_id())."\" />
-	<input type=\"hidden\" name=\"zoom\" value=\"".($self->get_zoom())."\" />
-	<input type=\"hidden\" name=\"show_ruler\" value=\"".($self->get_show_ruler())."\" />
-	<input type=\"hidden\" name=\"show_IL\" value=\"".($self->get_show_IL())."\" />
-        <input type=\"hidden\" name=\"show_offsets\" value=\"".($self->get_show_offsets())."\" />
-        <input type=\"hidden\" name=\"cM_start\" value=\"".($self->get_cM_start())."\" />
-        <input type=\"hidden\" name=\"cM_end\" value=\"".($self->get_cM_end())."\" />
-	<input  type=\"hidden\" name=\"show_physical\" value=\"".($self->get_show_physical())."\" />
-	<input type=\"hidden\" name=\"color_model\" value=\"".($self->get_color_model())."\" />
-        <input type=\"hidden\" name=\"size\" value=\"".($self->get_size())."\" />
-        <input type=\"hidden\" name=\"show_zoomed\" value=\"".($self->get_show_zoomed())."\" />
-        <input type=\"hidden\" name=\"hilite\" value=\"".($self->get_hilite())."\" />
-        <input type=\"hidden\" name=\"marker_type\" value=\"".($self->get_display_marker_type())."\" /> ";
- 
-    my @options = $self->get_ref_map()->get_chromosome_connections($self->get_ref_chr());
-    
-    if (@options) { 
-        
-	$form .= "<select name=\"map_chr_select\">";
-	foreach my $o (@options) { 
-#	print STDERR $o->{map_version_id}, $o->{chr_nr}, $o->{short_name}."<br />\n";
-	    my $selected = "";
-	    if ($o->{map_version_id} == $self->get_comp_map_version_id()) { 
-		$selected = "selected=\"selected\""; 
-	    }
-	    
-	    $form .= qq {  <option value="$o->{map_version_id} $o->{lg_name}" $selected>Map $o->{short_name} Chromosome $o->{lg_name} ($o->{marker_count} markers)</option> };
-	}
-	
-	$form .="</select>\n";
-	$self->{compare_disabled} = ""; 
+    my $form =
+      "<form style=\"margin-bottom:0\" action=\"/cview/view_chromosome.pl\">
+	<input type=\"hidden\" name=\"chr_nr\" value=\""
+      . ( $self->get_ref_chr() ) . "\" />
+	<input type=\"hidden\" name=\"map_version_id\" value=\""
+      . ( $self->get_map_version_id() ) . "\" />
+	<input type=\"hidden\" name=\"zoom\" value=\"" . ( $self->get_zoom() ) . "\" />
+	<input type=\"hidden\" name=\"show_ruler\" value=\""
+      . ( $self->get_show_ruler() ) . "\" />
+	<input type=\"hidden\" name=\"show_IL\" value=\""
+      . ( $self->get_show_IL() ) . "\" />
+        <input type=\"hidden\" name=\"show_offsets\" value=\""
+      . ( $self->get_show_offsets() ) . "\" />
+        <input type=\"hidden\" name=\"cM_start\" value=\""
+      . ( $self->get_cM_start() ) . "\" />
+        <input type=\"hidden\" name=\"cM_end\" value=\""
+      . ( $self->get_cM_end() ) . "\" />
+	<input  type=\"hidden\" name=\"show_physical\" value=\""
+      . ( $self->get_show_physical() ) . "\" />
+	<input type=\"hidden\" name=\"color_model\" value=\""
+      . ( $self->get_color_model() ) . "\" />
+        <input type=\"hidden\" name=\"size\" value=\""
+      . ( $self->get_size() ) . "\" />
+        <input type=\"hidden\" name=\"show_zoomed\" value=\""
+      . ( $self->get_show_zoomed() ) . "\" />
+        <input type=\"hidden\" name=\"hilite\" value=\""
+      . ( $self->get_hilite() ) . "\" />
+        <input type=\"hidden\" name=\"marker_type\" value=\""
+      . ( $self->get_display_marker_type() )
+      . "\" /> ";
+
+    my @options =
+      $self->get_ref_map()->get_chromosome_connections( $self->get_ref_chr() );
+
+    if (@options) {
+
+        $form .= "<select name=\"map_chr_select\">";
+        foreach my $o (@options) {
+
+ #	print STDERR $o->{map_version_id}, $o->{chr_nr}, $o->{short_name}."<br />\n";
+            my $selected = "";
+            if ( $o->{map_version_id} == $self->get_comp_map_version_id() ) {
+                $selected = "selected=\"selected\"";
+            }
+
+            $form .=
+qq {  <option value="$o->{map_version_id} $o->{lg_name}" $selected>Map $o->{short_name} Chromosome $o->{lg_name} ($o->{marker_count} markers)</option> };
+        }
+
+        $form .= "</select>\n";
+        $self->{compare_disabled} = "";
     }
     else {
-	$form .= "<select name=\"map_chr_select\" disabled=\"disabled\" >";
-	$form .= "<option value=\"\" disabld=\"disabled\" >No maps to compare to</option>";
-	$form .= "</select>\n";
-	$self->{compare_disabled} = qq{ disabled="disabled" }; 
+        $form .= "<select name=\"map_chr_select\" disabled=\"disabled\" >";
+        $form .=
+"<option value=\"\" disabld=\"disabled\" >No maps to compare to</option>";
+        $form .= "</select>\n";
+        $self->{compare_disabled} = qq{ disabled="disabled" };
     }
-		     
-    $form .= "<input type=\"submit\" value=\"Compare\" $self->{compare_disabled} /></form>";
-    
+
+    $form .=
+"<input type=\"submit\" value=\"Compare\" $self->{compare_disabled} /></form>";
+
     return $form;
 }
 
-sub append_error { 
-    my $self = shift;
+sub append_error {
+    my $self   = shift;
     my $append = shift;
-    if (!exists($self->{errors})) { $self ->{errors}=""; }
-    $self->{errors}.=$append;
+    if ( !exists( $self->{errors} ) ) { $self->{errors} = ""; }
+    $self->{errors} .= $append;
 }
 
-sub get_errors { 
+sub get_errors {
     my $self = shift;
     return $self->{errors};
 }
@@ -1718,24 +1898,25 @@ sub get_errors {
 
 =cut
 
-sub get_preceding_chromosome { 
-    my $self = shift;
-    my $chr_nr = shift;
-    my $chr_count = scalar( @{$self->{chromo_names}} );
-    my $chr_index = 0;
-    my $old_chr_index=0;
-    #
-    # find current chromosome in chromo_names array (a hash would be more elegant...)
-    #
-    for (my $i=0; $i< (@{$self->{chromo_names}}); $i++) { 
-	if (${$self->{chromo_names}}[$i] eq $chr_nr) { 
-	    $old_chr_index=$i;
-	}
+sub get_preceding_chromosome {
+    my $self          = shift;
+    my $chr_nr        = shift;
+    my $chr_count     = scalar( @{ $self->{chromo_names} } );
+    my $chr_index     = 0;
+    my $old_chr_index = 0;
+
+#
+# find current chromosome in chromo_names array (a hash would be more elegant...)
+#
+    for ( my $i = 0 ; $i < ( @{ $self->{chromo_names} } ) ; $i++ ) {
+        if ( ${ $self->{chromo_names} }[$i] eq $chr_nr ) {
+            $old_chr_index = $i;
+        }
     }
-	    
-    if ($old_chr_index==0) { $chr_index = $chr_count-1; }
-    else { $chr_index = $old_chr_index-1; }
-    return ${$self->{chromo_names}}[$chr_index];
+
+    if   ( $old_chr_index == 0 ) { $chr_index = $chr_count - 1; }
+    else                         { $chr_index = $old_chr_index - 1; }
+    return ${ $self->{chromo_names} }[$chr_index];
 }
 
 =head2 function get_next_chromosome()
@@ -1753,66 +1934,65 @@ sub get_preceding_chromosome {
 
 =cut
 
-sub get_next_chromosome { 
-    my $self = shift;
-    my $chr_nr = shift;
-    my $chr_count = scalar( @{$self->{chromo_names}} );
-    my $chr_index = 0;
+sub get_next_chromosome {
+    my $self          = shift;
+    my $chr_nr        = shift;
+    my $chr_count     = scalar( @{ $self->{chromo_names} } );
+    my $chr_index     = 0;
     my $old_chr_index = 0;
-    for (my $i=0; $i< (@{$self->{chromo_names}}); $i++) { 
-	if (${$self->{chromo_names}}[$i] eq $chr_nr) { 
-	    $old_chr_index=$i;
-	}
+    for ( my $i = 0 ; $i < ( @{ $self->{chromo_names} } ) ; $i++ ) {
+        if ( ${ $self->{chromo_names} }[$i] eq $chr_nr ) {
+            $old_chr_index = $i;
+        }
     }
 
-    if ($old_chr_index == ($chr_count-1)) { $chr_index = 0; }
-    else { $chr_index = $old_chr_index+1; }
-    return ${$self->{chromo_names}}[$chr_index];
+    if ( $old_chr_index == ( $chr_count - 1 ) ) { $chr_index = 0; }
+    else { $chr_index = $old_chr_index + 1; }
+    return ${ $self->{chromo_names} }[$chr_index];
 }
 
-sub get_preceding_comp_chromosome { 
-    my $self = shift;
+sub get_preceding_comp_chromosome {
+    my $self   = shift;
     my $chr_nr = shift;
-    if (!($self->get_comp_map())) { 
-	return "?";
+    if ( !( $self->get_comp_map() ) ) {
+        return "?";
     }
-    my $chr_count = scalar( @{$self->{comp_chromo_names}} );
-    my $chr_index = 0;
+    my $chr_count     = scalar( @{ $self->{comp_chromo_names} } );
+    my $chr_index     = 0;
     my $old_chr_index = 0;
 
-    for (my $i=0; $i< (@{$self->{comp_chromo_names}}); $i++) { 
-	if (${$self->{comp_chromo_names}}[$i] eq $chr_nr) { 
-	    $old_chr_index=$i;
-	}
+    for ( my $i = 0 ; $i < ( @{ $self->{comp_chromo_names} } ) ; $i++ ) {
+        if ( ${ $self->{comp_chromo_names} }[$i] eq $chr_nr ) {
+            $old_chr_index = $i;
+        }
     }
 
-    if ($old_chr_index == 0) { $chr_index = $chr_count-1; }
-    else { $chr_index = $old_chr_index-1; }
-    return ${$self->{comp_chromo_names}}[$chr_index];
+    if   ( $old_chr_index == 0 ) { $chr_index = $chr_count - 1; }
+    else                         { $chr_index = $old_chr_index - 1; }
+    return ${ $self->{comp_chromo_names} }[$chr_index];
 }
 
-sub get_next_comp_chromosome { 
-    my $self = shift;
+sub get_next_comp_chromosome {
+    my $self   = shift;
     my $chr_nr = shift;
-    if (!($self->get_comp_map())) { 
-	return "?";
+    if ( !( $self->get_comp_map() ) ) {
+        return "?";
     }
-    else { 
-	my $chr_count = scalar( @{$self->{comp_chromo_names}} );
-	my $chr_index = 0;
-	my $old_chr_index = 0;
-	for (my $i=0; $i< (@{$self->{comp_chromo_names}}); $i++) { 
-	    if (${$self->{comp_chromo_names}}[$i] eq $chr_nr) { 
-		$old_chr_index=$i;
-	    }
-	}
+    else {
+        my $chr_count     = scalar( @{ $self->{comp_chromo_names} } );
+        my $chr_index     = 0;
+        my $old_chr_index = 0;
+        for ( my $i = 0 ; $i < ( @{ $self->{comp_chromo_names} } ) ; $i++ ) {
+            if ( ${ $self->{comp_chromo_names} }[$i] eq $chr_nr ) {
+                $old_chr_index = $i;
+            }
+        }
 
-
-	if ($old_chr_index == ($chr_count-1)) { $chr_index = 0; }
-	else { $chr_index = $old_chr_index+1; }
-	return ${$self->{comp_chromo_names}}[$chr_index];
+        if ( $old_chr_index == ( $chr_count - 1 ) ) { $chr_index = 0; }
+        else { $chr_index = $old_chr_index + 1; }
+        return ${ $self->{comp_chromo_names} }[$chr_index];
     }
-    
+
 }
 
 =head2 function display_toolbar()
@@ -1827,246 +2007,326 @@ sub get_next_comp_chromosome {
 =cut
 
 sub display_toolbar {
-    my $self=shift;
-    #$self->{scrolldown} = $self->{cM}+2*$self->{unzoomedheight}/$self->{zoom}/3;
-    
-    
- 
-    $self->{scrolldown_start} = $self->get_cM_start() + ($self->{zoom_length} / 2);
-    $self->{scrolldown_end}   = $self->get_cM_end() + ($self->{zoom_length} / 2);
-    if ($self->{scrolldown_end} > $self->get_ref_chr_len()) {
+    my $self = shift;
 
-	$self->{scrolldown_end}= $self->get_ref_chr_len();
-	$self->{scrolldown_start} = $self->{scrolldown_end}-$self->{zoom_length};
+   #$self->{scrolldown} = $self->{cM}+2*$self->{unzoomedheight}/$self->{zoom}/3;
+
+    $self->{scrolldown_start} =
+      $self->get_cM_start() + ( $self->{zoom_length} / 2 );
+    $self->{scrolldown_end} =
+      $self->get_cM_end() + ( $self->{zoom_length} / 2 );
+    if ( $self->{scrolldown_end} > $self->get_ref_chr_len() ) {
+
+        $self->{scrolldown_end} = $self->get_ref_chr_len();
+        $self->{scrolldown_start} =
+          $self->{scrolldown_end} - $self->{zoom_length};
     }
-    #$self->{scrollup}   = $self->{cM}-2*$self->{unzoomedheight}/$self->{zoom}/3;
-    $self->{scrollup_start}   = $self->get_cM_start()- ($self->{zoom_length} / 2);
-    $self->{scrollup_end}    = $self->get_cM_end() - ($self->{zoom_length} /2);
-    if ($self->{scrollup_start}<0) { 
-	$self->{scrollup_start}=0;
-	$self->{scrollup_end}=$self->{zoom_length};
+
+   #$self->{scrollup}   = $self->{cM}-2*$self->{unzoomedheight}/$self->{zoom}/3;
+    $self->{scrollup_start} =
+      $self->get_cM_start() - ( $self->{zoom_length} / 2 );
+    $self->{scrollup_end} = $self->get_cM_end() - ( $self->{zoom_length} / 2 );
+    if ( $self->{scrollup_start} < 0 ) {
+        $self->{scrollup_start} = 0;
+        $self->{scrollup_end}   = $self->{zoom_length};
     }
-    
-    if ($self->{zoom_length}==0) { die "ZOOM LENGTH IS 0!\n"; }
+
+    if ( $self->{zoom_length} == 0 ) { die "ZOOM LENGTH IS 0!\n"; }
+
     #$self->{zoom_in}    = $self->{zoom}+1;
-    $self->{zoom_in_start} = $self->get_cM_start() +($self->{zoom_length}/4);
-    $self->{zoom_in_end}   = $self->get_cM_end() - ($self->{zoom_length}/4);
+    $self->{zoom_in_start} =
+      $self->get_cM_start() + ( $self->{zoom_length} / 4 );
+    $self->{zoom_in_end} = $self->get_cM_end() - ( $self->{zoom_length} / 4 );
 
     #$self->{zoom_out}   = $self->{zoom}-1;
-    $self->{zoom_out_start}   = $self->get_cM_start() - ($self->{zoom_length}/4);
-    $self->{zoom_out_end}  = $self->get_cM_end + ($self->{zoom_length}/4);
+    $self->{zoom_out_start} =
+      $self->get_cM_start() - ( $self->{zoom_length} / 4 );
+    $self->{zoom_out_end} = $self->get_cM_end + ( $self->{zoom_length} / 4 );
 
-    if ($self->{zoom_out_end} > $self->get_ref_chr_len()) { 
-	$self->{zoom_out_end} = $self->get_ref_chr_len();
-	$self->{zoom_out_start} = $self->{zoom_out_end} - $self->{zoom_length};
+    if ( $self->{zoom_out_end} > $self->get_ref_chr_len() ) {
+        $self->{zoom_out_end}   = $self->get_ref_chr_len();
+        $self->{zoom_out_start} = $self->{zoom_out_end} - $self->{zoom_length};
     }
-    
+
     # set buttons to disabled when no zoomed-in chromosome is displayed.
-    if (!$self->{show_zoomed} || !$self->get_ref_map()->can_zoom()) { 
-	$self->{zoom_in_disabled}="disabled=\"disabled\"";
-	$self->{zoom_out_disabled} = "disabled=\"disabled\"";
-	$self->{scroll_up_disabled} = "disabled=\"disabled\"";
-	$self->{scroll_down_disabled} = "disabled=\"disabled\"";
-    }
-    
-
-
-#    if (!$self->map_has_physical($self->{map_id})) {
-    if (!$self->get_ref_map()->has_physical()) { 
-	$self->{physical_disabled} = "disabled=\"disabled\"";
+    if ( !$self->{show_zoomed} || !$self->get_ref_map()->can_zoom() ) {
+        $self->{zoom_in_disabled}     = "disabled=\"disabled\"";
+        $self->{zoom_out_disabled}    = "disabled=\"disabled\"";
+        $self->{scroll_up_disabled}   = "disabled=\"disabled\"";
+        $self->{scroll_down_disabled} = "disabled=\"disabled\"";
     }
 
-    if (!$self->get_ref_map()->has_IL()) {
-	$self->{IL_disabled} = qq { disabled="disabled" };
-    }
-    else { 
-	$self->{IL_disabled} = "";
+    #    if (!$self->map_has_physical($self->{map_id})) {
+    if ( !$self->get_ref_map()->has_physical() ) {
+        $self->{physical_disabled} = "disabled=\"disabled\"";
     }
 
-    if ($self->{show_zoomed}) { 
-	#$self->{zoom_in_disabled} = "";
-	$self->{enable_zoom_text} = "Hide zoomed";
-	$self->{enable_zoom_value} = 0;
-	$self->{toggle_zoomed_section} = 0;
+    if ( !$self->get_ref_map()->has_IL() ) {
+        $self->{IL_disabled} = qq { disabled="disabled" };
     }
     else {
-	$self->{zoom_in_disabled} = " disabled=\"disabled\" ";
-	$self->{enable_zoom_text} = "Show zoomed";
-	$self->{enable_zoom_value} =1;
-	$self->{toggle_zoomed_section} = 10;
+        $self->{IL_disabled} = "";
     }
-    if (!$self->get_ref_map->can_zoom()) { 
-	$self->{zoomed_button_enabled}= " disabled=\"disabled\" ";
+
+    if ( $self->{show_zoomed} ) {
+
+        #$self->{zoom_in_disabled} = "";
+        $self->{enable_zoom_text}      = "Hide zoomed";
+        $self->{enable_zoom_value}     = 0;
+        $self->{toggle_zoomed_section} = 0;
     }
-   
+    else {
+        $self->{zoom_in_disabled}      = " disabled=\"disabled\" ";
+        $self->{enable_zoom_text}      = "Show zoomed";
+        $self->{enable_zoom_value}     = 1;
+        $self->{toggle_zoomed_section} = 10;
+    }
+    if ( !$self->get_ref_map->can_zoom() ) {
+        $self->{zoomed_button_enabled} = " disabled=\"disabled\" ";
+    }
+
 #    $self->{next_chromosome} = $self->{chr_nr} + 1;
 #    if ($self->{next_chromosome} > $self->{max_chr}) { $self->{next_chromosome} = 1; }
-  
-    $self->{next_chromosome} = $self->get_next_chromosome($self->get_ref_chr());
 
- #   $self->{preceding_chromosome} = $self->{chr_nr}-1;
- #   if ($self->{preceding_chromosome} == 0)  { $self->{preceding_chromosome} = $self->{max_chr}; }
+    $self->{next_chromosome} =
+      $self->get_next_chromosome( $self->get_ref_chr() );
 
-    $self->{preceding_chromosome} = $self -> get_preceding_chromosome($self->get_ref_chr());
+#   $self->{preceding_chromosome} = $self->{chr_nr}-1;
+#   if ($self->{preceding_chromosome} == 0)  { $self->{preceding_chromosome} = $self->{max_chr}; }
+
+    $self->{preceding_chromosome} =
+      $self->get_preceding_chromosome( $self->get_ref_chr() );
 
 #    $self->{next_comp_chr} = $self->{comp_chr} + 1;
 #    if ($self->{next_comp_chr} > $self->{comp_max_chr}) { $self->{next_comp_chr} = 1; }
 
-    $self->{next_comp_chr} = $self->get_next_comp_chromosome($self->get_comp_chr());
+    $self->{next_comp_chr} =
+      $self->get_next_comp_chromosome( $self->get_comp_chr() );
 
- #   $self->{preceding_comp_chr} = $self -> {comp_chr} -1;
- #   if ($self->{preceding_comp_chr} ==0 ) { $self->{preceding_comp_chr} = $self->{comp_max_chr}; }
-    $self->{preceding_comp_chr} = $self->get_preceding_comp_chromosome($self->get_comp_chr());
+#   $self->{preceding_comp_chr} = $self -> {comp_chr} -1;
+#   if ($self->{preceding_comp_chr} ==0 ) { $self->{preceding_comp_chr} = $self->{comp_max_chr}; }
+    $self->{preceding_comp_chr} =
+      $self->get_preceding_comp_chromosome( $self->get_comp_chr() );
 
-
-#    $self->{imagemap} =    $self->{map}->get_image_map("imagemap");
+    #    $self->{imagemap} =    $self->{map}->get_image_map("imagemap");
 
     $self->{marker_map_links} = $self->get_marker_map_links();
-    
-    my $comp_map_caption = "";
+
+    my $comp_map_caption   = "";
     my $chromo_designation = "chr";
-    if ($self->get_comp_chr()=~/[A-Za-z]/) { $chromo_designation = "linkage group"; }
-    if ($self->get_comp_map_version_id()) { $comp_map_caption = "<td>Comparing to $chromo_designation <b>$self->{comp_chr}</b> of map&nbsp;</td><td bgcolor=\"#9999CC\"><a href=\"/cview/map.pl?map_version_id=$self->{comp_map_version_id}\"><b>$self->{comp_map_name}</b></a>&nbsp;</td>"; }
+    if ( $self->get_comp_chr() =~ /[A-Za-z]/ ) {
+        $chromo_designation = "linkage group";
+    }
+    if ( $self->get_comp_map_version_id() ) {
+        $comp_map_caption =
+"<td>Comparing to $chromo_designation <b>$self->{comp_chr}</b> of map&nbsp;</td><td bgcolor=\"#9999CC\"><a href=\"/cview/map.pl?map_version_id=$self->{comp_map_version_id}\"><b>$self->{comp_map_name}</b></a>&nbsp;</td>";
+    }
 
     # some legends need to know the state of the script...
-    $self->get_ref_map()->get_legend()->set_state_hashref($self->get_state_hashref());
-    $self->get_ref_map()->get_legend()->set_mode($self->get_color_model());
-    my $color_legend = $self->get_ref_map()->get_legend()->get_legend_html();
-    my $toggle_ruler= !($self->{show_ruler});
-    my $toggle_physical = !($self->{show_physical});
-    my $toggle_IL = ! ($self->{show_IL});
-    my $toggle_offsets = ! ($self->get_show_offsets());
-    
+    $self->get_ref_map()->get_legend()
+      ->set_state_hashref( $self->get_state_hashref() );
+    $self->get_ref_map()->get_legend()->set_mode( $self->get_color_model() );
+    my $color_legend    = $self->get_ref_map()->get_legend()->get_legend_html();
+    my $toggle_ruler    = !( $self->{show_ruler} );
+    my $toggle_physical = !( $self->{show_physical} );
+    my $toggle_IL       = !( $self->{show_IL} );
+    my $toggle_offsets  = !( $self->get_show_offsets() );
+
     my $toggle_size_select = qq { <select name="size" > };
-    
+
     my @selected = ();
-    if ($self->{size}=~/small/i) {  $selected[0]=qq { selected="1" }; }
-    elsif ($self->{size}=~/large/i) {  $selected[2]= qq { selected="1" }; }
-    else { $selected[1]= qq { selected="1" }; }
-    $toggle_size_select .= qq { <option value="small" $selected[0] >Small</option> };
-    $toggle_size_select .= qq { <option value="normal" $selected[1] >Normal</option> };
-    $toggle_size_select .= qq { <option value="large" $selected[2] >Large</option> };
+    if    ( $self->{size} =~ /small/i ) { $selected[0] = qq { selected="1" }; }
+    elsif ( $self->{size} =~ /large/i ) { $selected[2] = qq { selected="1" }; }
+    else                                { $selected[1] = qq { selected="1" }; }
+    $toggle_size_select .=
+      qq { <option value="small" $selected[0] >Small</option> };
+    $toggle_size_select .=
+      qq { <option value="normal" $selected[1] >Normal</option> };
+    $toggle_size_select .=
+      qq { <option value="large" $selected[2] >Large</option> };
     $toggle_size_select .= qq { </select> };
 
-    if (!$self->get_comp_map_version_id()) {
-	$self->{hide_comparison} = "disabled=\"disabled\"";
+    if ( !$self->get_comp_map_version_id() ) {
+        $self->{hide_comparison} = "disabled=\"disabled\"";
     }
 
-    $self->{maps_select} = CXGN::Cview::Utils::get_maps_select($self->get_dbh(), $self->get_ref_map()->get_id());
+    $self->{maps_select} =
+      CXGN::Cview::Utils::get_maps_select( $self->get_dbh(),
+        $self->get_ref_map()->get_id() );
 
     my $view_entire_map_link = "&nbsp;View entire comparative map";
-    if ($self->get_comp_map_version_id()) {
-	$view_entire_map_link = "&nbsp;<a href=\"/cview/view_maps.pl?center_map_version_id=".($self->get_ref_map()->get_id())."&amp;right_map_version_id=$self->{comp_map_version_id}\">View entire comparative map</a>";
+    if ( $self->get_comp_map_version_id() ) {
+        $view_entire_map_link =
+            "&nbsp;<a href=\"/cview/view_maps.pl?center_map_version_id="
+          . ( $self->get_ref_map()->get_id() )
+          . "&amp;right_map_version_id=$self->{comp_map_version_id}\">View entire comparative map</a>";
     }
-    
+
     $self->{url_map_name} = $self->{ref_map_name};
     $self->{url_map_name} =~ s/ /\+/g;
 
-
     my $show_marker_link = "Show markers between 0 and 0 cM";
-    if ($self->{show_zoomed} && $self->get_ref_map()->can_zoom()) { 
-	$show_marker_link= "<a href=\"/search/markers/markersearch.pl?
-w822_pos_start=".$self->get_cM_start()."&amp;w822_pos_end=".$self->get_cM_end()."&amp;w822_maps=".(CXGN::Cview::Map::Tools::find_map_id_with_version($self->get_dbh(), $self->get_ref_map()->get_id()))."&amp;w822_confs=$self->{confidence}&amp;&amp;w822_submit=Search&amp;w822_chromos=".$self->get_ref_chr()."\"\n>Search markers between ".($self->get_cM_start())." and ".($self->get_cM_end())." ".$self->get_ref_map()->get_units()."</a>";
+    if ( $self->{show_zoomed} && $self->get_ref_map()->can_zoom() ) {
+        $show_marker_link = "<a href=\"/search/markers/markersearch.pl?
+w822_pos_start="
+          . $self->get_cM_start()
+          . "&amp;w822_pos_end="
+          . $self->get_cM_end()
+          . "&amp;w822_maps="
+          . (
+            CXGN::Cview::Map::Tools::find_map_id_with_version(
+                $self->get_dbh(), $self->get_ref_map()->get_id()
+            )
+          )
+          . "&amp;w822_confs=$self->{confidence}&amp;&amp;w822_submit=Search&amp;w822_chromos="
+          . $self->get_ref_chr()
+          . "\"\n>Search markers between "
+          . ( $self->get_cM_start() ) . " and "
+          . ( $self->get_cM_end() ) . " "
+          . $self->get_ref_map()->get_units() . "</a>";
     }
     $chromo_designation = "chr";
-    if ($self->get_ref_chr()=~/[A-Za-z]/) { $chromo_designation = "linkage group"; }
+    if ( $self->get_ref_chr() =~ /[A-Za-z]/ ) {
+        $chromo_designation = "linkage group";
+    }
 
     my $state_hashref = $self->get_state_hashref();
-    
-    
-    my $scroll_up_button = CXGN::Cview::Chromosome_view::toolbar_button -> new("Scroll up", $state_hashref);
-    $scroll_up_button -> set_property("cM_start", $self->{scrollup_start});
-    $scroll_up_button -> set_property("cM_end", $self->{scrollup_end});
-    $scroll_up_button -> set_enabled($self->{scroll_up_disabled});
-    my $scroll_up_html = $scroll_up_button -> render_string();
-    
-    my $scroll_down_button = CXGN::Cview::Chromosome_view::toolbar_button -> new("Scroll down", $state_hashref);
-    $scroll_down_button -> set_property("cM_start", $self->{scrolldown_start});
-    $scroll_down_button -> set_property("cM_end", $self->{scrolldown_end});
-    $scroll_down_button -> set_enabled($self->{scroll_down_disabled});
-    my $scroll_down_html = $scroll_down_button -> render_string();
-    
-    my $zoom_in_button = CXGN::Cview::Chromosome_view::toolbar_button -> new("Zoom in", $state_hashref);
-    $zoom_in_button -> set_property("cM_start", $self->{zoom_in_start});
-    $zoom_in_button -> set_property("cM_end", $self->{zoom_in_end});
-    $zoom_in_button -> set_enabled($self->{zoom_in_disabled});
-    my $zoom_in_html = $zoom_in_button -> render_string();
 
+    my $scroll_up_button =
+      CXGN::Cview::Chromosome_view::toolbar_button->new( "Scroll up",
+        $state_hashref );
+    $scroll_up_button->set_property( "cM_start", $self->{scrollup_start} );
+    $scroll_up_button->set_property( "cM_end",   $self->{scrollup_end} );
+    $scroll_up_button->set_enabled( $self->{scroll_up_disabled} );
+    my $scroll_up_html = $scroll_up_button->render_string();
 
-    my $zoom_out_button = CXGN::Cview::Chromosome_view::toolbar_button -> new("Zoom out", $state_hashref);
-    $zoom_out_button -> set_property("cM_start", $self->{zoom_out_start});
-    $zoom_out_button -> set_property("cM_end", $self->{zoom_out_end});
-    $zoom_out_button -> set_enabled($self->{zoom_out_disabled});
-    my $zoom_out_html = $zoom_out_button-> render_string();
+    my $scroll_down_button =
+      CXGN::Cview::Chromosome_view::toolbar_button->new( "Scroll down",
+        $state_hashref );
+    $scroll_down_button->set_property( "cM_start", $self->{scrolldown_start} );
+    $scroll_down_button->set_property( "cM_end",   $self->{scrolldown_end} );
+    $scroll_down_button->set_enabled( $self->{scroll_down_disabled} );
+    my $scroll_down_html = $scroll_down_button->render_string();
 
-    my $show_zoomed_button = CXGN::Cview::Chromosome_view::toolbar_button -> new($self->{enable_zoom_text}, $state_hashref);
-    $show_zoomed_button->set_enabled($self->{zoomed_button_enabled});
-    $show_zoomed_button -> set_property("show_zoomed", $self->{toggle_zoomed_section});
+    my $zoom_in_button =
+      CXGN::Cview::Chromosome_view::toolbar_button->new( "Zoom in",
+        $state_hashref );
+    $zoom_in_button->set_property( "cM_start", $self->{zoom_in_start} );
+    $zoom_in_button->set_property( "cM_end",   $self->{zoom_in_end} );
+    $zoom_in_button->set_enabled( $self->{zoom_in_disabled} );
+    my $zoom_in_html = $zoom_in_button->render_string();
 
-    my $show_zoomed_html = $show_zoomed_button -> render_string();
+    my $zoom_out_button =
+      CXGN::Cview::Chromosome_view::toolbar_button->new( "Zoom out",
+        $state_hashref );
+    $zoom_out_button->set_property( "cM_start", $self->{zoom_out_start} );
+    $zoom_out_button->set_property( "cM_end",   $self->{zoom_out_end} );
+    $zoom_out_button->set_enabled( $self->{zoom_out_disabled} );
+    my $zoom_out_html = $zoom_out_button->render_string();
 
-    my $hide_comparison_button = CXGN::Cview::Chromosome_view::toolbar_button -> new("Hide comparison", $state_hashref);
-    $hide_comparison_button -> set_property("comp_map_version_id", 0);
-    $hide_comparison_button -> set_property("comp_chr", 0);
-    $hide_comparison_button -> set_enabled($self->{hide_comparison});
-    my $hide_comparison_html = $hide_comparison_button -> render_string();
+    my $show_zoomed_button = CXGN::Cview::Chromosome_view::toolbar_button->new(
+        $self->{enable_zoom_text},
+        $state_hashref );
+    $show_zoomed_button->set_enabled( $self->{zoomed_button_enabled} );
+    $show_zoomed_button->set_property( "show_zoomed",
+        $self->{toggle_zoomed_section} );
 
-    my $switch_chromosomes_button = CXGN::Cview::Chromosome_view::toolbar_button -> new("Switch chromosomes", $state_hashref);
-    $switch_chromosomes_button -> set_property("comp_chr", $self->get_ref_chr());
-    $switch_chromosomes_button -> set_property("chr_nr", $self->get_comp_chr());
-    $switch_chromosomes_button -> set_property("map_version_id", $self->get_comp_map_version_id());
-    $switch_chromosomes_button -> set_property("comp_map_version_id", $self->get_map_version_id());
-    $switch_chromosomes_button -> set_enabled($self->{hide_comparison});
-    my $switch_chromosomes_html = $switch_chromosomes_button -> render_string();
+    my $show_zoomed_html = $show_zoomed_button->render_string();
 
-    my $sync_preceding_chr_button = CXGN::Cview::Chromosome_view::toolbar_button->new("&lt;&lt;", $state_hashref);
-    $sync_preceding_chr_button ->set_property("chr_nr", $self->{preceding_chromosome});
-    $sync_preceding_chr_button ->set_property("comp_chr", $self->{preceding_comp_chr});
-    $sync_preceding_chr_button ->set_enabled($self->{hide_comparison});
+    my $hide_comparison_button =
+      CXGN::Cview::Chromosome_view::toolbar_button->new( "Hide comparison",
+        $state_hashref );
+    $hide_comparison_button->set_property( "comp_map_version_id", 0 );
+    $hide_comparison_button->set_property( "comp_chr",            0 );
+    $hide_comparison_button->set_enabled( $self->{hide_comparison} );
+    my $hide_comparison_html = $hide_comparison_button->render_string();
+
+    my $switch_chromosomes_button =
+      CXGN::Cview::Chromosome_view::toolbar_button->new( "Switch chromosomes",
+        $state_hashref );
+    $switch_chromosomes_button->set_property( "comp_chr",
+        $self->get_ref_chr() );
+    $switch_chromosomes_button->set_property( "chr_nr", $self->get_comp_chr() );
+    $switch_chromosomes_button->set_property( "map_version_id",
+        $self->get_comp_map_version_id() );
+    $switch_chromosomes_button->set_property( "comp_map_version_id",
+        $self->get_map_version_id() );
+    $switch_chromosomes_button->set_enabled( $self->{hide_comparison} );
+    my $switch_chromosomes_html = $switch_chromosomes_button->render_string();
+
+    my $sync_preceding_chr_button =
+      CXGN::Cview::Chromosome_view::toolbar_button->new( "&lt;&lt;",
+        $state_hashref );
+    $sync_preceding_chr_button->set_property( "chr_nr",
+        $self->{preceding_chromosome} );
+    $sync_preceding_chr_button->set_property( "comp_chr",
+        $self->{preceding_comp_chr} );
+    $sync_preceding_chr_button->set_enabled( $self->{hide_comparison} );
     my $sync_preceding_chr_html = $sync_preceding_chr_button->render_string();
 
-    my $sync_next_chr_button  = CXGN::Cview::Chromosome_view::toolbar_button->new("&gt;&gt;", $state_hashref);
-    $sync_next_chr_button ->set_property("chr_nr", $self->{next_chromosome});
-    $sync_next_chr_button ->set_property("comp_chr", $self->{next_comp_chr});
-    $sync_next_chr_button ->set_enabled($self->{hide_comparison});
+    my $sync_next_chr_button =
+      CXGN::Cview::Chromosome_view::toolbar_button->new( "&gt;&gt;",
+        $state_hashref );
+    $sync_next_chr_button->set_property( "chr_nr",   $self->{next_chromosome} );
+    $sync_next_chr_button->set_property( "comp_chr", $self->{next_comp_chr} );
+    $sync_next_chr_button->set_enabled( $self->{hide_comparison} );
     my $sync_next_chr_html = $sync_next_chr_button->render_string();
 
-    my $previous_chr_button = CXGN::Cview::Chromosome_view::toolbar_button -> new($self->{preceding_chromosome}."&lt;", $state_hashref);
-    $previous_chr_button -> set_property("chr_nr", $self->{preceding_chromosome});
-    my $previous_chr_html = $previous_chr_button -> render_string();
-    
-    my $next_chr_button = CXGN::Cview::Chromosome_view::toolbar_button -> new("&gt;".$self->{next_chromosome}, $state_hashref);
-    $next_chr_button -> set_property("chr_nr", $self->{next_chromosome});
-    my $next_chr_html = $next_chr_button -> render_string();
+    my $previous_chr_button = CXGN::Cview::Chromosome_view::toolbar_button->new(
+        $self->{preceding_chromosome} . "&lt;",
+        $state_hashref );
+    $previous_chr_button->set_property( "chr_nr",
+        $self->{preceding_chromosome} );
+    my $previous_chr_html = $previous_chr_button->render_string();
 
-    my $preceding_comp_chr_button = CXGN::Cview::Chromosome_view::toolbar_button -> new($self->{preceding_comp_chr}."&lt;", $state_hashref);
-    $preceding_comp_chr_button -> set_property("comp_chr", $self->{preceding_comp_chr});
-    $preceding_comp_chr_button -> set_enabled($self->{hide_comparison});
-    my $preceding_comp_chr_html = $preceding_comp_chr_button -> render_string();
+    my $next_chr_button = CXGN::Cview::Chromosome_view::toolbar_button->new(
+        "&gt;" . $self->{next_chromosome},
+        $state_hashref );
+    $next_chr_button->set_property( "chr_nr", $self->{next_chromosome} );
+    my $next_chr_html = $next_chr_button->render_string();
 
-    my $next_comp_chr_button = CXGN::Cview::Chromosome_view::toolbar_button -> new("&gt;".$self->{next_comp_chr}, $state_hashref);
-    $next_comp_chr_button -> set_property("comp_chr", $self->{next_comp_chr});
-    $next_comp_chr_button -> set_enabled($self->{hide_comparison});
-    my $next_comp_chr_html = $next_comp_chr_button -> render_string();
+    my $preceding_comp_chr_button =
+      CXGN::Cview::Chromosome_view::toolbar_button->new(
+        $self->{preceding_comp_chr} . "&lt;",
+        $state_hashref );
+    $preceding_comp_chr_button->set_property( "comp_chr",
+        $self->{preceding_comp_chr} );
+    $preceding_comp_chr_button->set_enabled( $self->{hide_comparison} );
+    my $preceding_comp_chr_html = $preceding_comp_chr_button->render_string();
 
-    my $ruler_button = CXGN::Cview::Chromosome_view::toolbar_button -> new("Ruler", $state_hashref);
-    $ruler_button -> set_property("show_ruler", $toggle_ruler);
+    my $next_comp_chr_button =
+      CXGN::Cview::Chromosome_view::toolbar_button->new(
+        "&gt;" . $self->{next_comp_chr},
+        $state_hashref );
+    $next_comp_chr_button->set_property( "comp_chr", $self->{next_comp_chr} );
+    $next_comp_chr_button->set_enabled( $self->{hide_comparison} );
+    my $next_comp_chr_html = $next_comp_chr_button->render_string();
+
+    my $ruler_button =
+      CXGN::Cview::Chromosome_view::toolbar_button->new( "Ruler",
+        $state_hashref );
+    $ruler_button->set_property( "show_ruler", $toggle_ruler );
     my $ruler_html = $ruler_button->render_string();
 
-    my $physical_map_button = CXGN::Cview::Chromosome_view::toolbar_button -> new("Physical map", $state_hashref);
-    $physical_map_button -> set_property("show_physical", $toggle_physical);
-    $physical_map_button -> set_enabled($self->{physical_disabled});
-    my $physical_map_html = $physical_map_button -> render_string();
+    my $physical_map_button =
+      CXGN::Cview::Chromosome_view::toolbar_button->new( "Physical map",
+        $state_hashref );
+    $physical_map_button->set_property( "show_physical", $toggle_physical );
+    $physical_map_button->set_enabled( $self->{physical_disabled} );
+    my $physical_map_html = $physical_map_button->render_string();
 
-    my $IL_button = CXGN::Cview::Chromosome_view::toolbar_button->new("IL", $state_hashref);
-    $IL_button -> set_property("show_IL", $toggle_IL);
-    $IL_button -> set_enabled($self->{IL_disabled});
-    my $IL_html = $IL_button -> render_string();
+    my $IL_button =
+      CXGN::Cview::Chromosome_view::toolbar_button->new( "IL", $state_hashref );
+    $IL_button->set_property( "show_IL", $toggle_IL );
+    $IL_button->set_enabled( $self->{IL_disabled} );
+    my $IL_html = $IL_button->render_string();
 
-    my $offset_button = CXGN::Cview::Chromosome_view::toolbar_button->new("Offsets", $state_hashref);
-    $offset_button -> set_property("show_offsets", $toggle_offsets);
-    $offset_button -> set_enabled($self->{zoom_button_enabled});
-    my $offset_html = $offset_button-> render_string();
+    my $offset_button =
+      CXGN::Cview::Chromosome_view::toolbar_button->new( "Offsets",
+        $state_hashref );
+    $offset_button->set_property( "show_offsets", $toggle_offsets );
+    $offset_button->set_enabled( $self->{zoom_button_enabled} );
+    my $offset_html = $offset_button->render_string();
 
 #    my $size_button = CXGN::Cview::Chromosome_view::toolbar_button -> new($size_button_text, $state_hashref);
 #    $size_button -> set_property("size", $toggle_size);
@@ -2074,25 +2334,25 @@ w822_pos_start=".$self->get_cM_start()."&amp;w822_pos_end=".$self->get_cM_end().
 
     my $errors = $self->get_errors();
 
-    my $chr_nr = $self->get_ref_chr();
-    my $map_version_id = $self->get_map_version_id();
-    my $map_name = $self->get_ref_map()->get_short_name();
-    my $zoom = $self->get_zoom();
-    my $cM   = $self->get_cM();
-    my $show_ruler = $self->get_show_ruler();
-    my $show_IL = $self->get_show_IL();
-    my $show_offsets = $self->get_show_offsets();
-    my $comp_map_version_id= $self ->get_comp_map_version_id();
-    my $comp_chr= $self->get_comp_chr();
-    my $color_model = $self->get_color_model();
-    my $show_physical = $self->get_show_physical();
-    my $size = $self->get_size();
-    my $show_zoomed = $self->get_show_zoomed();
-    my $confidence = $self->get_confidence();
-    my $hilite = $self->get_hilite();
+    my $chr_nr              = $self->get_ref_chr();
+    my $map_version_id      = $self->get_map_version_id();
+    my $map_name            = $self->get_ref_map()->get_short_name();
+    my $zoom                = $self->get_zoom();
+    my $cM                  = $self->get_cM();
+    my $show_ruler          = $self->get_show_ruler();
+    my $show_IL             = $self->get_show_IL();
+    my $show_offsets        = $self->get_show_offsets();
+    my $comp_map_version_id = $self->get_comp_map_version_id();
+    my $comp_chr            = $self->get_comp_chr();
+    my $color_model         = $self->get_color_model();
+    my $show_physical       = $self->get_show_physical();
+    my $size                = $self->get_size();
+    my $show_zoomed         = $self->get_show_zoomed();
+    my $confidence          = $self->get_confidence();
+    my $hilite              = $self->get_hilite();
     my $display_marker_type = $self->get_display_marker_type();
-    my $cM_start = $self->get_cM_start();
-    my $cM_end = $self->get_cM_end();
+    my $cM_start            = $self->get_cM_start();
+    my $cM_end              = $self->get_cM_end();
 
     my $zoom_range_html = qq { 
 	<form style="margin-bottom:0" >
@@ -2116,8 +2376,7 @@ w822_pos_start=".$self->get_cM_start()."&amp;w822_pos_end=".$self->get_cM_end().
 	    </form> 
 	};
 
-
-    print <<BUTTONS;    
+    print <<BUTTONS;
 
     $errors
 
@@ -2289,10 +2548,9 @@ $scroll_up_html
 
 BUTTONS
 
-    unless($chr_nr ne "") {$chr_nr ="&nbsp;";}
+    unless ( $chr_nr ne "" ) { $chr_nr = "&nbsp;"; }
 
-
-print <<BUTTONS; 
+    print <<BUTTONS;
 
     &nbsp;<b>$chr_nr</b>&nbsp; </td>
     <td>
@@ -2312,10 +2570,9 @@ $preceding_comp_chr_html
 
 BUTTONS
 
-    unless($comp_chr ne "") {$comp_chr ="&nbsp;";}
+    unless ( $comp_chr ne "" ) { $comp_chr = "&nbsp;"; }
 
-
-print <<BUTTONS; 
+    print <<BUTTONS;
 
     &nbsp;<b>$comp_chr</b>&nbsp;</td>
     <td>
@@ -2389,13 +2646,11 @@ print <<BUTTONS;
 
 BUTTONS
 
-
 }
 
 sub clean_up {
     my $self = shift;
 }
-
 
 =head2 accessors set_state_hashref(), get_state_hashref()
 
@@ -2409,16 +2664,15 @@ sub clean_up {
 
 =cut
 
-sub get_state_hashref { 
-    my $self=shift;
+sub get_state_hashref {
+    my $self = shift;
     return $self->{state_hashref};
 }
 
-sub set_state_hashref { 
-    my $self=shift;
-    $self->{state_hashref}=shift;
+sub set_state_hashref {
+    my $self = shift;
+    $self->{state_hashref} = shift;
 }
-
 
 =head2 accessors set_force(), get_force()
 
@@ -2431,19 +2685,18 @@ sub set_state_hashref {
 
 =cut
 
-sub get_force { 
-    my $self=shift;
-    if (!exists($self->{force}) || !defined($self->{force})) {
-	$self->{force}="";
+sub get_force {
+    my $self = shift;
+    if ( !exists( $self->{force} ) || !defined( $self->{force} ) ) {
+        $self->{force} = "";
     }
     return $self->{force};
 }
 
-sub set_force { 
-    my $self=shift;
-    $self->{force}=shift;
+sub set_force {
+    my $self = shift;
+    $self->{force} = shift;
 }
-
 
 =head2 get_temp_dir
 
@@ -2457,12 +2710,12 @@ sub set_force {
 =cut
 
 sub get_temp_dir {
-  my $self=shift;
-  if (!exists($self->{temp_dir})) { 
-      die "Chromosome_viewer: need a temp_dir  for storing images... STOP!\n";
-  }
+    my $self = shift;
+    if ( !exists( $self->{temp_dir} ) ) {
+        die "Chromosome_viewer: need a temp_dir  for storing images... STOP!\n";
+    }
 
-  return $self->{temp_dir};
+    return $self->{temp_dir};
 
 }
 
@@ -2478,8 +2731,8 @@ sub get_temp_dir {
 =cut
 
 sub set_temp_dir {
-  my $self=shift;
-  $self->{temp_dir}=shift;
+    my $self = shift;
+    $self->{temp_dir} = shift;
 }
 
 =head2 get_basedir
@@ -2494,11 +2747,11 @@ sub set_temp_dir {
 =cut
 
 sub get_basedir {
-  my $self=shift;
-  if (!exists($self->{basedir})) { 
-      die "Chromosome_viewer: need a basedir for storing images... STOP!\n";
-  }
-  return $self->{basedir};
+    my $self = shift;
+    if ( !exists( $self->{basedir} ) ) {
+        die "Chromosome_viewer: need a basedir for storing images... STOP!\n";
+    }
+    return $self->{basedir};
 
 }
 
@@ -2514,8 +2767,8 @@ sub get_basedir {
 =cut
 
 sub set_basedir {
-  my $self=shift;
-  $self->{basedir}=shift;
+    my $self = shift;
+    $self->{basedir} = shift;
 }
 
 =head2 accessors get_db_backend, set_db_backend
@@ -2532,25 +2785,21 @@ sub set_basedir {
 =cut
 
 sub get_db_backend {
-  my $self = shift;
-  return $self->{db_backend}; 
+    my $self = shift;
+    return $self->{db_backend};
 }
 
 sub set_db_backend {
-  my $self = shift;
-  $self->{db_backend} = shift;
+    my $self = shift;
+    $self->{db_backend} = shift;
 }
-
-
-
-
 
 package CXGN::Cview::Chromosome_view::toolbar_button;
 
-sub new { 
+sub new {
     my $class = shift;
-    my $args = {};
-    my $self = bless $args, $class;
+    my $args  = {};
+    my $self  = bless $args, $class;
 
     my $name = shift;
 
@@ -2558,119 +2807,129 @@ sub new {
 
     $self->set_name($name);
 
-    %{$self->{properties}} = ( 'chr_nr' => "",
-			       'map_version_id' => "",
-			       'zoom'   => "",
-			       'show_ruler' => "",
-			       'show_IL' => "",
-			       'show_offsets'=> "",
-                               'comp_map_version_id' => "",
-			       'comp_chr' => "",
-			       'color_model' => "",
-			       'show_zoomed' => "",
-			       'show_physical' => "",
-			       'confidence' => "",
-			       'size'=> "",
-			       'hilite' => "",
-			       'marker_type' => "",
-			       'cM_start' => "",
-			       'cM_end' => "",
-			       'cM' => "",
-			       'clicked' => "",
-			   );
+    %{ $self->{properties} } = (
+        'chr_nr'              => "",
+        'map_version_id'      => "",
+        'zoom'                => "",
+        'show_ruler'          => "",
+        'show_IL'             => "",
+        'show_offsets'        => "",
+        'comp_map_version_id' => "",
+        'comp_chr'            => "",
+        'color_model'         => "",
+        'show_zoomed'         => "",
+        'show_physical'       => "",
+        'confidence'          => "",
+        'size'                => "",
+        'hilite'              => "",
+        'marker_type'         => "",
+        'cM_start'            => "",
+        'cM_end'              => "",
+        'cM'                  => "",
+        'clicked'             => "",
+    );
 
-    foreach my $k (keys(%$properties_hashref)) { 
-	if (exists(${$self->{properties}}{$k})) { 
-	    ${$self->{properties}}{$k}=$$properties_hashref{$k};
-	}
-	else { print STDERR "property $k is not supported in toolbar_button package.\n"; }
+    foreach my $k ( keys(%$properties_hashref) ) {
+        if ( exists( ${ $self->{properties} }{$k} ) ) {
+            ${ $self->{properties} }{$k} = $$properties_hashref{$k};
+        }
+        else {
+            print STDERR
+              "property $k is not supported in toolbar_button package.\n";
+        }
     }
     return $self;
 }
 
-sub set_name { 
+sub set_name {
     my $self = shift;
-    $self->{name}=shift;
+    $self->{name} = shift;
 }
 
-sub get_name { 
+sub get_name {
     my $self = shift;
     return $self->{name};
 }
 
-sub set_action { 
+sub set_action {
     my $self = shift;
     $self->{action} = shift;
 }
 
-sub get_action { 
-    my $self =shift;
-    if (!exists($self->{action})) { $self->{action}=""; }
+sub get_action {
+    my $self = shift;
+    if ( !exists( $self->{action} ) ) { $self->{action} = ""; }
     return $self->{action};
 }
 
 sub set_enabled {
+
     # parameter: true or false setting to enabled or disabled
     #
     my $self = shift;
     $self->{enabled} = shift;
 }
 
-sub is_enabled { 
+sub is_enabled {
     my $self = shift;
     return $self->{enabled};
 }
 
-sub set_property { 
-    my $self = shift;
+sub set_property {
+    my $self     = shift;
     my $property = shift;
-    my $value = shift;
-    if (!$value) { $value=""; }
-    if (!exists(${$self->{properties}}{$property})) { 
-	print STDERR "Warning: toolbar_button: property $property does not exist!\n";
-	return 0;
+    my $value    = shift;
+    if ( !$value ) { $value = ""; }
+    if ( !exists( ${ $self->{properties} }{$property} ) ) {
+        print STDERR
+          "Warning: toolbar_button: property $property does not exist!\n";
+        return 0;
     }
-    else { 
-	${$self->{properties}}{$property}=$value;
-	return 1;
+    else {
+        ${ $self->{properties} }{$property} = $value;
+        return 1;
     }
 }
 
-sub render_string { 
+sub render_string {
     my $self = shift;
-    
+
     my $action = $self->get_action();
 
-    if ($action eq "") {
-$action = "#"
-}
+    if ( $action eq "" ) {
+        $action = "#";
+    }
     my $s = "<form style=\"margin-bottom:0\" action=\"$action\">\n";
 
-    foreach my $p (keys %{$self->{properties}}) { 
-	#print STDERR "Printing toolbar button: hidden field: $p, $self->{properties}{$p}\n";
-	if (exists($self->{properties}{$p}) && $self->{properties}{$p}) { 
-	    $s .= "<input type=\"hidden\" name=\"$p\" value=\"$self->{properties}{$p}\" />\n"; 
-	}
-	
+    foreach my $p ( keys %{ $self->{properties} } ) {
+
+#print STDERR "Printing toolbar button: hidden field: $p, $self->{properties}{$p}\n";
+        if ( exists( $self->{properties}{$p} ) && $self->{properties}{$p} ) {
+            $s .=
+"<input type=\"hidden\" name=\"$p\" value=\"$self->{properties}{$p}\" />\n";
+        }
+
     }
 
     my $disabled;
-    if ($self->is_enabled()) { 
-	$disabled = "disabled=\"disabled\"";
+    if ( $self->is_enabled() ) {
+        $disabled = "disabled=\"disabled\"";
     }
     else {
-	$disabled="";
+        $disabled = "";
     }
-    $s .="<input type=\"submit\" value=\"".$self->get_name()."\" $disabled />\n";
-    $s .="</form>\n";
+    $s .=
+        "<input type=\"submit\" value=\""
+      . $self->get_name()
+      . "\" $disabled />\n";
+    $s .= "</form>\n";
     return $s;
 }
 
-sub render { 
-    my $self=shift;
+sub render {
+    my $self = shift;
     print $self->render_string();
 }
-
 
 # <FORM style="margin-bottom:0" action=/cview/view_chromosome.pl>
 # 	<INPUT TYPE=hidden NAME=chr_nr VALUE="$self->{chr_nr}" />
