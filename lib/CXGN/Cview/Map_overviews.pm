@@ -46,6 +46,7 @@ The cache can be reset by deleting the contents of the caching directory. The de
 =cut
 
 use strict;
+use warnings;
 
 use CXGN::Page;
 use CXGN::People;
@@ -68,8 +69,7 @@ use CXGN::Cview::Map_overviews::Generic;
 use CXGN::Cview::Map_overviews::Physical;
 use CXGN::Cview::Map_overviews::ProjectStats;
 use CXGN::Cview::Map_overviews::Individual;
-use CatalystX::GlobalContext '$c';
-our $c;
+use CXGN::Cview::Config;
 
 
 =head1 CXGN::Cview::Map_overviews
@@ -112,7 +112,7 @@ sub new {
     @{$self->{c_len}} = (0, 163, 140, 170, 130, 120, 100, 110, 90, 115, 90, 100, 120);
 
     $self->set_horizontal_spacing(50);
-    $self->set_vhost($c);
+    $self->set_vhost(CXGN::Cview::Config->new);
     
     # set up the cache
     #

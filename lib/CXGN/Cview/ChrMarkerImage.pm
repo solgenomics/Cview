@@ -1,3 +1,4 @@
+package CXGN::Cview::ChrMarkerImage;
 =head1 NAME
 
 CXGN::Cview::ChrMarkerImage - a class for drawing small chromosome image with a specific marker highlighted
@@ -16,19 +17,16 @@ Naama Menda (nm249@cornell.edu)
 
 =cut
 
-1;
-
 use strict;
 use warnings;
 
 use CXGN::Cview;
 use CXGN::Cview::Chromosome;
 use CXGN::Cview::MapImage;
-use CXGN::VHost;
-use File::Temp qw / tempfile /;
-use File::Basename qw / basename /;
+use File::Temp qw/ tempfile /;
+use File::Basename qw/ basename /;
+use CXGN::Cview::Config;
 
-package CXGN::Cview::ChrMarkerImage;
 
 use base qw/ CXGN::Cview::MapImage /;
 
@@ -101,7 +99,7 @@ sub new {
 
 sub get_image_filename {
     my $self=shift;
-    my $vhost_conf=CXGN::VHost->new();
+    my $vhost_conf=CXGN::Cview::Config->new;
     my $dir = $vhost_conf->get_conf('basepath').$vhost_conf->get_conf('tempfiles_subdir')."/cview/";
     
     my $template = 'tempXXXX'; #not needed. The function tempfile seems to generate a default TEMPLATE 'XXXXXXXXXX$suffix'
@@ -259,6 +257,6 @@ sub set_marker_name {
 
 
 
-return 1;
+1;
 
 
