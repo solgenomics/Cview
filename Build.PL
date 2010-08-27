@@ -48,7 +48,6 @@ my $build = Module::Build->new(
         #     'CXGN::People::BACStatusLog' => 0,
         #     'CXGN::People::UserMap' => 0,
         #     'CXGN::Tools::WebImageCache' => 0,
-        #     'CXGN::VHost' => 0,
 
         'File::Temp'   => 0,
         'List::Util'   => 0,
