@@ -69,7 +69,6 @@ use CXGN::Cview::Map_overviews::Generic;
 use CXGN::Cview::Map_overviews::Physical;
 use CXGN::Cview::Map_overviews::ProjectStats;
 use CXGN::Cview::Map_overviews::Individual;
-use CXGN::Cview::Config;
 
 
 =head1 CXGN::Cview::Map_overviews
@@ -79,6 +78,8 @@ This class implements an abstract interface for drawing map overview images.
 =cut
 
 use CXGN::DB::Connection;
+
+use CatalystX::GlobalContext '$c';
 
 use base qw( CXGN::DB::Connection );
 
@@ -112,14 +113,13 @@ sub new {
     @{$self->{c_len}} = (0, 163, 140, 170, 130, 120, 100, 110, 90, 115, 90, 100, 120);
 
     $self->set_horizontal_spacing(50);
-    $self->set_vhost(CXGN::Cview::Config->new);
-    
+
     # set up the cache
     #
     my $cache =  CXGN::Tools::WebImageCache->new();
     $cache->set_force($force);
-    $cache->set_basedir($self->get_vhost()->config->{"basepath"});
-    $cache->set_temp_dir("/documents/tempfiles/cview");
+    $cache->set_basedir( $c->config->{"basepath"});
+    $cache->set_temp_dir( $c->tempfiles_subdir('cview') );
     $self->set_cache($cache);
     $self->set_image_width(700);
     $self->set_image_height(200);
@@ -146,26 +146,6 @@ sub get_map {
 sub set_map { 
     my $self=shift;
     $self->{map}=shift;
-}
-
-=head2 accessors set_vhost(), get_vhost()
-
-  Property:	a CXGN::VHost object
-  Description:	This is set to a new CXGN::VHost object
-                in the constructor. The getter is used
-                to obtain configuration information, such
-                as tempfile pathnames and the like.
-
-=cut
-
-sub get_vhost { 
-    my $self=shift;
-    return $self->{vhost};
-}
-
-sub set_vhost { 
-    my $self=shift;
-    $self->{vhost}=shift;
 }
 
 =head2 function set_horizontal_spacing()
