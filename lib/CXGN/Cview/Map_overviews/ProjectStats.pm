@@ -25,15 +25,14 @@ This class implements the following functions:
 
 use strict;
 use warnings;
-
-
 use CXGN::Cview::Map_overviews;
 use CXGN::Cview::Map::SGN::ProjectStats;
 use CXGN::People::BACStatusLog;
 use List::Util;
-
-
+use CXGN::Cview::Config;
 use base qw( CXGN::Cview::Map_overviews );
+
+our $conf = CXGN::Cview::Config->new;
 
 =head2 constructor new()
 
@@ -189,7 +188,7 @@ sub create_mini_overview {
     $self->set_horizontal_spacing(30);
     
     my $url = "/documents/tempfiles/frontpage/project_stats_overview.png";
-    my $path = File::Spec->catfile($self->get_vhost()->config->{"basepath"}, $url);
+    my $path = File::Spec->catfile($conf->get_conf("basepath"), $url);
     
     $self->render_map();
     $self->get_file_png($path);

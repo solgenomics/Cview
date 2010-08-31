@@ -1,3 +1,4 @@
+package CXGN::Cview::MapImage;
 
 =head1 NAME
 
@@ -17,8 +18,8 @@ Lukas Mueller (lam87@cornell.edu)
 =cut
 
 use strict;
+use warnings;
 
-package CXGN::Cview::MapImage;
 
 use GD;
 use CXGN::Cview::ImageI;
@@ -74,7 +75,6 @@ sub render {
 
     
     foreach my $c (@{$self->{chromosomes}}) {
-      #print STDERR "Calling layout...\n";
 	$c -> layout();
 	$c -> draw_chromosome($self->get_image());
     }
@@ -136,12 +136,8 @@ sub render_png_string {
 =cut
 
 sub render_png_file {
-    my $self = shift;
-    my $filename = shift;
-    $self -> render();
-    open my $f, '>', $filename
-        or die "Can't open $filename for writing!!! Check write permission in dest directory.";
-    print $f $self->get_image()->png();
+    my ($self, $filename) = @_;
+    $self->_render_to_file($filename,'png');
 }
 
 =head2 function render_jpg()
@@ -168,26 +164,22 @@ sub render_jpg {
 =cut
 
 sub render_jpg_file {
-    my $self = shift;
-    my $filename = shift;
-    #print STDERR "cview.pm: render_jpg_file.\n";
-    $self ->render();
-    #print STDERR "rendering. Now writing file..\n";
-    open (F, ">", $filename) || die "Can't open $filename for writing!!! Check write permission in dest directory. : $!";
-    print F $self->get_image()->jpeg();
-    close(F);
-    #print STDERR "done...\n";
+    my ($self, $filename) = @_;
+    $self->_render_to_file($filename,'jpeg');
 }
 
 
 sub render_gif_file { 
-    my $self = shift;
+    my ($self, $filename) = @_;
+    $self->_render_to_file($filename,'gif');
+}
 
-    my $filename = shift;
+sub _render_to_file {
+    my ($self, $filename, $format) = @_;
     $self->render();
-    open(F, ">",$filename) || die "Can't open $filename for writing. Check permissions: $!";
-    print F $self->get_image()->gif();
-    close(F);
+    open (my $fh, ">", $filename) || die "Can't open $filename for writing!!! Check write permission in dest directory. : $!";
+    print $fh $self->get_image()->$format();
+    close($fh);
 }
 
 =head2 function get_image_map()
@@ -297,4 +289,4 @@ sub add_physical {
 }
 
 
-return 1;
+1;
