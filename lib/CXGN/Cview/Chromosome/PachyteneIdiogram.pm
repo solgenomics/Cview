@@ -1,6 +1,4 @@
-
-
-
+package CXGN::Cview::Chromosome::PachyteneIdiogram;
 
 =head1 NAME
 
@@ -24,11 +22,11 @@ Lukas Mueller (lam87@cornell.edu)
 =cut
 
 use strict;
+use warnings;
 
 use CXGN::Cview::Chromosome;
 use CXGN::Cview::Ruler::PachyteneRuler;
 
-package CXGN::Cview::Chromosome::PachyteneIdiogram;
 
 use base qw( CXGN::Cview::Chromosome );
 
@@ -95,7 +93,7 @@ sub add_feature {
     #print STDERR "Cview::pchytene::add_feature: Adding feature  $type, $start_coord, $end_coord\n";
 
     if (!exists($self->{feature_color}->{$type})) { 
-	print STDERR "Cview.pm [pachytene_idiogram]: Unknown feature type: $type\n";
+	#print STDERR "Cview.pm [pachytene_idiogram]: Unknown feature type: $type\n";
     }
     if ($type eq "short_arm") { 
 	$self->set_short_arm_length(abs($end_coord-$start_coord));
@@ -337,7 +335,6 @@ sub draw_caption {
 sub layout { 
     my $self=shift;
 
-    print STDERR "EXECUTING layout() in PachyteneIdiogram...\n";
     # determine the offset type
     if ($self->{vertical_offset_type} eq "top_edge") { 
 	my $new_offset = $self->get_vertical_offset()-$self->mapunits2pixels(-100);
