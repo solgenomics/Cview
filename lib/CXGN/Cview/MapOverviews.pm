@@ -1,5 +1,3 @@
-package CXGN::Cview::Map_overviews;
-
 =head1 NAME
 
 CXGN::Cview::MapOverviews - classes to display different kinds of map overviews.
@@ -44,6 +42,8 @@ The cache can be reset by deleting the contents of the caching directory. The de
  John Binns (zombieite@gmail.com)
 
 =cut
+
+package CXGN::Cview::MapOverviews;
 
 use strict;
 use warnings;

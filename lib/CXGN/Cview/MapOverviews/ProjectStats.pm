@@ -1,13 +1,10 @@
-package CXGN::Cview::Map_overviews::ProjectStats;
-
-
 =head1 NAME
 
-CXGN::Cview::Map_overviews::ProjectStats - a class to display the tomato genome sequence project status.
+CXGN::Cview::MapOverviews::ProjectStats - a class to display the tomato genome sequence project status.
 
 =head1 SYNOPSYS
 
-see L<CXGN::Cview::Map_overviews>.
+see L<CXGN::Cview::MapOverviews>.
 
 =head1 DESCRIPTION
 
@@ -29,9 +26,10 @@ use warnings;
 
 use base "CXGN::Cview::MapOverviews";
 
+use List::Util;
+
 use CXGN::Cview::Map::SGN::ProjectStats;
 use CXGN::People::BACStatusLog;
-use List::Util;
 
 =head2 constructor new()
 
