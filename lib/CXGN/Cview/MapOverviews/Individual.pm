@@ -27,12 +27,11 @@ This class implements the following functions:
 =cut
 
 use strict;
+use warnings;
 
-package CXGN::Cview::Map_overviews::Individual;
+package CXGN::Cview::MapOverviews::Individual;
 
-use CXGN::Cview::Map_overviews;
-
-use base qw | CXGN::Cview::Map_overviews |;
+use base "CXGN::Cview::MapOverviews";
 
 =head2 function new
 
@@ -258,36 +257,6 @@ sub get_cache_key {
 }
 
 
-=head2 accessors set_chromosome_count, get_chromosome_count
-
-  Property:	
-  Setter Args:	
-  Getter Args:	
-  Getter Ret:	
-  Side Effects:	
-  Description:	
-
-=cut
-
-sub get_chromosome_count { 
-    my $self=shift;
-    return $self->{chromosome_count};
-}
-
-sub set_chromosome_count { 
-    my $self=shift;
-    $self->{chromosome_count}=shift;
-}
 
 
-package CXGN::Cview::Map_overviews::Individual_overview;
-
-use base qw | CXGN::Cview::Map_overviews::Individual |; 
-
-sub new { 
-    my $class = shift;
-    my $self = $class->SUPER::new(@_);
-    return $self;
-}
-
-return 1;
+1;

@@ -173,16 +173,16 @@ sub get_overview_chromosome {
 	if ($offset>$largest_offset) { $largest_offset = $offset; }
 	
     }   
-    my $sgn = $self->get_dbh() -> qualify_schema("sgn");
+
     my $computational_query = "
          SELECT distinct(physical.computational_associations.clone_id), 
                 physical.computational_associations.marker_id,
                 marker_location.position
            FROM physical.computational_associations
-           JOIN $sgn.marker_experiment using(marker_id)
-           JOIN $sgn.marker_location using (location_id) 
-           JOIN $sgn.linkage_group using (lg_id)
-           JOIN $sgn.map_version on (map_version.map_version_id=linkage_group.map_version_id) 
+           JOIN sgn.marker_experiment using(marker_id)
+           JOIN sgn.marker_location using (location_id) 
+           JOIN sgn.linkage_group using (lg_id)
+           JOIN sgn.map_version on (map_version.map_version_id=linkage_group.map_version_id) 
           WHERE map_version.map_version_id=?
                 AND linkage_group.lg_name=?
           ORDER BY marker_location.position
@@ -287,5 +287,8 @@ sub get_map_stats {
 
 }
 
+sub has_overlay {
+    return 0;
+}
 
-return 1;
+1;

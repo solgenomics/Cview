@@ -12,8 +12,7 @@ use CXGN::Cview::Chromosome::Glyph;
 sub new { 
     my $class = shift;
     my $args = shift;
-
-    my $self = $class->SUPER::new(@_);
+    my $self = $class->SUPER::new($args->{dbh});
 
 
     $self->set_chromosome_names("1", "2", "3", "4", "5", "6", "7", "8", "9" ,"10", "11", "12");

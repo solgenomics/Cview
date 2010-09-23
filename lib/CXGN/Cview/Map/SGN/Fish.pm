@@ -1,5 +1,3 @@
-
-
 =head1 NAME
 
 CXGN::Cview::Map::SGN::Fish - a class to generate cytological fish maps.
@@ -39,6 +37,7 @@ This class implements the following functions:
 =cut
 
 package CXGN::Cview::Map::SGN::Fish;
+
 use strict;
 use warnings;
 
@@ -64,12 +63,16 @@ sub new {
     my $class = shift;
     my $dbh = shift;
     my $id = shift;
-    my $pachytene_version = shift;
-
+    my $args = shift;
 
     my $self = $class->SUPER::new($dbh, $id);
     $self->set_id($id);
-    $self->{pachytene_version} = $pachytene_version;
+
+    $self->{pachytene_version} = $args->{pachytene_version};
+    $self->{basepath} = $args->{basepath};
+    $self->{documents_subdir} = $args->{documents_subdir};
+    $self->{pachytene_file} = $args->{pachytene_file};
+
     $self->set_preferred_chromosome_width(12);
     $self->set_chromosome_names("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12");
     $self->set_chromosome_count(12);
@@ -92,17 +95,9 @@ sub new {
 
 sub fetch_pachytene_idiograms {
     my $self = shift;
-    require SGN::Context;
-    my $vhost_conf = SGN::Context->new;
 
-    my $file_name = "pachytene_stack.txt";
+    open (my $F, '<', $self->{pachytene_file}) || die "Can't open pachytene def file: $self->{pachytene_file} ... $!";
 
-    if (defined($self->{pachytene_version}) && $self->{pachytene_version} =~/dejong/i ) {
-	$file_name = "pachytene_tomato_dapi.txt";
-    }
-
-    my $data_folder=$vhost_conf->get_conf('basepath').$vhost_conf->get_conf('documents_subdir');
-    open (my $F, '<', "$data_folder/cview/pachytene/".$file_name) || die "Can't open pachytene def file: $!";
     my %chr_len=();;
     @{$self->{pachytene_idiograms}} = ();
     for my $n ($self->get_chromosome_names()) {
@@ -320,7 +315,10 @@ sub get_marker_count {
     $sth->execute($chr_nr);
     my ($count) = $sth->fetchrow_array();
     return $count;
-
 }
 
-return 1;
+sub can_overlay {
+    return 0;
+}
+
+1;

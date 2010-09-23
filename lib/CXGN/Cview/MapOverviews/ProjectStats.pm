@@ -4,11 +4,11 @@ package CXGN::Cview::Map_overviews::ProjectStats;
 =head1 NAME
 
 CXGN::Cview::Map_overviews::ProjectStats - a class to display the tomato genome sequence project status.
-           
+
 =head1 SYNOPSYS
 
 see L<CXGN::Cview::Map_overviews>.
-         
+
 =head1 DESCRIPTION
 
 This class implements the project status overview graph found on the SGN homepage and the /about/tomato_sequencing.pl page, where each chromosome is represented by a glyph that is filled to the fraction of the estimated number of BACs needed to complete the chromosome sequence.
@@ -23,50 +23,52 @@ This class implements the following functions:
 
 =cut
 
+package CXGN::Cview::MapOverviews::ProjectStats;
 use strict;
 use warnings;
-use CXGN::Cview::Map_overviews;
+
+use base "CXGN::Cview::MapOverviews";
+
 use CXGN::Cview::Map::SGN::ProjectStats;
 use CXGN::People::BACStatusLog;
 use List::Util;
-use CXGN::Cview::Config;
-use base qw( CXGN::Cview::Map_overviews );
-
-our $conf = CXGN::Cview::Config->new;
 
 =head2 constructor new()
 
-  Synopsis:	
-  Arguments:	
-  Returns:	
-  Side effects:	
-  Description:	
+  Synopsis:
+  Arguments:
+  Returns:
+  Side effects:
+  Description:
 
 =cut
 
 sub new {
     my $class = shift;
-    my $force = shift;
+    my $args = shift;
 
-    my $self = $class->SUPER::new($force);
+    my $map = CXGN::Cview::Map::SGN::ProjectStats->new($args->{dbh});
 
+    my $self = $class->SUPER::new($map, $args);
+    $self->{dbh}= $args->{dbh};
     $self->set_horizontal_spacing(50);
     $self->set_image_width(586);
     $self->set_image_height(160);
     $self->set_chr_height(80);
-
+    $self->{basepath}=$args->{basepath};
+    $self->{tempfiles_subdir} = $args->{tempfiles_subdir};
 #    print STDERR "Generating new map object...\n";
-    $self->set_map(CXGN::Cview::Map::SGN::ProjectStats->new($self));
+    $self->set_map($map);
     return $self;
 }
 
 =head2 function generate_image()
 
-  Synopsis:	
-  Arguments:	
-  Returns:	
-  Side effects:	
-  Description:	
+  Synopsis:
+  Arguments:
+  Returns:
+  Side effects:
+  Description:
 
 =cut
 
@@ -77,11 +79,11 @@ sub generate_image {
 
 =head2 function send_image()
 
-  Synopsis:	
-  Arguments:	
-  Returns:	
-  Side effects:	
-  Description:	
+  Synopsis:
+  Arguments:
+  Returns:
+  Side effects:
+  Description:
 
 =cut
 
@@ -93,11 +95,11 @@ sub send_image {
 
 =head2 function render_map()
 
-  Synopsis:	
-  Arguments:	
-  Returns:	
-  Side effects:	
-  Description:	
+  Synopsis:
+  Arguments:
+  Returns:
+  Side effects:
+  Description:
 
 =cut
 
@@ -111,7 +113,7 @@ sub render_map {
 
     if ($self->get_cache()->is_valid()) {  return; }
 
-    my $bac_status_log=CXGN::People::BACStatusLog->new($self);
+    my $bac_status_log=CXGN::People::BACStatusLog->new($self->{dbh});
 
 #    print STDERR "WIDTH=".$self->get_image_width()." HEIGHT ".$self->get_image_height()."\n";
     $self->{map_image}=CXGN::Cview::MapImage->new("", $self->get_image_width(), $self->get_image_height());
@@ -124,7 +126,7 @@ sub render_map {
     my @bacs_submitted = $bac_status_log->get_number_bacs_uploaded();
 
     my @bacs_phase = $bac_status_log->get_number_bacs_in_phase(3);
-    
+
 
     for my $i (1..12) {
 	$c[$i]= CXGN::Cview::Chromosome::Glyph -> new(1, 100, $self->get_horizontal_spacing()*($i-1)+17, 25);
@@ -138,9 +140,9 @@ sub render_map {
 	my $percent_in_progress = $bacs_in_progress[$i]/$bacs_to_complete[$i]*100;
 
 	my $percent_finished = $c_percent_finished[$i];
-	
+
 	my $percent_htgs3 = $bacs_phase[$i]/$bacs_to_complete[$i]*100;
-	
+
 	my $percent_available = $bacs_submitted[$i]/$bacs_to_complete[$i]*100;
 
 	#$percent_submitted = $percent_submitted - $percent_htgs3;
@@ -161,8 +163,8 @@ sub render_map {
     }
     my $white = $self->{map_image}->get_image()->colorResolve(255,255,255);
     $self->{map_image}->get_image()->transparent($white);
-    
-    
+
+
 
     $self->get_cache()->set_image_data( $self->{map_image}->render_png_string());
     $self->get_cache()->set_image_map_data ($self->{map_image}->get_image_map("overview_map") );
@@ -171,55 +173,28 @@ sub render_map {
 
 =head2 function create_mini_overview()
 
-  Synopsis:	
+  Synopsis:
   Arguments:	none
   Returns:	nothing
-  Side effects:	creates the mini overview png image that goes on the 
+  Side effects:	creates the mini overview png image that goes on the
                 homepage
-  Description:	
+  Description:
 
 =cut
 
-sub create_mini_overview { 
+sub create_mini_overview {
     my $self = shift;
     $self->set_image_width(400);
     $self->set_image_height(100);
     $self->set_chr_height(50);
     $self->set_horizontal_spacing(30);
-    
+
     my $url = "/documents/tempfiles/frontpage/project_stats_overview.png";
-    my $path = File::Spec->catfile($conf->get_conf("basepath"), $url);
-    
+    my $path = File::Spec->catfile($self->{basepath}, $url);
+
     $self->render_map();
     $self->get_file_png($path);
-    
+
 }
 
-
-=head2 DEPRECATED CLASS CXGN::Cview::Map_overviews::project_stats
-
-  Synopsis:	
-  Arguments:	
-  Returns:	
-  Side effects:	
-  Description:	This class is deprecated. It now inherits from 
-                CXGN::Cview::Map_overviews::ProjectStats 
-                Use CXGN::Cview::Map_overview::ProjectStats 
-                directly.
-
-=cut
-
-
-
-
-package CXGN::Cview::Map_overviews::project_stats;
-
-use base qw | CXGN::Cview::Map_overviews::ProjectStats |;
-
-sub new { 
-    my $class = shift;
-    my $self = $class->SUPER::new(@_);
-    return $self;
-}
-
-1; 
+1;

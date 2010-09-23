@@ -23,6 +23,7 @@ use strict;
 use warnings;
 
 use File::Spec;
+use CXGN::Cview::MapFactory;
 use CXGN::Cview::Map::SGN::Genetic;
 use CXGN::Cview::Chromosome::Physical;
 use CXGN::Cview::Marker::Physical;
