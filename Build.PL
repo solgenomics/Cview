@@ -19,7 +19,7 @@ my $build = Module::Build->new(
         'Test::More'           => 0,
     },
     requires => {
-
+        perl => '5.10.0',
         # depend on all of bioperl, because
         ### 'Bio::Root::Version' => '1.5.2',
         #'Bio::DB::GFF' => 0,
@@ -48,7 +48,6 @@ my $build = Module::Build->new(
         #     'CXGN::People::BACStatusLog' => 0,
         #     'CXGN::People::UserMap' => 0,
         #     'CXGN::Tools::WebImageCache' => 0,
-        #     'CXGN::VHost' => 0,
 
         'File::Temp'   => 0,
         'List::Util'   => 0,

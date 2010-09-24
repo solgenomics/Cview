@@ -1,7 +1,7 @@
-
-use strict;
-
 package CXGN::Cview::Legend;
+use strict;
+use warnings;
+use Scalar::Util ();
 
 =head2 new
 
@@ -40,6 +40,8 @@ sub get_viewer {
 sub set_viewer {
   my $self = shift;
   $self->{viewer} = shift;
+  # must be careful to weaken circular references!
+  Scalar::Util::weaken $self->{viewer};
 }
 
 

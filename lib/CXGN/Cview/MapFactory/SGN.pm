@@ -59,6 +59,8 @@ package CXGN::Cview::MapFactory::SGN;
 
 use base qw| CXGN::DB::Object |;
 
+use Scalar::Util qw/blessed/;
+
 use CXGN::Cview::Map::SGN::Genetic;
 #use CXGN::Cview::Map::SGN::User;
 use CXGN::Cview::Map::SGN::Fish;
@@ -86,7 +88,7 @@ sub new {
     my $dbh = shift;
     my $context = shift;
 
-    if (!$context) {
+    unless( blessed($context) && $context->isa('SGN::Context') ) {
         require SGN::Context;
 	$context = SGN::Context->new();
     }
@@ -143,7 +145,7 @@ sub create {
 	my ($id, $map_type) = $sth->fetchrow_array();
 	if ($map_type =~ /genetic/i) {
 	    return CXGN::Cview::Map::SGN::Genetic->new($self->get_dbh(), $id);
-	    
+
 	}
 	elsif ($map_type =~ /fish/) {
 	    #print STDERR "Creating a fish map...\n";
@@ -177,8 +179,8 @@ sub create {
 					      { short_name    => "Tomato IL map",
 						long_name     => $long_name,
 						abstract      => $abstract,
-                                                
-						
+
+
 					      });
     }
     elsif ($id =~ /^\//) {
@@ -205,7 +207,7 @@ sub create {
 					       temp_dir => $temp_dir ,
 					       basedir       => $self->{context}->get_conf("basepath"),
 					       documents_subdir => $self->{context}->get_conf("tempfiles_subdir")."/cview"
-						   
+
 					       },
 	    );
 
@@ -220,6 +222,8 @@ sub create {
 	    @dbs > 1 and die "I can handle only one db!";
 	}
 
+        return unless $gbrowse_itag;
+
         my $gbrowse_view_link = $gbrowse_itag->view_url;
 
 	my $marker_link =  sub { my $id = shift; return "$gbrowse_view_link?name=$id"; };
@@ -229,25 +233,25 @@ sub create {
 						abstract=>"<p>The ITAG map shows the contig assembly and the corresponding BACs as used by the most recent annotation from the International Tomato Annotation Group (ITAG, see <a href=\"http://www.ab.wur.nl/TomatoWiki\">ITAG Wiki</a>). Clicking on the contigs will show the ITAG annotation in the genome browser.",
 						temp_dir    => $temp_dir,
 						marker_link => $marker_link,
-                                                
+
 					    }
 	    );
     }
-    
-    elsif ($id =~ /scaffold103/) { 
 
-	return CXGN::Cview::Map::SGN::Scaffold->new($self->get_dbh(), $id, { 
+    elsif ($id =~ /scaffold103/) {
+
+	return CXGN::Cview::Map::SGN::Scaffold->new($self->get_dbh(), $id, {
 	    file=> '/data/prod/public/tomato_genome/wgs/chromosomes/assembly_1.03/chromosome_defs_v1.03_sorted.txt',
 	    abstract=>'test abstract',
 	    temp_dir=>$temp_dir,
 	    short_name=>'Tomato scaffold map V1.03',
 	    long_name=>'Solanum lycopersicum scaffold map V1.03',
 	    marker_link => sub {},
-	   
+
 						    } );
     }
-    
-    elsif ($id =~ /scaffold100/) { 
+
+    elsif ($id =~ /scaffold100/) {
 	my (@sources) = map $_->data_sources(), $c->enabled_feature('gbrowse2');
 	my ($gbrowse) = grep $_->description()=~/ITAG1.+genomic/i, @sources;
 	if (!$gbrowse) { die "No such map in GBrowse."; }
@@ -257,11 +261,13 @@ sub create {
 	    @dbs > 1 and die "I can handle only one db!";
 	}
 
+        return unless $gbrowse;
+
 	my $gbrowse_view_link = $gbrowse->view_url;
 
 	my $marker_link =  sub { my $id = shift; return "$gbrowse_view_link?name=$id"; };
 
-	return CXGN::Cview::Map::SGN::Scaffold->new($self->get_dbh(), $id, { 
+	return CXGN::Cview::Map::SGN::Scaffold->new($self->get_dbh(), $id, {
 	    file=> '/data/prod/public/tomato_genome/wgs/chromosomes/assembly_1.00/chromosome_defs_v1.00_sorted.txt',
 	    abstract=>'test abstract',
 	    temp_dir=>$temp_dir,
@@ -279,30 +285,33 @@ sub create {
 	if ($gbrowse_fpc) {
 	    @dbs = $gbrowse_fpc->databases();
 	    @dbs > 1 and die "I can handle only one db!";
-	}
-	
+	} else {
+            warn "no GBrowse FPC data sources available, cannot open map $id";
+            return;
+        }
+
         my $gbrowse_view_link = $gbrowse_fpc->view_url;
 	return CXGN::Cview::Map::SGN::Contig->new($self->get_dbh(), $id, {
 	    gbrowse_fpc => $gbrowse_fpc,
 	    short_name => $gbrowse_fpc->description,
 	    long_name => '',
 	    temp_dir => $temp_dir,
-	    
-	    #marker_link => $gbrowse_fpc->xrefs(), 
+
+	    #marker_link => $gbrowse_fpc->xrefs(),
 	    abstract => $gbrowse_fpc->extended_description."\n". qq{
 	    <p>This overview shows the counts of contigs along the chromosome. Click on any chromosome to view the individual contigs. More information on each contig can be obtained by by clicking on a specific contig.</p>
 		<p>Specific contig IDs, including contigs that are not mapped, can be searched on the <a href="$gbrowse_view_link">FPC viewer page</a>.</p>
-		
+
 						  },
-	    
+
 						  });
     }
 
-	  
-						  
-						  
+
+
+
     return;
-    
+
 }
 
 =head2 function get_all_maps()

@@ -1,15 +1,15 @@
-
 package CXGN::Cview::ViewMaps;
+use strict;
+use warnings;
 
 use CXGN::Page::FormattingHelpers qw | page_title_html |;
 use CXGN::Cview::MapFactory;
-use CXGN::Cview::Chromosome_viewer;
+use CXGN::Cview::ChromosomeViewer;
 use CXGN::Cview::ChrLink;
 use CXGN::Cview::Utils qw | set_marker_color |;
 use CXGN::Cview::MapImage;
 use CXGN::Tools::WebImageCache;
 use CXGN::Map;
-use CXGN::VHost;
 
 use base qw | CXGN::DB::Object |;
 

@@ -1,4 +1,6 @@
+package CXGN::Cview::LocusChr;
 use strict;
+use warnings;
 
 use CXGN::Cview;
 use CXGN::Cview::Chromosome;
@@ -6,7 +8,6 @@ use CXGN::Cview::Cview_data_adapter;
 use CXGN::Configuration;
 use CXGN::Cview::MapImage;
 
-package CXGN::Cview::LocusChr;
 
 use base qw/ CXGN::Cview::MapImage /;
 
@@ -54,7 +55,7 @@ sub get_image_filename {
     my $self=shift;
 
     my $filename = time().".$$.png";    
-    my $vhost_conf=CXGN::VHost->new();
+    my $vhost_conf=CXGN::CView::Config->new();
     my $image_path = $vhost_conf->get_conf('basepath').$vhost_conf->get_conf('tempfiles_subdir')."/cview/$filename";
     my $image_url = $vhost_conf->get_conf('tempfiles_subdir')."/cview/$filename";
    

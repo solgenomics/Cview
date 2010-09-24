@@ -1,5 +1,4 @@
 
-
 =head1 NAME
 
 re-generate-overview.pl - regenerates the small progress overview image on the homepage
@@ -15,12 +14,13 @@ Lukas Mueller <lam87@cornell.edu>
 =cut
 
 use strict;
+use warnings;
 use Carp;
-use CXGN::VHost;
 use CXGN::Cview::Map_overviews;
 use CXGN::Cview::Map_overviews::ProjectStats;
+use CXGN::Cview::Config;
 
-my $vhost = CXGN::VHost->new();
+my $vhost = CXGN::Cview::Config->new();
 
 print STDERR "Generating new overview object...\n";
 my $map_overview = CXGN::Cview::Map_overviews::ProjectStats->new("force"); # force re-calculation of the image/stats

@@ -128,7 +128,7 @@ sub get_maps_select {
                 "marker_types", "confidence" 
   Status:       implemented
   Example:
-  Note:         this function was moved to Utils from Chromosome_viewer, such that
+  Note:         this function was moved to Utils from ChromosomeViewer, such that
                 it is available for other scripts, such as view_maps.pl
 
 =cut

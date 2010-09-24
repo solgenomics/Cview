@@ -1,18 +1,20 @@
+package CXGN::Cview::Cview_data_adapter;
 
 # NOTE: THIS MODULE IS DEPRECATED AND WILL BE REMOVED SOON. 
 # --LUKAS, APR 2007.
 #
 use strict;
-return 1;
+use warnings;
 
 use CXGN::Cview::Marker;
 use CXGN::Cview::Marker::SequencedBAC;
 use CXGN::Cview::Marker::FISHMarker;
-use CXGN::VHost;
 use CXGN::Genomic::Clone;
 use CXGN::Map::Tools;
+use CXGN::Cview::Config;
 
-package CXGN::Cview::Cview_data_adapter;
+our $config = CXGN::Cview::Config->new;
+
 
 =head2 function get_chromosome()
 
@@ -554,11 +556,10 @@ sub fetch_IL {
     my @m2 = $IL -> get_markers();
     foreach my $m (@m2) {
 	$marker_pos{$m->get_name()} = $m-> get_offset();
-	#print STDERR $m->get_name()." ".$m->get_offset()." \n";
     }
     
-    my $vhost_conf=CXGN::VHost->new();
-    my $data_folder=$vhost_conf->get_conf('basepath').$vhost_conf->get_conf('documents_subdir');
+    my $data_folder= $config->get_conf('basepath') . $config->get_conf('documents_subdir');
+
     open (F, '<', "$data_folder/cview/IL_defs/$IL_name".".txt") || die "Can't open IL file IL_defs/$IL_name $!\n";
 
     while (<F>) {
@@ -605,7 +606,7 @@ sub fetch_pachytene_idiogram {
     my $chromosome_number = shift;
     
     #print STDERR "Fetching $chromosome_number pachytene\n";
-    my $vhost_conf=CXGN::VHost->new();
+    my $vhost_conf=CXGN::Cview::Config->new();
     my $data_folder=$vhost_conf->get_conf('basepath').$vhost_conf->get_conf('documents_subdir');
     open (F, '<', "<$data_folder/cview/pachytene/pachytene_tomato_dapi.txt") || die "Can't open pachytene def file $!";
     
@@ -624,4 +625,4 @@ sub fetch_pachytene_idiogram {
     }
 }
 
-
+1;

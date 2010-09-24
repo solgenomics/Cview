@@ -1,3 +1,4 @@
+package CXGN::Cview::VectorViewer;
 
 =head1 NAME
 
@@ -44,8 +45,8 @@ This class implements the following methods:
 =cut
 
 use strict;
+use warnings;
 
-package CXGN::Cview::VectorViewer;
 
 use Bio::SeqIO;
 use Bio::Restriction::Analysis;
@@ -300,7 +301,7 @@ sub restriction_analysis {
 sub generate_image {
     my $self = shift;
 
-    my $vh = CXGN::VHost->new();
+    my $vh = CXGN::Cview::Config->new;
     
     my $cache = CXGN::Tools::WebImageCache->new();
     $cache->set_key("abc");

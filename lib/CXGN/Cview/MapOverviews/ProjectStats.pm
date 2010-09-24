@@ -1,13 +1,11 @@
-
-
 =head1 NAME
 
-CXGN::Cview::Map_overviews::ProjectStats - a class to display the tomato genome sequence project status.
-           
+CXGN::Cview::MapOverviews::ProjectStats - a class to display the tomato genome sequence project status.
+
 =head1 SYNOPSYS
 
-see L<CXGN::Cview::Map_overviews>.
-         
+see L<CXGN::Cview::MapOverviews>.
+
 =head1 DESCRIPTION
 
 This class implements the project status overview graph found on the SGN homepage and the /about/tomato_sequencing.pl page, where each chromosome is represented by a glyph that is filled to the fraction of the estimated number of BACs needed to complete the chromosome sequence.
@@ -22,23 +20,24 @@ This class implements the following functions:
 
 =cut
 
-use strict;
-
 package CXGN::Cview::MapOverviews::ProjectStats;
+use strict;
+use warnings;
 
 use base "CXGN::Cview::MapOverviews";
 
+use List::Util;
+
 use CXGN::Cview::Map::SGN::ProjectStats;
 use CXGN::People::BACStatusLog;
-use List::Util;
 
 =head2 constructor new()
 
-  Synopsis:	
-  Arguments:	
-  Returns:	
-  Side effects:	
-  Description:	
+  Synopsis:
+  Arguments:
+  Returns:
+  Side effects:
+  Description:
 
 =cut
 
@@ -63,11 +62,11 @@ sub new {
 
 =head2 function generate_image()
 
-  Synopsis:	
-  Arguments:	
-  Returns:	
-  Side effects:	
-  Description:	
+  Synopsis:
+  Arguments:
+  Returns:
+  Side effects:
+  Description:
 
 =cut
 
@@ -78,11 +77,11 @@ sub generate_image {
 
 =head2 function send_image()
 
-  Synopsis:	
-  Arguments:	
-  Returns:	
-  Side effects:	
-  Description:	
+  Synopsis:
+  Arguments:
+  Returns:
+  Side effects:
+  Description:
 
 =cut
 
@@ -94,11 +93,11 @@ sub send_image {
 
 =head2 function render_map()
 
-  Synopsis:	
-  Arguments:	
-  Returns:	
-  Side effects:	
-  Description:	
+  Synopsis:
+  Arguments:
+  Returns:
+  Side effects:
+  Description:
 
 =cut
 
@@ -125,7 +124,7 @@ sub render_map {
     my @bacs_submitted = $bac_status_log->get_number_bacs_uploaded();
 
     my @bacs_phase = $bac_status_log->get_number_bacs_in_phase(3);
-    
+
 
     for my $i (1..12) {
 	$c[$i]= CXGN::Cview::Chromosome::Glyph -> new(1, 100, $self->get_horizontal_spacing()*($i-1)+17, 25);
@@ -139,9 +138,9 @@ sub render_map {
 	my $percent_in_progress = $bacs_in_progress[$i]/$bacs_to_complete[$i]*100;
 
 	my $percent_finished = $c_percent_finished[$i];
-	
+
 	my $percent_htgs3 = $bacs_phase[$i]/$bacs_to_complete[$i]*100;
-	
+
 	my $percent_available = $bacs_submitted[$i]/$bacs_to_complete[$i]*100;
 
 	#$percent_submitted = $percent_submitted - $percent_htgs3;
@@ -162,8 +161,8 @@ sub render_map {
     }
     my $white = $self->{map_image}->get_image()->colorResolve(255,255,255);
     $self->{map_image}->get_image()->transparent($white);
-    
-    
+
+
 
     $self->get_cache()->set_image_data( $self->{map_image}->render_png_string());
     $self->get_cache()->set_image_map_data ($self->{map_image}->get_image_map("overview_map") );
@@ -172,28 +171,28 @@ sub render_map {
 
 =head2 function create_mini_overview()
 
-  Synopsis:	
+  Synopsis:
   Arguments:	none
   Returns:	nothing
-  Side effects:	creates the mini overview png image that goes on the 
+  Side effects:	creates the mini overview png image that goes on the
                 homepage
-  Description:	
+  Description:
 
 =cut
 
-sub create_mini_overview { 
+sub create_mini_overview {
     my $self = shift;
     $self->set_image_width(400);
     $self->set_image_height(100);
     $self->set_chr_height(50);
     $self->set_horizontal_spacing(30);
-    
+
     my $url = "/documents/tempfiles/frontpage/project_stats_overview.png";
     my $path = File::Spec->catfile($self->{basepath}, $url);
-    
+
     $self->render_map();
     $self->get_file_png($path);
-    
+
 }
 
-1; 
+1;
