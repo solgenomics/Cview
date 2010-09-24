@@ -16,21 +16,20 @@ Naama Menda (nm249@cornell.edu)
 
 =cut
 
-1;
-
 use strict;
 
 use CXGN::Cview;
 use CXGN::Cview::Chromosome;
 #use CXGN::Cview::Cview_data_adapter;
 use CXGN::Cview::MapImage;
-use CXGN::VHost;
+#use CXGN::VHost;
 use File::Temp qw / tempfile /;
 use File::Basename qw / basename /;
+use File::Spec;
 
 package CXGN::Cview::ChrMarkerImage;
 
-use base qw/ CXGN::Cview::MapImage /;
+use base "CXGN::Cview::MapImage";
 
 =head2 new
 
@@ -48,19 +47,25 @@ sub new {
     my $name = shift;
     my $width = shift;
     my $height = shift;
+
     my $self= $class->SUPER::new($name, $width, $height);
+
     my $dbh=shift;
     my $lg_name= shift;
     my $map = shift;
     my $marker_name= shift;
+    my $basedir = shift;
+    my $tempdir = shift;
+
     $self->set_dbh($dbh);
     $self->set_lg_name($lg_name);
     $self->set_map($map);
     $self->set_marker_name($marker_name);
-
+    $self->{basedir} = $basedir;
+    $self->{tempdir} = $tempdir;
+    
     my $chromosome = $map->get_chromosome($lg_name);
-#    my $chromosome= CXGN::Cview::Chromosome->new($self->get_lg_name(), 100,50, 25 );
-#    CXGN::Cview::Cview_data_adapter::fetch_chromosome($self->get_dbh(), $chromosome, $self->get_map(), $self->get_lg_name());
+
     $chromosome->set_horizontal_offset(50);
     $chromosome->set_vertical_offset(25);
     $chromosome->set_height(100);
@@ -101,9 +106,8 @@ sub new {
 
 sub get_image_filename {
     my $self=shift;
-    my $vhost_conf=CXGN::VHost->new();
-    my $dir = $vhost_conf->get_conf('basepath').$vhost_conf->get_conf('tempfiles_subdir')."/cview/";
-    
+
+    my $dir = File::Spec->catfile($self->{basedir}, $self->{tempdir});
     my $template = 'tempXXXX'; #not needed. The function tempfile seems to generate a default TEMPLATE 'XXXXXXXXXX$suffix'
     my $suffix = '.png';
     my ($fh, $image_path) = File::Temp::tempfile( DIR => $dir,
@@ -115,7 +119,7 @@ sub get_image_filename {
     my $filename = File::Basename::basename($image_path);
  
     #print STDERR "IMAGE PATH: $image_path\n";
-   my $image_url = $vhost_conf->get_conf('tempfiles_subdir')."/cview/$filename";
+    my $image_url = File::Spec->catfile($self->{tempdir}, $filename);
 
     $self -> render_png_file($image_path);
     return ($image_path, $image_url);
@@ -257,8 +261,6 @@ sub set_marker_name {
   $self->{marker_name}=shift;
 }
 
-
-
-return 1;
+1;
 
 
