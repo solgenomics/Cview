@@ -76,8 +76,6 @@ This class implements an abstract interface for drawing map overview images.
 
 use CXGN::DB::Connection;
 
-use CatalystX::GlobalContext '$c';
-
 use base qw( CXGN::DB::Connection );
 
 # an abstract class from which other overviews inherit.
@@ -120,6 +118,7 @@ sub new {
     # set up the cache
     #
     my $cache =  CXGN::Tools::WebImageCache->new();
+
     $cache->set_force($args->{force});
     $cache->set_basedir($args->{basepath});
     $cache->set_temp_dir($args->{tempfiles_subdir});
