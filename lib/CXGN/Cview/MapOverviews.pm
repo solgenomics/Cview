@@ -15,27 +15,46 @@ CXGN::Cview::MapOverviews - classes to display different kinds of map overviews.
 
 =head1 DESCRIPTION
 
-CXGN::Cview::MapOverviews contains a number of classes designed to display map overview images (chromosomes aligned horizontally) for a given map. The base class is an abstract class called CXGN::Cview::MapOverviews and it depends on CXGN::Cview classes for drawing the chromosomes. The subclasses derived from this class are 
+CXGN::Cview::MapOverviews contains a number of classes designed to display map
+overview images (chromosomes aligned horizontally) for a given map. The base
+class is an abstract class called CXGN::Cview::MapOverviews and it depends on
+CXGN::Cview classes for drawing the chromosomes. The subclasses derived from
+this class are 
 
 =over 5
 
 =item *
 
-CXGN::Cview::MapOverviews::Generic, which displays a generic overview for maps of type "genetic", "fish" or "physical" - or any other map that has an appropriate CXGN::Cview::Map object implemented.
+CXGN::Cview::MapOverviews::Generic, which displays a generic overview for maps
+of type "genetic", "fish" or "physical" - or any other map that has an
+appropriate CXGN::Cview::Map object implemented.
 
 =item *
 
-CXGN::Cview::MapOverviews::ProjectStats displays a map showing the progress of the sequencing project. It also uses CXGN::People, to get the BAC statistics associated to the different chromosomes. 
+CXGN::Cview::MapOverviews::ProjectStats displays a map showing the progress of
+the sequencing project. It also uses CXGN::People, to get the BAC statistics
+associated to the different chromosomes.
 
 =back
 
 =head2 Caching implementation
 
-The caching is implemented using CXGN::Tools::WebImageCache, which implements caching on the file system level. Each subclass of MapOverviews can implement its own get_cache_key() function, which should should be set to a distinct key for each map. MapOverviews::Generic concatenates the map_version_id, the hilited markers, and the package name. For more information, see L<CXGN::Tools::WebImageCache>.
+The caching is implemented using CXGN::Tools::WebImageCache, which implements
+caching on the file system level. Each subclass of MapOverviews can implement
+its own get_cache_key() function, which should should be set to a distinct key
+for each map. MapOverviews::Generic concatenates the map_version_id, the hilited
+markers, and the package name. For more information, see
+L<CXGN::Tools::WebImageCache>.
 
 =head2 Resetting the cache
 
-The cache can be reset by deleting the contents of the caching directory. The default value is set using CXGN::VHost properties basepath, tempfiles_subdir and the string "cview", which resolves to "/data/local/website/sgn/documents/tempfiles/cview/" on the current production systems (as of Dec 2006). The class also takes a $reset_cache parameter in the constructor, which will be passed to the CXGN::Tools::WebImageCache constructor. A true value will cause the cache to be considered as expired.
+The cache can be reset by deleting the contents of the caching directory. The
+default value is set using CXGN::Cview::Config properties basepath,
+tempfiles_subdir and the string "cview", which resolves to
+"/data/local/website/sgn/documents/tempfiles/cview/" on the current production
+systems (as of Dec 2006). The class also takes a $reset_cache parameter in the
+constructor, which will be passed to the CXGN::Tools::WebImageCache constructor.
+A true value will cause the cache to be considered as expired.
 
 =head1 AUTHORS
 
