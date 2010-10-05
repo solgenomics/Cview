@@ -87,13 +87,6 @@ sub new {
     my $class  = shift;
     my ($dbh, $conf_hash_ref) = @_;
 
-    # if no config was passed, warn about it and try to load SGN::Config
-   #  $config ||= do{
-#         carp "WARNING: no config specified, trying to load SGN::Config";
-#         require SGN::Config;
-#         SGN::Config->load
-#       };
-
     my $db_backend = $conf_hash_ref->{cview_db_backend}; 
 
     # figure out what map factory class we need.  if cview_db_backend
