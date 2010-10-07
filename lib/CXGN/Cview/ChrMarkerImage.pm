@@ -20,6 +20,8 @@ Naama Menda (nm249@cornell.edu)
 use strict;
 use warnings;
 
+use Carp;
+
 use CXGN::Cview;
 use CXGN::Cview::Chromosome;
 use CXGN::Cview::MapImage;
@@ -54,8 +56,10 @@ sub new {
     my $lg_name= shift;
     my $map = shift;
     my $marker_name= shift;
-    my $basedir = shift;
-    my $tempdir = shift;
+    my $basedir = shift
+        or croak 'must provide basedir';
+    my $tempdir = shift
+        or croak 'must provide tempdir';
 
     $self->set_dbh($dbh);
     $self->set_lg_name($lg_name);
