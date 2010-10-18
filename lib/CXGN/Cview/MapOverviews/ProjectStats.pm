@@ -26,6 +26,9 @@ use warnings;
 
 use base "CXGN::Cview::MapOverviews";
 
+use File::Basename;
+use File::Path 'mkpath';
+
 use List::Util;
 
 use CXGN::Cview::Map::SGN::ProjectStats;
@@ -189,6 +192,7 @@ sub create_mini_overview {
 
     my $url = "/documents/tempfiles/frontpage/project_stats_overview.png";
     my $path = File::Spec->catfile($self->{basepath}, $url);
+    mkpath( dirname( $path ) );
 
     $self->render_map();
     $self->get_file_png($path);
