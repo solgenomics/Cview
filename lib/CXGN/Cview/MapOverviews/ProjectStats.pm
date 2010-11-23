@@ -48,7 +48,7 @@ sub new {
     my $class = shift;
     my $args = shift;
 
-    my $map = CXGN::Cview::Map::SGN::ProjectStats->new($args->{dbh});
+    my $map = CXGN::Cview::Map::SGN::ProjectStats->new({ dbh => $args->{dbh} });
 
     my $self = $class->SUPER::new($map, $args);
     $self->{dbh}= $args->{dbh};
