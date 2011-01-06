@@ -140,6 +140,7 @@ sub render_map {
 	$c[$i]->set_height($self->get_chr_height());
 	$c[$i]->set_url("/cview/view_chromosome.pl?map_version_id=agp&show_offsets=1&show_ruler=1&chr_nr=$i");
 
+        no warnings 'uninitialized';
 	my $percent_in_progress = $bacs_in_progress[$i]/$bacs_to_complete[$i]*100;
 
 	my $percent_finished = $c_percent_finished[$i];
