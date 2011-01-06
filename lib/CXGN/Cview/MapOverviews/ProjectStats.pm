@@ -26,13 +26,14 @@ use warnings;
 
 use base "CXGN::Cview::MapOverviews";
 
+use Carp;
+
 use File::Basename;
 use File::Path 'mkpath';
 
 use List::Util;
 
 use CXGN::Cview::Map::SGN::ProjectStats;
-use CXGN::People::BACStatusLog;
 
 =head2 constructor new()
 
@@ -58,6 +59,8 @@ sub new {
     $self->set_chr_height(80);
     $self->{basepath}=$args->{basepath};
     $self->{tempfiles_subdir} = $args->{tempfiles_subdir};
+    $self->{progress_data} = $args->{progress_data}
+        or croak "must provide progress_data arg to $class constructor";
 #    print STDERR "Generating new map object...\n";
     $self->set_map($map);
     return $self;
@@ -114,20 +117,19 @@ sub render_map {
 
     if ($self->get_cache()->is_valid()) {  return; }
 
-    my $bac_status_log=CXGN::People::BACStatusLog->new($self->{dbh});
-
 #    print STDERR "WIDTH=".$self->get_image_width()." HEIGHT ".$self->get_image_height()."\n";
     $self->{map_image}=CXGN::Cview::MapImage->new("", $self->get_image_width(), $self->get_image_height());
+
+    my $progress_data = $self->{progress_data};
+
     my @c = ();
-    my @c_len = $bac_status_log->get_chromosome_graph_lengths();
-    my @bacs_to_complete = $bac_status_log->get_number_bacs_to_complete();
-    my @c_percent_finished = $bac_status_log->get_chromosomes_percent_finished();
-
-    my @bacs_in_progress = $bac_status_log->get_number_bacs_in_progress();
-    my @bacs_submitted = $bac_status_log->get_number_bacs_uploaded();
-
-    my @bacs_phase = $bac_status_log->get_number_bacs_in_phase(3);
-
+    my @chr_nums = 1..12;
+    my @c_len = ( 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200 );
+    my @bacs_to_complete   = ( undef, map $progress_data->{$_}{total_bacs},    @chr_nums );
+    my @c_percent_finished = ( undef, map $progress_data->{$_}{pct_done},    @chr_nums );
+    my @bacs_in_progress   = ( undef, map $progress_data->{$_}{in_progress}, @chr_nums );
+    my @bacs_submitted     = ( undef, map $progress_data->{$_}{available},   @chr_nums );
+    my @bacs_phase         = ( undef, map $progress_data->{$_}{htgs_3},      @chr_nums );
 
     for my $i (1..12) {
 	$c[$i]= CXGN::Cview::Chromosome::Glyph -> new(1, 100, $self->get_horizontal_spacing()*($i-1)+17, 25);
@@ -153,7 +155,6 @@ sub render_map {
 	$percent_in_progress += $percent_in_progress_base_level;
 
 	#print STDERR "Chromosome $i $percent_htgs3, $percent_available, $percent_finished, $percent_in_progress\n";
-
 
 	$c[$i]->set_fill_level(0, $percent_htgs3);
 	$c[$i]->set_fill_level(1, $percent_available);
