@@ -26,27 +26,29 @@ sub new {
     return $self;
 }
 
-sub get_chromosome { 
+sub get_chromosome {
     my $self = shift;
     my $chr_nr = shift;
 
-    my $bac_status_log=CXGN::People::BACStatusLog->new($self->get_dbh());
-    my @c_len = $self->get_chromosome_lengths();
-    my @c_percent_finished = $bac_status_log->get_chromosomes_percent_finished();
+    die "get_chromosome not implemented for $self";
+
+#     my $bac_status_log=CXGN::People::BACStatusLog->new($self->get_dbh());
+#     my @c_len = $self->get_chromosome_lengths();
+#     my @c_percent_finished = $bac_status_log->get_chromosomes_percent_finished();
     
 
-    my $c= CXGN::Cview::Chromosome::Glyph -> new(1, 100, 40, 40);
-    my $m = CXGN::Cview::Marker->new($c);
-    $m -> set_offset($c_percent_finished[$chr_nr]);
-    $m -> hide();
-    $c->add_marker($m);
-    $c->set_caption($chr_nr);
-    $c->set_height($c_len[$chr_nr-1]);
+#     my $c= CXGN::Cview::Chromosome::Glyph -> new(1, 100, 40, 40);
+#     my $m = CXGN::Cview::Marker->new($c);
+#     $m -> set_offset($c_percent_finished[$chr_nr]);
+#     $m -> hide();
+#     $c->add_marker($m);
+#     $c->set_caption($chr_nr);
+#     $c->set_height($c_len[$chr_nr-1]);
     
-    $c->set_fill_level($c_percent_finished[$chr_nr]);
-    $c->set_bac_count(0);
+#     $c->set_fill_level($c_percent_finished[$chr_nr]);
+#     $c->set_bac_count(0);
     
-    return $c;
+#     return $c;
 }
 
 
