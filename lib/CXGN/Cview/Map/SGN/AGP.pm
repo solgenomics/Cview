@@ -261,8 +261,8 @@ sub _determine_chromosome_length {
     my $self   = shift;
     my $chr_nr = shift;
 
-    my $longest = 1
-      ; # prevent division by zero errors. 1 is very small for practical purposes here.
+    my $longest = 1; # prevent division by zero errors in a braindead way
+
     if ( exists( $self->get_files()->{$chr_nr} )
         && $self->get_files()->{$chr_nr} )
     {
@@ -277,6 +277,7 @@ sub _determine_chromosome_length {
                 last();
             }
             my ( $project, $start, $end ) = split /\t/;
+            $end ||= 0;
 
             if ( $end > $longest ) {
                 $longest = $end;
