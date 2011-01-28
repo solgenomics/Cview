@@ -203,19 +203,21 @@ sub cache_chromosome_lengths {
 
     my @lengths = ();
     if ( !-e $len_cache_path ) {
-        open( my $LENCACHE, ">", $len_cache_path )
-          || die "Can't open the len cache $len_cache_path : $!";
+        open( my $LENCACHE, ">", $len_cache_path ) or die "Can't open the len cache $len_cache_path : $!";
 
         for my $chr_nr ( 1 .. 12 ) {
 
-            my $c =
-              CXGN::Cview::Chromosome::ITAG->new( $chr_nr, 100, 10, 10,
+            my $c = CXGN::Cview::Chromosome::ITAG->new( $chr_nr, 100, 10, 10,
                 $self->get_release_gff(),
                 $self->get_dbh(), $self->get_temp_dir() );
 
             print $LENCACHE $chr_nr . "\t" . $c->get_length() . "\n";
             push @lengths, $c->get_length();
         }
+
+        close($LENCACHE);
+
+        open($LENCACHE, "<", $len_cache_path ) or die "Can't open the len cache $len_cache_path : $!";
 
         while (<$LENCACHE>) {
             chomp;
@@ -225,10 +227,8 @@ sub cache_chromosome_lengths {
 
         $self->set_chromosome_lengths(@lengths);
         close($LENCACHE);
-    }
-    else {
-        open( my $LENCACHE, '<', $len_cache_path )
-          || die "Can't open the agp chr len cache file $len_cache_path : $!";
+    } else {
+        open( my $LENCACHE, '<', $len_cache_path ) or die "Can't open the agp chr len cache file $len_cache_path : $!";
         while (<$LENCACHE>) {
             chomp;
             my ( $chr_nr, $len ) = split /\t/;
