@@ -537,7 +537,7 @@ sub generate_image {
     $self->{c1}->set_caption( $self->get_ref_chr() );
     $self->{c1}->set_labels_left();
 
-    #    $self->{c1}->set_units( $self->{c1}->get_units() );
+    $self->{c1}->set_units( $self->get_ref_map->get_units() );
     $self->{c1}
       ->set_width( $self->get_ref_map()->get_preferred_chromosome_width() );
 
@@ -657,6 +657,7 @@ sub generate_image {
         $self->{r}->set_height( $self->get_chr_height() );
         $self->{r}->set_start_value(0);
         $self->{r}->set_end_value( $self->{c1}->get_length() );
+	$self->{r}->set_units($self->get_ref_map()->get_units());
         $self->{map}->add_ruler( $self->{r} );
     }
 
@@ -683,7 +684,7 @@ sub generate_image {
         $self->{c2}->set_vertical_offset(40);
         $self->{c2}->set_hilite( $self->get_hilite_zoomed() );
         $self->{c2}->set_horizontal_offset( $x_distance * $element_count );
-
+	$self->{c2}->set_units($self->{c1}->get_units());
         # because we have incomplete length information from the query above,
         # we set the length of the zoomed in chromosome
         # to be the same as the comparison chromosome (the length is simply
