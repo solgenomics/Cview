@@ -51,6 +51,7 @@ sub new {
     $self->set_height($height);
     $self->set_width($width);
     $self->set_color(0,0,0);
+    $self->set_fill_color(255, 255, 255);
     return $self;
 }
 
@@ -112,6 +113,26 @@ sub set_color {
 sub get_color { 
     my $self = shift;
     return @{$self->{color}};
+}
+
+
+=head2 accessors set_fill_color(), get_fill_color()
+
+  Synopsis:	$io->set_color(255,255,0)
+  Property:     the fill color of the element
+  Side effects:	the element will be rendered filled in this color
+  Description:	
+
+=cut
+
+sub set_fill_color {
+    my $self = shift;
+    ($self->{fill_color}[0], $self->{fill_color}[1], $self->{fill_color}[2]) = @_;
+}
+    
+sub get_fill_color { 
+    my $self = shift;
+    return @{$self->{fill_color}};
 }
 
 =head2 function render()
