@@ -49,6 +49,7 @@ sub new {
     $self->set_region_hilite_color(100, 100, 150);
     $self->set_north_range(1);
     $self->set_south_range(1);
+    $self->set_marker_width(2);
     return $self;
 }
 
@@ -158,14 +159,16 @@ sub draw_tick {
     my $self = shift;
     my $image = shift;
     my $color = $image -> colorResolve($self->get_color());
+    my $fill_color = $image->colorResolve($self->get_fill_color());
 
     my ($x, $north_y, $y, $south_y) = $self->get_enclosing_rect();
 
     if ($self->get_show_tick()) { 	
+	$image -> filledRectangle($x, $north_y, $y, $south_y, $fill_color);
 	$image -> rectangle($x, $north_y, $y, $south_y, $color);
     }
 }
-
+    
 sub get_image_map { 
     my $self = shift;
     my $coords = join ",", ($self->get_enclosing_rect());
@@ -179,14 +182,48 @@ sub get_image_map {
 
 sub get_enclosing_rect { 
     my $self = shift;
+
     my $halfwidth = int($self->get_chromosome->get_width/2);
     my $north_y = $self->get_chromosome()->get_vertical_offset() + $self->get_chromosome()->mapunits2pixels($self->get_offset()-$self->get_north_range());
-
+    
     my $south_y = $self->get_chromosome()->get_vertical_offset() + $self->get_chromosome()->mapunits2pixels($self->get_offset()+$self->get_south_range());
+    
+    my $x;
 
-    my $x = $self->get_chromosome()->get_horizontal_offset()+$halfwidth+$self->get_label()->get_stacking_height()*$self->get_label()->get_stacking_level();
-    return ($x-1, $north_y, $x+1, $south_y);
+
+    if ($self->get_label_side() eq "right") { 
+	
+	$x = $self->get_chromosome()->get_horizontal_offset()+$halfwidth+$self->get_label()->get_stacking_height()*$self->get_label()->get_stacking_level();
+
+    }
+    elsif ($self->get_label_side() eq "left") { 
+	$x = $self->get_chromosome()->get_horizontal_offset()-$halfwidth-$self->get_label()->get_stacking_height()*$self->get_label()->get_stacking_level();
+
+    }
+    
+    return ($x-int($self->get_marker_width()/2), $north_y, $x+int($self->get_marker_width()/2), $south_y);
 }
+
+=head2 accessors get_marker_width, set_marker_width
+
+ Usage:
+ Desc:
+ Property
+ Side Effects:
+ Example:
+
+=cut
+
+sub get_marker_width {
+  my $self = shift;
+  return $self->{marker_width}; 
+}
+
+sub set_marker_width {
+  my $self = shift;
+  $self->{marker_width} = shift;
+}
+
 
 return 1;
 
