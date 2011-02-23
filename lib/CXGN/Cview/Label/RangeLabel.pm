@@ -137,10 +137,10 @@ sub get_stacking_height {
 =cut
 
 sub set_stacking_height { 
-my $self=shift;
-$self->{stacking_height}=shift;
+    my $self=shift;
+    $self->{stacking_height}=shift;
 }
 
 
 
-return 1;
+1;
