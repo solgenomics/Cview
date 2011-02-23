@@ -26,7 +26,7 @@ sub new {
 
     # set some interesting defaults
     #
-    $self->set_align_side("left");
+    $self->set_align_side("default");
     $self->set_label_spacer(20);
     $self->set_vertical_stacking_spacing(2);
     $self->set_stacking_height(5);
@@ -58,14 +58,26 @@ sub render_line {
     # calculate the point that the line should connect to 
     # on the label
     #
+
+
     my ($x, $y, $a, $b) = $self->get_enclosing_rect();
 
     my ($connection_x, $connection_y) = (0, 0);
 
+#      if ($self->get_align_side() eq "auto") { 
+#  	if ($x < ($self->get_reference_point())[0]) { 
+#  	    $self->set_align_side("right");
+#  	}
+#  	else { 
+#  	    $self->set_align_side("left");
+#  	}
+#      }
+
+
     if ($self->get_align_side() eq "right") { 
 
 	$connection_x = $a;
-	$connection_y = $y + CXGN::Cview::ImageObject::round(($b - $y ) /2);
+	$connection_y = $y + int(($b - $y ) /2);
 
 	#my $horizontal = ($self->get_reference_point())[0]-$self->get_stacking_level()*$self->get_stacking_height();
 
@@ -77,9 +89,11 @@ sub render_line {
     if ($self->get_align_side() eq "left") { 
 
 	$connection_x = $x;
-	$connection_y = $y + CXGN::Cview::ImageObject::round(($b - $y)/2);
+	$connection_y = $y + int($b - $y)/2;
 
 	#my $horizontal = ($self->get_reference_point())[0]+$self->get_stacking_level()*$self->get_stacking_height();
+
+	
 
 	$image->line($connection_x, 
 		     $connection_y,  
@@ -92,4 +106,4 @@ sub render_line {
 
 }
 
-return 1;
+1;
