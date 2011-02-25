@@ -419,7 +419,7 @@ sub get_image {
     my $cache         = CXGN::Tools::WebImageCache->new();
     my $state_hashref = $self->get_state_hashref();
 
-    my @sorted_values = map { $state_hashref->{$_} } sort keys %$state_hashref;
+    my @sorted_values = map { if (exists($state_hashref->{$_}) && defined($state_hashref->{$_})) { $state_hashref->{$_};} } sort keys %$state_hashref;
     my $key = join "-", @sorted_values;
 
     #    print STDERR "USING KEY: $key\n";
@@ -1301,7 +1301,7 @@ sub set_zoom {
 
 sub get_zoom {
     my $self = shift;
-    if ( !exists( $self->{zoom} ) ) { $self->{zoom} = 1; }
+    if ( !exists( $self->{zoom} ) || !defined($self->{zoom}) ) { $self->{zoom} = 1; }
     return $self->{zoom};
 }
 
@@ -1392,7 +1392,7 @@ sub set_show_IL {
 
 sub get_show_IL {
     my $self = shift;
-    if ( !exists( $self->{show_IL} ) ) { $self->{show_IL} = 0; }
+    if ( !exists( $self->{show_IL}) || !defined($self->{show_IL}) ) { $self->{show_IL} = 0; }
     return $self->{show_IL};
 }
 
@@ -1443,6 +1443,9 @@ sub get_show_physical {
 
 sub get_show_offsets {
     my $self = shift;
+    if (!exists($self->{show_offsets}) || !defined($self->{show_offsets})) { 
+	$self->{show_offsets}=0;
+    }
     return $self->{show_offsets};
 }
 
@@ -1464,7 +1467,7 @@ sub set_show_offsets {
 
 sub get_size {
     my $self = shift;
-    if ( !exists( $self->{size} ) ) { $self->{size} = 0; }
+    if ( !exists( $self->{size} ) or !defined($self->{size}) ) { $self->{size} = 0; }
     return $self->{size};
 }
 
@@ -1542,9 +1545,9 @@ sub get_hilite {
 
 sub set_confidence {
     my $self       = shift;
-    my $confidence = shift;
+    my $confidence = shift || '';
     $confidence =~ s/[A-Za-z]//g;
-    if ( $confidence eq "" || $confidence == undef ) { $confidence = -2; }
+    if ( $confidence eq "" || !defined($confidence) ) { $confidence = -2; }
     $confidence = $confidence + 0;
     $self->{confidence} = $confidence;
 }
@@ -1571,7 +1574,7 @@ sub set_confidence {
 
 sub get_confidence {
     my $self = shift;
-    if ( !exists( $self->{confidence} ) ) { $self->{confidence} = -2; }
+    if ( !exists( $self->{confidence}) || !defined($self->{confidence}) ) { $self->{confidence} = -2; }
     return $self->{confidence};
 }
 
@@ -1601,7 +1604,7 @@ sub set_display_marker_type {
 
 sub get_display_marker_type {
     my $self = shift;
-    if ( !exists( $self->{display_marker_type} ) ) {
+    if ( !exists( $self->{display_marker_type}) || !defined($self->{display_marker_type}) ) {
         $self->{display_marker_type} = "";
     }
     return $self->{display_marker_type};
@@ -1637,7 +1640,7 @@ sub set_show_zoomed {
 
 sub get_show_zoomed {
     my $self = shift;
-    if ( !exists( $self->{show_zoomed} ) ) { $self->{show_zoomed} = 0; }
+    if ( !exists( $self->{show_zoomed}) || !defined($self->{show_zoomed}) ) { $self->{show_zoomed} = 0; }
     return $self->{show_zoomed};
 }
 
@@ -1664,6 +1667,12 @@ sub set_hilite_zoomed {
 
 sub get_hilite_zoomed {
     my $self = shift;
+    if (!exists($self->{hilite_zoom_start}) || !defined($self->{hilite_zoom_start})) { 
+	$self->{hilite_zoom_start} = '';
+    }
+    if (!exists($self->{hilite_zoom_end}) || !defined($self->{hilite_zoom_end})) { 
+	$self->{hilite_zoom_end} = '';
+    }
     return ( $self->{hilite_zoom_start}, $self->{hilite_zoom_end} );
 }
 
@@ -1696,7 +1705,7 @@ sub set_color_model {
 
 sub get_color_model {
     my $self = shift;
-    if ( !exists( $self->{color_model} ) ) { $self->{color_model} = ""; }
+    if ( !exists( $self->{color_model}) || !defined($self->{color_model}) ) { $self->{color_model} = ""; }
     return $self->{color_model};
 }
 
@@ -1807,11 +1816,11 @@ sub get_marker_map_links {
       . ( $self->get_ref_chr() ) . "\" />
 	<input type=\"hidden\" name=\"map_version_id\" value=\""
       . ( $self->get_map_version_id() ) . "\" />
-	<input type=\"hidden\" name=\"zoom\" value=\"" . ( $self->get_zoom() ) . "\" />
+	<input type=\"hidden\" name=\"zoom\" value=\"" . ( $self->get_zoom()  ) . "\" />
 	<input type=\"hidden\" name=\"show_ruler\" value=\""
       . ( $self->get_show_ruler() ) . "\" />
 	<input type=\"hidden\" name=\"show_IL\" value=\""
-      . ( $self->get_show_IL() ) . "\" />
+      . ( $self->get_show_IL()  ) . "\" />
         <input type=\"hidden\" name=\"show_offsets\" value=\""
       . ( $self->get_show_offsets() ) . "\" />
         <input type=\"hidden\" name=\"cM_start\" value=\""
@@ -1842,7 +1851,8 @@ sub get_marker_map_links {
 
  #	print STDERR $o->{map_version_id}, $o->{chr_nr}, $o->{short_name}."<br />\n";
             my $selected = "";
-            if ( $o->{map_version_id} == $self->get_comp_map_version_id() ) {
+	    
+            if (defined($self->get_comp_map_version_id()) &&  $o->{map_version_id} == $self->get_comp_map_version_id() ) {
                 $selected = "selected=\"selected\"";
             }
 
@@ -2130,7 +2140,7 @@ sub display_toolbar {
 
     my $toggle_size_select = qq { <select name="size" > };
 
-    my @selected = ();
+    my @selected = ('', '', '');
     if    ( $self->{size} =~ /small/i ) { $selected[0] = qq { selected="1" }; }
     elsif ( $self->{size} =~ /large/i ) { $selected[2] = qq { selected="1" }; }
     else                                { $selected[1] = qq { selected="1" }; }
@@ -2340,17 +2350,17 @@ w822_pos_start="
     my $show_ruler          = $self->get_show_ruler();
     my $show_IL             = $self->get_show_IL();
     my $show_offsets        = $self->get_show_offsets();
-    my $comp_map_version_id = $self->get_comp_map_version_id();
-    my $comp_chr            = $self->get_comp_chr();
-    my $color_model         = $self->get_color_model();
-    my $show_physical       = $self->get_show_physical();
-    my $size                = $self->get_size();
-    my $show_zoomed         = $self->get_show_zoomed();
-    my $confidence          = $self->get_confidence();
-    my $hilite              = $self->get_hilite();
-    my $display_marker_type = $self->get_display_marker_type();
-    my $cM_start            = $self->get_cM_start();
-    my $cM_end              = $self->get_cM_end();
+    my $comp_map_version_id = $self->get_comp_map_version_id() || '';
+    my $comp_chr            = $self->get_comp_chr() || '';
+    my $color_model         = $self->get_color_model() || '';
+    my $show_physical       = $self->get_show_physical() || 0;
+    my $size                = $self->get_size() || 0;
+    my $show_zoomed         = $self->get_show_zoomed() || 0;
+    my $confidence          = $self->get_confidence() || -2;
+    my $hilite              = $self->get_hilite() || '';
+    my $display_marker_type = $self->get_display_marker_type() || '';
+    my $cM_start            = $self->get_cM_start() || '';
+    my $cM_end              = $self->get_cM_end() || '';
 
     my $zoom_range_html = qq {
 	<form style="margin-bottom:0" >
