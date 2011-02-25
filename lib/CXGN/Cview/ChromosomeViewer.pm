@@ -947,7 +947,7 @@ sub set_ref_map {
 
 sub get_comp_map {
     my $self = shift;
-    if ( !exists( $self->{comp_map} ) ) { $self->{comp_map} = undef; }
+    if ( !exists( $self->{comp_map}) || !defined($self->{comp_map}) ) { $self->{comp_map} = undef; }
     return $self->{comp_map};
 
 }
@@ -977,7 +977,7 @@ sub get_map_id {
     my $self = shift;
 
     #    if (!exists($self->{map_id})) { $self->{map_id}=0; }
-    if ( !exists( $self->{map_id} ) ) { $self->{map_id} = 0; }
+    if ( !exists( $self->{map_id}) || !defined($self->{map_id}) ) { $self->{map_id} = 0; }
     return $self->{map_id};
 }
 
@@ -1016,6 +1016,9 @@ sub set_map_version_id {
 
 sub get_comp_map_version_id {
     my $self = shift;
+    if (!exists($self->{comp_map_version_id}) || !defined($self->{comp_map_version_id})) { 
+	$self->{comp_map_version_id} = '';
+    }
     return $self->{comp_map_version_id};
 
 }
@@ -1054,7 +1057,7 @@ sub set_comp_map_id {
 
 sub get_comp_map_id {
     my $self = shift;
-    if ( !exists( $self->{comp_map_id} ) ) { $self->{comp_map_id} = 0; }
+    if ( !exists( $self->{comp_map_id}) || !defined($self->{comp_map_id}) ) { $self->{comp_map_id} = 0; }
     return $self->{comp_map_id};
 }
 
@@ -1126,7 +1129,7 @@ sub set_comp_chr {
 
 sub get_comp_chr {
     my $self = shift;
-    if ( !exists( $self->{comp_chr} ) ) { $self->{comp_chr} = 0; }
+    if ( !exists( $self->{comp_chr}) || !defined($self->{comp_chr}) ) { $self->{comp_chr} = 0; }
     return $self->{comp_chr};
 }
 
@@ -1142,6 +1145,9 @@ sub get_comp_chr {
 
 sub get_ref_chr_len {
     my $self = shift;
+    if (!exists($self->{ref_chr_len}) || !defined($self->{ref_chr_len})) { 
+	$self->{ref_chr_len} = '';
+    }
     return $self->{ref_chr_len};
 }
 
@@ -1207,7 +1213,7 @@ sub set_cM_end {
     my $self   = shift;
     my $cM_end = shift;
     $cM_end =~ s/[^0-9.]//g;
-    if ( $cM_end eq "" || !$cM_end ) { $cM_end = 0; }
+    if ( !defined($cM_end) || !$cM_end ) { $cM_end = 0; }
     $self->{cM_end} = abs( ($cM_end) );
 }
 
@@ -1261,7 +1267,7 @@ sub set_cM {
 
 sub get_cM {
     my $self = shift;
-    if ( !exists( $self->{cM} ) ) { $self->{cM} = 0; }
+    if ( !exists( $self->{cM}) || !defined($self->{cM}) ) { $self->{cM} = 0; }
     return $self->{cM};
 }
 
@@ -1281,7 +1287,7 @@ sub get_cM {
 sub set_zoom {
     my $self = shift;
     $self->{zoom} = shift;
-    if ( !exists( $self->{zoom} ) || $self->{zoom} eq "" ) {
+    if ( !exists( $self->{zoom} ) || !defined($self->{zoom}) || $self->{zoom} eq "" ) {
         $self->{zoom} = 0;
     }
     if ( $self->{zoom} == 0 ) { $self->{zoom} = 1; }
@@ -1320,6 +1326,9 @@ sub get_zoom {
 
 sub get_clicked {
     my $self = shift;
+    if (!exists($self->{clicked}) || !defined($self->{clicked})) { 
+	$self->{clicked} = 0;
+    }
     return $self->{clicked};
 }
 
@@ -1341,7 +1350,7 @@ sub set_clicked {
 
 sub get_show_ruler {
     my $self = shift;
-    if ( !exists( $self->{show_ruler} ) ) { $self->{show_ruler} = 0; }
+    if ( !exists( $self->{show_ruler}) || !defined($self->{show_ruler}) ) { $self->{show_ruler} = 0; }
     return $self->{show_ruler};
 }
 
@@ -1427,7 +1436,7 @@ sub set_show_physical {
 
 sub get_show_physical {
     my $self = shift;
-    if ( !exists( $self->{show_physical} ) ) { $self->{show_physical} = 0; }
+    if ( !exists( $self->{show_physical}) || !defined($self->{show_physical}) ) { $self->{show_physical} = 0; }
     return $self->{show_physical};
 }
 
@@ -1507,7 +1516,7 @@ sub set_size {
 
 sub set_hilite {
     my $self   = shift;
-    my $hilite = shift;
+    my $hilite = shift || '';
     $hilite =~ tr/\,\.\:\;\// /;
     $hilite =~ s/\s+/ /;
     $self->{hilite} = $hilite;
@@ -1527,7 +1536,7 @@ sub set_hilite {
 
 sub get_hilite {
     my $self = shift;
-    if ( !exists( $self->{hilite} ) ) { $self->{hilite} = ""; }
+    if ( !exists( $self->{hilite}) || !defined($self->{hilite}) ) { $self->{hilite} = ""; }
     return $self->{hilite};
 }
 
@@ -1547,7 +1556,7 @@ sub set_confidence {
     my $self       = shift;
     my $confidence = shift || '';
     $confidence =~ s/[A-Za-z]//g;
-    if ( $confidence eq "" || !defined($confidence) ) { $confidence = -2; }
+    if (!defined($confidence) || $confidence eq "" ) { $confidence = -2; }
     $confidence = $confidence + 0;
     $self->{confidence} = $confidence;
 }
@@ -1879,8 +1888,8 @@ qq {  <option value="$o->{map_version_id} $o->{lg_name}" $selected>Map $o->{shor
 
 sub append_error {
     my $self   = shift;
-    my $append = shift;
-    if ( !exists( $self->{errors} ) ) { $self->{errors} = ""; }
+    my $append = shift || '';
+    if ( !exists( $self->{errors}) || !defined($self->{errors}) ) { $self->{errors} = ""; }
     $self->{errors} .= $append;
 }
 
