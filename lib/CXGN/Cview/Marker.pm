@@ -412,7 +412,7 @@ sub has_bacs {
 
 sub get_mark_rect {
     my $self = shift;
-    if (! exists($self->{mark_rect})) { @{$self->{mark_rect}} = (0,0,0,0); }
+    if (! exists($self->{mark_rect}) || !defined($self->{mark_rect})) { @{$self->{mark_rect}} = (0,0,0,0); }
     return ($self ->{mark_rect}[0], $self->{mark_rect}[1], $self->{mark_rect}[2], $self->{mark_rect}[3]);
 }
 
@@ -438,7 +438,7 @@ sub set_mark_size {
 
 sub get_mark_size {
     my $self = shift;
-    if (!exists($self->{mark_size})) { $self->{mark_size}=0; }
+    if (!exists($self->{mark_size}) || !defined($self->{mark_size})) { $self->{mark_size}=0; }
     return $self->{mark_size};
 }
 
@@ -457,7 +457,7 @@ sub get_mark_size {
 
 sub is_frame_marker {
     my $self = shift;
-    if (!exists($self->{loc_type})) { $self->{loc_type}=""; }
+    if (!exists($self->{loc_type}) || !defined($self->{loc_type})) { $self->{loc_type}=""; }
     return ($self->{loc_type} eq "frame");
 }
 
@@ -1099,6 +1099,9 @@ sub get_url {
 
 sub get_tooltip { 
     my $self=shift;
+    if (!exists($self->{tooltip}) || !defined($self->{tooltip})) { 
+	$self->{tooltip} = '';
+    }
     return $self->{tooltip};
 }
 
