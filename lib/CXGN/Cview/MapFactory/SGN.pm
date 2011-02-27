@@ -72,6 +72,8 @@ use CXGN::Cview::Map::SGN::AGP;
 use CXGN::Cview::Map::SGN::ITAG;
 use CXGN::Cview::Map::SGN::Contig;
 use CXGN::Cview::Map::SGN::Scaffold;
+use CXGN::Cview::Map::SGN::Image;
+use CXGN::Cview::Map::SGN::QTL;
 
 =head2 function new()
 
@@ -154,6 +156,9 @@ sub create {
 	elsif ($map_type =~ /seq/) {
 	    #print STDERR "Creating a seq map...\n";
 	    return CXGN::Cview::Map::SGN::Sequence->new($self->get_dbh(), $id);
+	}
+	elsif ($map_type =~ /qtl/i) { 
+	    return CXGN::Cview::Map::SGN::QTL->new($self->get_dbh(), $id);
 	}
     }
     elsif ($id =~ /^u/i) {
@@ -238,47 +243,71 @@ sub create {
 	    );
     }
 
-    elsif ($id =~ /scaffold103/) {
+#     elsif ($id =~ /scaffold103/) {
 
-	return CXGN::Cview::Map::SGN::Scaffold->new($self->get_dbh(), $id, {
-	    file=> '/data/prod/public/tomato_genome/wgs/chromosomes/assembly_1.03/chromosome_defs_v1.03_sorted.txt',
-	    abstract=>'test abstract',
-	    temp_dir=>$temp_dir,
-	    short_name=>'Tomato scaffold map V1.03',
-	    long_name=>'Solanum lycopersicum scaffold map V1.03',
-	    marker_link => sub {},
+# 	return CXGN::Cview::Map::SGN::Scaffold->new($self->get_dbh(), $id, {
+# 	    file=> '/data/prod/public/tomato_genome/wgs/chromosomes/assembly_1.03/chromosome_defs_v1.03_sorted.txt',
+# 	    abstract=>'test abstract',
+# 	    temp_dir=>$temp_dir,
+# 	    short_name=>'Tomato scaffold map V1.03',
+# 	    long_name=>'Solanum lycopersicum scaffold map V1.03',
+# 	    marker_link => sub {},
 
-						    } );
-    }
+# 						    } );
+#     }
 
-    elsif ($id =~ /scaffold100/) {
-	my (@sources) = map $_->data_sources(), $c->enabled_feature('gbrowse2');
-	my ($gbrowse) = grep $_->description()=~/ITAG1.+genomic/i, @sources;
-	if (!$gbrowse) { die "No such map in GBrowse."; }
-	my @dbs;
-	if ($gbrowse) {
-	    @dbs = $gbrowse->databases();
-	    @dbs > 1 and die "I can handle only one db!";
-	}
+#     elsif ($id =~ /scaffold100/) {
+# 	my (@sources) = map $_->data_sources(), $c->enabled_feature('gbrowse2');
+# 	my ($gbrowse) = grep $_->description()=~/ITAG1.+genomic/i, @sources;
+# 	if (!$gbrowse) { die "No such map in GBrowse."; }
+# 	my @dbs;
+# 	if ($gbrowse) {
+# 	    @dbs = $gbrowse->databases();
+# 	    @dbs > 1 and die "I can handle only one db!";
+# 	}
 
-        return unless $gbrowse;
+#         return unless $gbrowse;
 
-	my $gbrowse_view_link = $gbrowse->view_url;
+# 	my $gbrowse_view_link = $gbrowse->view_url;
 
-	my $marker_link =  sub { my $id = shift; return "$gbrowse_view_link?name=$id"; };
+# 	my $marker_link =  sub { my $id = shift; return "$gbrowse_view_link?name=$id"; };
 
-	return CXGN::Cview::Map::SGN::Scaffold->new($self->get_dbh(), $id, {
-	    file=> '/data/prod/public/tomato_genome/wgs/chromosomes/assembly_1.00/chromosome_defs_v1.00_sorted.txt',
-	    abstract=>'test abstract',
-	    temp_dir=>$temp_dir,
-	    short_name=>'Tomato scaffold map V1.00',
-	    long_name=>'Solanum lycopersicum scaffold map V1.00',
-	    marker_link => $marker_link,
-						    } );
-    }
+# 	return CXGN::Cview::Map::SGN::Scaffold->new($self->get_dbh(), $id, {
+# 	    file=> '/data/prod/public/tomato_genome/wgs/chromosomes/assembly_1.00/chromosome_defs_v1.00_sorted.txt',
+# 	    abstract=>'test abstract',
+# 	    temp_dir=>$temp_dir,
+# 	    short_name=>'Tomato scaffold map V1.00',
+# 	    long_name=>'Solanum lycopersicum scaffold map V1.00',
+# 	    marker_link => $marker_link,
+# 						    } );
+#     }
     elsif ($id =~ /^u\d+$/i) {
 	return CXGN::Cview::Map::SGN::User->new($self->get_dbh(), $id);
     }
+    elsif ($id =~ /pachy/i) { 
+	my $image_dir = $self->{context}->get_conf('image_path');
+	my $map = CXGN::Cview::Map::SGN::Image->new(
+	    $self->get_dbh(),
+	    $id,
+	    $image_dir.'/maps/tomato_pachytene_images/chr1.png',
+	    $image_dir.'/maps/tomato_pachytene_images/chr2.png',
+	    $image_dir.'/maps/tomato_pachytene_images/chr3.png',
+	    $image_dir.'/maps/tomato_pachytene_images/chr4.png',
+	    $image_dir.'/maps/tomato_pachytene_images/chr5.png',
+	    $image_dir.'/maps/tomato_pachytene_images/chr6.png',
+	    $image_dir.'/maps/tomato_pachytene_images/chr7.png',
+	    $image_dir.'/maps/tomato_pachytene_images/chr8.png',
+	    $image_dir.'/maps/tomato_pachytene_images/chr9.png',
+	    $image_dir.'/maps/tomato_pachytene_images/chr10.png',
+	    $image_dir.'/maps/tomato_pachytene_images/chr11.png',
+	    $image_dir.'/maps/tomato_pachytene_images/chr12.png',
+	    );
+	$map->set_abstract('This map shows the pachytene chromosomes of tomato. It is only for illustrative purposes and does not contain any markers. <br /><br />Images courtesy of Prof. Stephen Stack, Colorado State University.');
+	$map->set_short_name('Tomato Pachytene Chromosomes');
+
+	return $map;
+    }
+						 
     elsif ($id =~ /^c\d+$/i) {
 	my ($gbrowse_fpc) = map $_->fpc_data_sources, $c->enabled_feature('gbrowse2');
 	my @dbs;
@@ -289,6 +318,7 @@ sub create {
             warn "no GBrowse FPC data sources available, cannot open map $id";
             return;
         }
+
 
         my $gbrowse_view_link = $gbrowse_fpc->view_url;
 	return CXGN::Cview::Map::SGN::Contig->new($self->get_dbh(), $id, {
@@ -364,7 +394,7 @@ sub get_system_maps {
 
     # push il, physical, contig, and agp map
     #
-    foreach my $id ("il6.5", "il6.9", "p9", "c9", "agp", "itag") {
+    foreach my $id ("il6.5", "il6.9", "p9", "c9", "agp", "itag", "pachy") {
 	my $map = $self->create( {map_id=>$id} );
 	if ($map) { push @maps, $map; }
     }
