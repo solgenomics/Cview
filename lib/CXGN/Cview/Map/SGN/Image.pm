@@ -18,11 +18,13 @@ sub new {
     my $self = $class->SUPER::new($dbh);
     
     $self->set_id($id);
-    $self->set_units('%');
+    $self->set_units('');
     @{$self->{files}} = @files;
 
     my @chr_names = ();
     foreach my $f (@files) { 
+	if (! -e $f) { die "Can't find file $f."; }
+	##print STDERR "CHR: ".(basename($f, ".png"))."\n";
 	push @chr_names, basename($f, ".png");
     }
     $self->set_chromosome_names(@chr_names);
@@ -50,8 +52,6 @@ sub can_overlay {
 sub get_chromosome { 
     my $self = shift;
     my $chr_nr = shift;
-
-    print STDERR "**** pachy get_chromosome $chr_nr\n";
 
     my $file_index;
     my @chr_names = $self->get_chromosome_names();
