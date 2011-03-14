@@ -36,7 +36,6 @@ sub new {
 
 sub get_chromosome_names { 
     my $self = shift;
-	print STDERR "GETTING CHROMOSOME NAMES...\n";
 
     if (!exists($self->{chromosome_names})) { 
 	@{$self->{chromosome_names}} = ();
@@ -52,12 +51,11 @@ sub get_chromosome_names {
 	$chr_h->execute($self->get_id());
 	my @names = ();
 	while (my($chr) = $chr_h->fetchrow_array()) { 
-	    print STDERR "Adding chr $chr\n";
 	    push @names, $chr;
 	}
 	@{$self->{chromosome_names}} = @names;
     }
-    print STDERR "Chromosome names: ".(join(", ", @{$self->{chromosome_names}}))."\n";
+    #print STDERR "Chromosome names: ".(join(", ", @{$self->{chromosome_names}}))."\n";
     return @{$self->{chromosome_names}};
 }
 
@@ -82,7 +80,6 @@ sub get_chromosome_lengths {
                    GROUP BY lg_name, map_version.map_id, lg_order
                    ORDER BY lg_order";
 
-    #print STDERR "QUERY: $query\n";
 
     my $sth = $self->get_dbh()->prepare($query);
     $sth ->execute($self->get_id());
@@ -90,7 +87,7 @@ sub get_chromosome_lengths {
     @{$self->{chromosome_lengths}} = ();
 
     while (my ($lg_name, $length, $reference_map_id) = $sth->fetchrow_array()) {
-	#print STDERR "LENGTHS: $lg_name is $length long.\n";
+
 	push @{$self->{chromosome_lengths}},$length;
 	$self->{map_id}=$reference_map_id;
     }
@@ -119,9 +116,6 @@ sub get_chromosome {
                    AND genotype_region.marker_id_ns=sgn.marker_experiment.marker_id
                  AND stock_id =? and genotype_experiment.preferred='t' and linkage_group.lg_name =? ORDER BY position";
 
- #   print STDERR "QUERY2: $query2\n";
-
-    
     my $query3 = "SELECT linkage_group.lg_name, position  FROM phenome.genotype
                  JOIN phenome.genotype_region USING(genotype_id) 
                  JOIN phenome.genotype_experiment USING (genotype_experiment_id)
@@ -134,7 +128,6 @@ sub get_chromosome {
                    AND marker_id_sn=sgn.marker_experiment.marker_id
                  AND stock_id =? and genotype_experiment.preferred='t' and linkage_group.lg_name=? ORDER BY position";
 
-#    print STDERR "QUERY3: $query3\n";
 
     my $sth2 = $self->get_dbh()->prepare($query2);
     $sth2->execute($self->get_id, $chr_nr);
@@ -159,7 +152,6 @@ sub get_chromosome {
 	    $m->set_offset($top_marker);
 	    $c->add_marker($m);
 	    $c->set_url("/cview/view_chromosome.pl?chr_nr=$chr1&amp;map_id=$self->{map_id}&amp;show_ruler=1");
-	    print STDERR "$chr_nr ZYGOCITY_CODE = $zygocity_code (position $top_marker)\n";
 	}
 	
 	elsif ("$chr1" eq "$chr2") { 
@@ -179,7 +171,6 @@ sub get_chromosome {
 	    #$m->get_label()->set_url("/cview/view_chromosome.pl?map_id=5&cM_start=$top_marker&cM_end=$bottom_marker&show_zoomed=1");
 	    $c->set_url("/cview/view_chromosome.pl?chr_nr=$chr1&amp;map_id=$self->{map_id}&amp;cM_start=".($top_marker-1)."&amp;cM_end=".($bottom_marker+1)."&amp;show_zoomed=1&amp;show_ruler=1");
 	    
-	    print STDERR "Fragment: $offset, $top_marker, $bottom_marker\n";
 	}
 	else { warn "[Genotype map] $chr1 should be the same as $chr2...\n"; }
 	
