@@ -30,7 +30,7 @@ sub get_chromosome {
 
     while (my ($marker_id, $name, $north, $south, $locus_id) = $h->fetchrow_array()) { 
 	
-	#print STDERR "Adding marker $marker_id, $name, $north, $south\n";
+
 	my $qtl = CXGN::Cview::Marker::QTL->new($chr, $marker_id);
 	$qtl->set_range_coords($north,$south);
 	$qtl->set_marker_name($name);
@@ -73,7 +73,6 @@ sub get_overview_chromosome {
 
     foreach my $m ($chr->get_markers()) { 
 	$m->get_label()->set_stacking_height(5);
-	print STDERR "STACKING LEVEL: ".$m->get_label()->get_stacking_level()."\n";
 
     }
 
