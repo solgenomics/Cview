@@ -586,7 +586,8 @@ sub get_map_stats {
 
     my $total_count = 0;
 
-    my $s = "<table summary=\"\"><tr><td>&nbsp;</td><td>\# markers</td></tr>";
+    my $s = "<table summary=\"\">";
+    $s .= "<tr><td colspan=\"2\"><b>Marker collections</b></td></tr>";
     my $sth = $self->get_dbh() -> prepare($query);
     $sth -> execute($self->get_id());
 
@@ -616,7 +617,6 @@ sub get_map_stats {
     my $total_protocols = 0;
     $s.= qq { <br /><br /><table><tr><td colspan="2"><b>Protocols:</b></td></tr> };
     $s.= qq { <tr><td>&nbsp;</td><td>&nbsp;</td></tr> };
-    $s.= qq { <tr><td>&nbsp;</td><td>\# markers</td></tr> };
     while (my ($protocol, $count) = $pqh->fetchrow_array()) {
 	$s.= qq { <tr><td>$protocol</td><td align="right">$count</td></tr> };
 	$total_protocols += $count;
