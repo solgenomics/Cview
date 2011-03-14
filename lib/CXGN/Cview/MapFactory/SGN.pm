@@ -158,7 +158,10 @@ sub create {
 	    return CXGN::Cview::Map::SGN::Sequence->new($self->get_dbh(), $id);
 	}
 	elsif ($map_type =~ /qtl/i) { 
-	    return CXGN::Cview::Map::SGN::QTL->new($self->get_dbh(), $id);
+	    
+	    my $qtl = CXGN::Cview::Map::SGN::QTL->new($self->get_dbh(), $id);
+	    $qtl->set_abstract("This potato consensus map shows the location of QTLs for blight resistance and maturity. [Citations]");
+	    return $qtl;
 	}
     }
     elsif ($id =~ /^u/i) {
