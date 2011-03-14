@@ -85,12 +85,9 @@ sub render {
 	} 
     }
 
-#    my $longest_length = $c_len[$longest_chr];
- #   print STDERR "longest chromosome: $longest_length [$longest_chr]\n";
-    my $unit_eq = ($image_height-2*$top_margin) /$longest_length;
- #   print STDERR "unit_eq = $unit_eq\n";
 
-#    if ($self->get_map->get_type()=~ /seq/) { $unit_eq=2; }
+    my $unit_eq = ($image_height-2*$top_margin) /$longest_length;
+    #print STDERR "unit_eq = $unit_eq\n";
 
     my @clean_markers = ();
     foreach my $hm ($self->get_hilite_markers()) { 
@@ -131,7 +128,7 @@ sub render {
 
 	foreach my $m (@markers) {
 	
-	    $m -> set_color(200, 100, 100);
+	    #$m -> set_color(200, 100, 100);
 	    if ($m->get_offset() > $chr_len) { $chr_len = $m->get_offset(); }
 	    #print STDERR "Read: ".$m->get_name." offset: ".$m->get_offset()."\n";
 	    my $marker_name_suffix = $m->get_marker_name();
@@ -148,6 +145,8 @@ sub render {
 	    }
 	}
 	
+	#print STDERR "$i, $c_len[$i], $unit_eq\n";
+	#print STDERR "(".join(", ", @c_len).")\n";
 	$c[$i]->set_height($c_len[$i]*$unit_eq); 
 	$c[$i]->set_length($c_len[$i]);
 	$c[$i]->layout();
@@ -161,7 +160,10 @@ sub render {
 	    $c[$i]->set_url("/cview/view_chromosome.pl?map_version_id=".($self->get_map()->get_id())."&amp;chr_nr=$chr_names[$i]");
 	}    
 	if ($c[$i]->get_scaling_factor() == 0) { 
-	    die "Scaling factor is 0. How did this happen?";
+	    print STDERR join (", ", map { $_->get_offset } $c[$i]->get_markers())."\n";
+	    print STDERR "LENGTH = ".$c[$i]->get_length()."\n";
+	    print STDERR "HEIGHT = ".$c[$i]->get_height()."\n";
+	    die "Scaling factor is 0 for chromosome $i. How did this happen?";
 	}
 	$self->{map_image}->add_chromosome($c[$i]);
     }
