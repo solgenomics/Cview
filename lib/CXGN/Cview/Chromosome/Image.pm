@@ -31,7 +31,7 @@ sub render {
     my $self = shift;
     my $image = shift;
 
-    print STDERR "Rendering chromosome...\n";
+    #print STDERR "Rendering chromosome...\n";
     my $ratio = $self->{chr_image}->width()/$self->{chr_image}->height();
     my $halfwidth = int(($self->get_height()* $ratio)/2);
     $image->copyResized($self->{chr_image}, 
@@ -46,7 +46,7 @@ sub render {
 	);
 
     $self->draw_caption($image);
-    print STDERR "Done.\n";
+    #print STDERR "Done.\n";
 
 }
 

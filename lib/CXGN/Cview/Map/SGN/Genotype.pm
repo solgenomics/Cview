@@ -151,7 +151,7 @@ sub get_chromosome {
 	    $m->set_color(@color);
 	    $m->set_offset($top_marker);
 	    $c->add_marker($m);
-	    $c->set_url("/cview/view_chromosome.pl?chr_nr=$chr1&amp;map_id=$self->{map_id}&amp;show_ruler=1");
+	    $c->set_url("/cview/view_chromosome.pl?chr_nr=$chr1&amp;map_id=".($self->get_id())."&amp;show_ruler=1");
 	}
 	
 	elsif ("$chr1" eq "$chr2") { 
