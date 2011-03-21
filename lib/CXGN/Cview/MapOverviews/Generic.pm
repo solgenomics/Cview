@@ -51,7 +51,7 @@ sub new {
 
     my $self = $class -> SUPER::new($map, $args);
 
-    if (!$map) { exit(); }
+#    if (!$map) { exit(); }
 
     $self->set_dbh($args->{dbh});
     $self->set_map($map);
