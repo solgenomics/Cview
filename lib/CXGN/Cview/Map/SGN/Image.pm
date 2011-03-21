@@ -23,7 +23,7 @@ sub new {
 
     my @chr_names = ();
     foreach my $f (@files) { 
-	if (! -e $f) { die "Can't find file $f."; }
+	if (! -e $f) { warn "Can't find file $f."; }
 	##print STDERR "CHR: ".(basename($f, ".png"))."\n";
 	push @chr_names, basename($f, ".png");
     }
