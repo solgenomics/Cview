@@ -87,49 +87,51 @@ sub get_chromosome {
     my $chromosome = CXGN::Cview::Chromosome::Physical->new();
 
     my $largest_offset = 0;
-
-    my (@gff) = $self->{gbrowse_fpc}->databases();
-    if (@gff > 1) { die "Can't deal with multiple databases right now..."; }
-    if (!@gff) {    die "No database found!"; }
-    my ($gff) = @gff;
-
-    for my $m ($genetic->get_markers()) {
-	$m->set_chromosome($chromosome);
-	$chromosome->add_marker($m);
-	my $offset = $m->get_offset();
-	if ($offset > $largest_offset) {
-	    $largest_offset=$offset;
-	}
-	$m->hide();
-
-	my @gff_markers = $gff->features(-method => 'marker',
+    eval { 
+	my (@gff) = $self->{gbrowse_fpc}->databases();
+	if (@gff > 1) { die "Can't deal with multiple databases right now..."; }
+	if (!@gff) {    die "No database found!"; }
+	my ($gff) = @gff;
+	
+	for my $m ($genetic->get_markers()) {
+	    $m->set_chromosome($chromosome);
+	    $chromosome->add_marker($m);
+	    my $offset = $m->get_offset();
+	    if ($offset > $largest_offset) {
+		$largest_offset=$offset;
+	    }
+	    $m->hide();
+	    
+	    my @gff_markers = $gff->features(-method => 'marker',
 		       -attributes => { Name => $m->get_name() },
-		       );
-	my @contigs = ();
-	for my $gm (@gff_markers) {
-	    @contigs = $gm->refseq();
+		);
+	    my @contigs = ();
+	    for my $gm (@gff_markers) {
+		@contigs = $gm->refseq();
+	    }
+	    my $count = 0;
+	    for my $c (@contigs) {
+		my $contig = CXGN::Cview::Marker::Physical->new();
+		$contig->set_chromosome($chromosome);
+		$contig->set_name($c);
+		
+		#my $url = "/gbrowse/gbrowse/sanger_tomato_fpc/?name=$c";
+		my $url = $self->{gbrowse_fpc}->view_url({ name => $c });
+		$contig->set_marker_name($c);
+		$contig->set_marker_type("contig");
+		$contig->set_url($url);
+		$contig->set_offset($m->get_offset());
+		$contig->get_label()->set_name($c);
+		$contig->get_label()->set_url($url);
+		$contig->set_tooltip("Contig: $c. Anchored to: ".($m->get_name()).".");
+		$chromosome -> add_marker($contig);
+		$count++;
+	    }
 	}
-	my $count = 0;
-	for my $c (@contigs) {
-	    my $contig = CXGN::Cview::Marker::Physical->new();
-	    $contig->set_chromosome($chromosome);
-	    $contig->set_name($c);
-
-	    #my $url = "/gbrowse/gbrowse/sanger_tomato_fpc/?name=$c";
-	    my $url = $self->{gbrowse_fpc}->view_url({ name => $c });
-	    $contig->set_marker_name($c);
-	    $contig->set_marker_type("contig");
-	    $contig->set_url($url);
-	    $contig->set_offset($m->get_offset());
-	    $contig->get_label()->set_name($c);
-	    $contig->get_label()->set_url($url);
-	    $contig->set_tooltip("Contig: $c. Anchored to: ".($m->get_name()).".");
-	    $chromosome -> add_marker($contig);
-	    $count++;
-	}
-    }
+    };
     $chromosome->set_length($largest_offset);
     $self->{chr}->[$chr_nr]=$chromosome;
+
     return $chromosome;
 
 }
@@ -154,12 +156,19 @@ sub get_overview_chromosome {
 
     my $chromosome = $self->get_chromosome($chr_nr);
 
-    for my $m ($chromosome->get_markers()) {
-        if ($m->get_marker_type() eq "contig") {
-            my $offset = $m->get_offset();
-            $bargraph -> add_association("manual", $offset, 1);
-            if ($offset>$largest_offset) { $largest_offset = $offset; }
-        }
+    eval { 
+	for my $m ($chromosome->get_markers()) {
+	    if ($m->get_marker_type() eq "contig") {
+		my $offset = $m->get_offset();
+		$bargraph -> add_association("manual", $offset, 1);
+		if ($offset>$largest_offset) { $largest_offset = $offset; }
+	    }
+	}
+    };
+    if ($@) { 
+	# avoid division by zero errors
+	$bargraph->set_length(1);
+	print STDERR "No data seem available for contig map.\n";
     }
     return $bargraph;
 }
