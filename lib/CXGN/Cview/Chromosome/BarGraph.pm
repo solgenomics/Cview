@@ -94,7 +94,7 @@ sub render {
     # draw coordinate system lines
     #
     my $halfwidth = $self->get_width()/2;
-    $self->{largest} = $self->_get_largest_group();
+    $self->{largest} = $self->_get_largest_group() || 2;
     
     $image -> line($self->get_horizontal_offset()-$halfwidth, $self->get_vertical_offset(), $self->get_horizontal_offset()-$halfwidth, $self->get_vertical_offset()+$self->{height}, $color);
 
