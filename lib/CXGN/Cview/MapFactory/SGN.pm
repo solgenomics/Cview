@@ -69,7 +69,7 @@ use CXGN::Cview::Map::SGN::IL;
 use CXGN::Cview::Map::SGN::Physical;
 use CXGN::Cview::Map::SGN::ProjectStats;
 use CXGN::Cview::Map::SGN::AGP;
-use CXGN::Cview::Map::SGN::ITAG;
+#use CXGN::Cview::Map::SGN::ITAG;
 use CXGN::Cview::Map::SGN::Contig;
 use CXGN::Cview::Map::SGN::Scaffold;
 use CXGN::Cview::Map::SGN::Image;
@@ -220,31 +220,31 @@ sub create {
 	    );
 
     }
-    elsif ($id =~ /^itag$/i) {
+#     elsif ($id =~ /^itag$/i) {
 
-	my (@sources) = map $_->data_sources(), $c->enabled_feature('gbrowse2');
-	my ($gbrowse_itag) = grep $_->description()=~/ITAG_devel.+genomic/i, @sources;
-	my @dbs;
-	if ($gbrowse_itag) {
-	    @dbs = $gbrowse_itag->databases();
-	    @dbs > 1 and die "I can handle only one db!";
-	}
+# 	my (@sources) = map $_->data_sources(), $c->enabled_feature('gbrowse2');
+# 	my ($gbrowse_itag) = grep $_->description()=~/ITAG_devel.+genomic/i, @sources;
+# 	my @dbs;
+# 	if ($gbrowse_itag) {
+# 	    @dbs = $gbrowse_itag->databases();
+# 	    @dbs > 1 and die "I can handle only one db!";
+# 	}
 
-        return unless $gbrowse_itag;
+#         return unless $gbrowse_itag;
 
-        my $gbrowse_view_link = $gbrowse_itag->view_url;
+#         my $gbrowse_view_link = $gbrowse_itag->view_url;
 
-	my $marker_link =  sub { my $id = shift; return "$gbrowse_view_link?name=$id"; };
-	return CXGN::Cview::Map::SGN::ITAG->new($self->get_dbh(), $id, {
-						short_name => "Tomato ITAG map",
-						long_name=>"Tomato (Solanum lycopersicum) ITAG map",
-						abstract=>"<p>The ITAG map shows the contig assembly and the corresponding BACs as used by the most recent annotation from the International Tomato Annotation Group (ITAG, see <a href=\"http://www.ab.wur.nl/TomatoWiki\">ITAG Wiki</a>). Clicking on the contigs will show the ITAG annotation in the genome browser.",
-						temp_dir    => $temp_dir,
-						marker_link => $marker_link,
+# 	my $marker_link =  sub { my $id = shift; return "$gbrowse_view_link?name=$id"; };
+# 	return CXGN::Cview::Map::SGN::ITAG->new($self->get_dbh(), $id, {
+# 						short_name => "Tomato ITAG map",
+# 						long_name=>"Tomato (Solanum lycopersicum) ITAG map",
+# 						abstract=>"<p>The ITAG map shows the contig assembly and the corresponding BACs as used by the most recent annotation from the International Tomato Annotation Group (ITAG, see <a href=\"http://www.ab.wur.nl/TomatoWiki\">ITAG Wiki</a>). Clicking on the contigs will show the ITAG annotation in the genome browser.",
+# 						temp_dir    => $temp_dir,
+# 						marker_link => $marker_link,
 
-					    }
-	    );
-    }
+# 					    }
+# 	    );
+#     }
 
 #     elsif ($id =~ /scaffold103/) {
 
@@ -289,6 +289,7 @@ sub create {
     }
     elsif ($id =~ /pachy/i) { 
 	my $image_dir = $self->{context}->get_conf('image_path');
+	print STDERR "**** IMAGE DIR = $image_dir\n";
 	my $map = CXGN::Cview::Map::SGN::Image->new(
 	    $self->get_dbh(),
 	    $id,
@@ -397,7 +398,7 @@ sub get_system_maps {
 
     # push il, physical, contig, and agp map
     #
-    foreach my $id ("il6.5", "il6.9", "p9", "c9", "agp", "itag", "pachy") {
+    foreach my $id ("il6.5", "il6.9", "p9", "c9", "agp", "pachy") {
 	my $map = $self->create( {map_id=>$id} );
 	if ($map) { push @maps, $map; }
     }
