@@ -67,7 +67,7 @@ sub get_chromosome {
     my $files = $self->get_files();
 
     #print STDERR "FILE: $files->{$chr_nr}\n";
-    if ( $files->{$chr_nr} =~ /sgn/ ) {
+    if ( $files->{$chr_nr} && $files->{$chr_nr} =~ /sgn/ ) {
         $self->append_messages(
 "This AGP map was automatically generated at SGN because no AGP file was submitted by the sequencing partner. It may be missing BACs or represent the information incorrectly. It is given as an approximate working reference"
         );
