@@ -192,7 +192,7 @@ sub get_files {
      # if the projects have not supplied a file, let's look for an SGN generated
      # file that is prefixed with "sgn_".
      #
-        if ( !-e $versioned_filenames{$k} ) {
+        if ( !($versioned_filenames{$k} && -e $versioned_filenames{$k}) ) {
             if ( -e $sgn_files{$k} ) {
                 $versioned_filenames{$k} = $sgn_files{$k};
 
@@ -293,7 +293,7 @@ sub get_filename {
     my $self     = shift;
     my $filename = shift;
     my @files    = `ls -t $filename`;
-
+    return undef unless @files;
     #print STDERR "unversioned name = $filename. versioned name = $files[0]\n";
     chomp( $files[0] );
     return $files[0];
