@@ -586,8 +586,10 @@ sub get_map_stats {
 
     my $total_count = 0;
 
-    my $s = "<table summary=\"\">";
-    $s .= "<tr><td colspan=\"2\"><b>Marker collections</b></td></tr>";
+    my $s = <<"";
+<table summary="">
+<tr><td colspan="2"><b>Marker collections</b></td></tr>
+
     my $sth = $self->get_dbh() -> prepare($query);
     $sth -> execute($self->get_id());
 
@@ -595,14 +597,25 @@ sub get_map_stats {
     $map_name =~ s/ /\+/g;
 
     while (my ($type, $count)= $sth->fetchrow_array()) {
-	$s .="<tr><td>$type</td><td align=\"right\"><a href=\"/search/markers/markersearch.pl?types=$type&amp;maps=$map_name\">$count</a></td></tr>";
+	$s .= <<"";
+<tr>
+  <td>$type</td>
+  <td align="right">
+     <a href="/search/markers/markersearch.pl?types=$type&amp;maps=$map_name">$count</a>
+  </td>
+</tr>
+
 	$total_count += $count;
-
-
     }
-    $s .= "<tr><td>&nbsp;</td><td>&nbsp;</td></tr>\n";
-    $s .= "<tr><td><b>Total</b>: </td><td align=\"right\"><a href=\"/search/markers/markersearch.pl?maps=$map_name\"><b>$total_count</b></a></td></tr>";
-    $s .= "</table>";
+    $s .= <<"";
+<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr>
+  <td><b>Total</b>:</td>
+  <td align="right">
+      <a style="font-weight: bold" href="/search/markers/markersearch.pl?maps=$map_name">$total_count</a>
+  </td>
+</tr>
+</table>
 
     my $protocol_q = "SELECT distinct(marker_experiment.protocol), count(distinct(marker_experiment.marker_experiment_id))
                         FROM marker
@@ -615,15 +628,25 @@ sub get_map_stats {
     $pqh ->execute($self->get_id());
 
     my $total_protocols = 0;
-    $s.= qq { <br /><br /><table><tr><td colspan="2"><b>Protocols:</b></td></tr> };
-    $s.= qq { <tr><td>&nbsp;</td><td>&nbsp;</td></tr> };
+    $s .= <<"";
+<br /><br />
+<table>
+  <tr>
+     <td colspan="2"><b>Protocols</b></td>
+  </tr>
+
     while (my ($protocol, $count) = $pqh->fetchrow_array()) {
 	$s.= qq { <tr><td>$protocol</td><td align="right">$count</td></tr> };
 	$total_protocols += $count;
     }
-    $s .= qq { <tr><td colspan="2">&nbsp;</td></tr> };
-    $s .= qq { <tr><td><b>Total:</b></td><td align="right"><b>$total_protocols</b></td></tr> };
-    $s .= "</table>";
+
+    $s .= <<"";
+<tr><td colspan="2">&nbsp;</td></tr>
+<tr>
+   <td><b>Total:</b></td>
+   <td align="right"><b>$total_protocols</b></td>
+</tr>
+</table>
 
     return $s;
 }
