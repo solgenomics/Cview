@@ -181,7 +181,7 @@ sub create {
 
 	my $ref_map = "ExPEN2000";
 	if ($id==5) { $ref_map = "ExPEN1992";}
-	my $long_name =qq | <i>Solanum lycopersicum</i> Zamir Introgression Lines (IL) based on $ref_map |;
+	my $long_name =qq | Solanum lycopersicum Zamir Introgression Lines (IL) based on $ref_map |;
 
 	return CXGN::Cview::Map::SGN::IL->new($self->get_dbh(), $id,
 					      { short_name    => "Tomato IL map",
