@@ -2,7 +2,7 @@ package CXGN::Cview::ViewMaps;
 use strict;
 use warnings;
 
-use CXGN::Page::FormattingHelpers qw | page_title_html |;
+use CXGN::Page::FormattingHelpers qw | page_title_html info_table_html |;
 use CXGN::Cview::MapFactory;
 use CXGN::Cview::ChromosomeViewer;
 use CXGN::Cview::ChrLink;
@@ -271,15 +271,17 @@ sub get_select_toolbar {
 #    my $center_select = CXGN::Cview::Utils::get_maps_select($self, !$center_map || $center_map->get_id(), "center_map_version_id", 1);
 #    my $right_select = CXGN::Cview::Utils::get_maps_select($self, !$right_map || $right_map->get_id(), "right_map_version_id", 1);
 
-
-    return qq { 
-	<form action="#">
-	    <center>
-	    <table summary=""><tr><td>$selects[0]</td><td>$selects[1]</td><td>$selects[2]</td></tr></table>
-	    <input type="submit" value="set" />
-	    </center>
-	</form>
-	};
+    return join '', map "$_\n", (
+	'<form action="#">',
+        info_table_html(
+            'Left' => $selects[0],
+            'Center' => $selects[1],
+            'Right' => $selects[2],
+            __border => 0,
+            ),
+        '<input style="width: 10em; line-height: 2; font-size: 120%" type="submit" value="set" />',
+        '</form>',
+        );
 }
 
 # =head2 function display()
