@@ -8,8 +8,7 @@ use CXGN::DB::Connection;
 use CXGN::Tools::WebImageCache;
 use CXGN::Cview::Map::Tools;
 use CXGN::Cview;
-use CXGN::Cview::Utils
-  qw | set_marker_color get_maps_select get_chromosome_links|;
+use CXGN::Cview::Utils qw|set_marker_color get_maps_select get_chromosome_links|;
 use CXGN::Cview::MapImage;
 use CXGN::Cview::Chromosome;
 use CXGN::Cview::Chromosome::Physical;
@@ -18,7 +17,7 @@ use CXGN::Cview::IL;
 use CXGN::Cview::ChrLink;
 use CXGN::Cview::MapFactory;
 
-use base qw | CXGN::DB::Object |;
+use base qw| CXGN::DB::Object |;
 
 =head1 NAME
 
@@ -27,31 +26,31 @@ CXGN::Cview::ChromosomeViewer -- a module to display comparative chromosome maps
 =head1 SYNOPSIS
 
  my $viewer = CXGN::Cview::ChromosomeViewer->new;
- $viewer -> set_map_id($map_id);
- $viewer -> set_map_version_id($map_version_id);
- $viewer -> set_ref_chr($chr_nr);
- $viewer -> set_cM($cM);
- $viewer -> set_zoom($zoom);
- $viewer -> set_show_physical($show_physical);
- $viewer -> set_show_ruler($show_ruler);
- $viewer -> set_show_IL($show_IL);
- $viewer -> set_comp_map_id($comp_map_id);
- $viewer -> set_comp_map_version_id($comp_map_version_id);
- $viewer -> set_comp_chr($comp_chr);
- $viewer -> set_color_model($color_model);
+ $viewer->set_map_id($map_id);
+ $viewer->set_map_version_id($map_version_id);
+ $viewer->set_ref_chr($chr_nr);
+ $viewer->set_cM($cM);
+ $viewer->set_zoom($zoom);
+ $viewer->set_show_physical($show_physical);
+ $viewer->set_show_ruler($show_ruler);
+ $viewer->set_show_IL($show_IL);
+ $viewer->set_comp_map_id($comp_map_id);
+ $viewer->set_comp_map_version_id($comp_map_version_id);
+ $viewer->set_comp_chr($comp_chr);
+ $viewer->set_color_model($color_model);
  if ($map_chr_select) {
      my ($comp_map_id, $comp_chr) = split / /, $map_chr_select;
      $viewer->set_comp_map_id($comp_map_id);
      $viewer->set_comp_chr($comp_chr);
  }
- $viewer -> set_cM_start($cM_start);
- $viewer -> set_cM_end($cM_end);
- $viewer -> set_confidence($confidence);
- $viewer -> set_show_zoomed($show_zoomed);
- $viewer -> set_hilite_zoomed($zoomed_hilite_start, $zoomed_hilite_end);
- $viewer -> set_force($force);
+ $viewer->set_cM_start($cM_start);
+ $viewer->set_cM_end($cM_end);
+ $viewer->set_confidence($confidence);
+ $viewer->set_show_zoomed($show_zoomed);
+ $viewer->set_hilite_zoomed($zoomed_hilite_start, $zoomed_hilite_end);
+ $viewer->set_force($force);
 
- $viewer -> generate_page();
+ $viewer->generate_page();
 
 =head1 DESCRIPTION
 
