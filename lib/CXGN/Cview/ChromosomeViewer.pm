@@ -1908,7 +1908,7 @@ sub get_marker_map_links {
             my $selected = "";
 
             if ( defined( $self->get_comp_map_version_id() )
-                && $o->{map_version_id} == $self->get_comp_map_version_id() )
+                && $o->{map_version_id} eq $self->get_comp_map_version_id() )
             {
                 $selected = "selected=\"selected\"";
             }
