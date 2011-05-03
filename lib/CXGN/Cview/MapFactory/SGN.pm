@@ -145,6 +145,7 @@ sub create {
 	my $sth = $self->get_dbh()->prepare($query);
 	$sth->execute($id);
 	my ($id, $map_type) = $sth->fetchrow_array();
+    $map_type || = '';
 	if ($map_type =~ /genetic/i) {
 	    return CXGN::Cview::Map::SGN::Genetic->new($self->get_dbh(), $id);
 
