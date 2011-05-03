@@ -8,3 +8,4 @@ MYMETA.yml
 *.sw?
 *.bak
 blib/*
+MYMETA.json
