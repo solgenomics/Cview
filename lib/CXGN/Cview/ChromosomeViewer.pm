@@ -419,7 +419,12 @@ sub get_image {
     my $cache         = CXGN::Tools::WebImageCache->new();
     my $state_hashref = $self->get_state_hashref();
 
-    my @sorted_values = map { if (exists($state_hashref->{$_}) && defined($state_hashref->{$_})) { $state_hashref->{$_};} } sort keys %$state_hashref;
+    my @sorted_values = map {
+        if ( exists( $state_hashref->{$_} ) && defined( $state_hashref->{$_} ) )
+        {
+            $state_hashref->{$_};
+        }
+    } sort keys %$state_hashref;
     my $key = join "-", @sorted_values;
 
     #    print STDERR "USING KEY: $key\n";
@@ -657,7 +662,7 @@ sub generate_image {
         $self->{r}->set_height( $self->get_chr_height() );
         $self->{r}->set_start_value(0);
         $self->{r}->set_end_value( $self->{c1}->get_length() );
-	$self->{r}->set_units($self->get_ref_map()->get_units());
+        $self->{r}->set_units( $self->get_ref_map()->get_units() );
         $self->{map}->add_ruler( $self->{r} );
     }
 
@@ -684,7 +689,8 @@ sub generate_image {
         $self->{c2}->set_vertical_offset(40);
         $self->{c2}->set_hilite( $self->get_hilite_zoomed() );
         $self->{c2}->set_horizontal_offset( $x_distance * $element_count );
-	$self->{c2}->set_units($self->{c1}->get_units());
+        $self->{c2}->set_units( $self->{c1}->get_units() );
+
         # because we have incomplete length information from the query above,
         # we set the length of the zoomed in chromosome
         # to be the same as the comparison chromosome (the length is simply
@@ -947,7 +953,9 @@ sub set_ref_map {
 
 sub get_comp_map {
     my $self = shift;
-    if ( !exists( $self->{comp_map}) || !defined($self->{comp_map}) ) { $self->{comp_map} = undef; }
+    if ( !exists( $self->{comp_map} ) || !defined( $self->{comp_map} ) ) {
+        $self->{comp_map} = undef;
+    }
     return $self->{comp_map};
 
 }
@@ -977,7 +985,9 @@ sub get_map_id {
     my $self = shift;
 
     #    if (!exists($self->{map_id})) { $self->{map_id}=0; }
-    if ( !exists( $self->{map_id}) || !defined($self->{map_id}) ) { $self->{map_id} = 0; }
+    if ( !exists( $self->{map_id} ) || !defined( $self->{map_id} ) ) {
+        $self->{map_id} = 0;
+    }
     return $self->{map_id};
 }
 
@@ -1016,8 +1026,10 @@ sub set_map_version_id {
 
 sub get_comp_map_version_id {
     my $self = shift;
-    if (!exists($self->{comp_map_version_id}) || !defined($self->{comp_map_version_id})) { 
-	$self->{comp_map_version_id} = '';
+    if (   !exists( $self->{comp_map_version_id} )
+        || !defined( $self->{comp_map_version_id} ) )
+    {
+        $self->{comp_map_version_id} = '';
     }
     return $self->{comp_map_version_id};
 
@@ -1057,7 +1069,9 @@ sub set_comp_map_id {
 
 sub get_comp_map_id {
     my $self = shift;
-    if ( !exists( $self->{comp_map_id}) || !defined($self->{comp_map_id}) ) { $self->{comp_map_id} = 0; }
+    if ( !exists( $self->{comp_map_id} ) || !defined( $self->{comp_map_id} ) ) {
+        $self->{comp_map_id} = 0;
+    }
     return $self->{comp_map_id};
 }
 
@@ -1129,7 +1143,9 @@ sub set_comp_chr {
 
 sub get_comp_chr {
     my $self = shift;
-    if ( !exists( $self->{comp_chr}) || !defined($self->{comp_chr}) ) { $self->{comp_chr} = 0; }
+    if ( !exists( $self->{comp_chr} ) || !defined( $self->{comp_chr} ) ) {
+        $self->{comp_chr} = 0;
+    }
     return $self->{comp_chr};
 }
 
@@ -1145,8 +1161,8 @@ sub get_comp_chr {
 
 sub get_ref_chr_len {
     my $self = shift;
-    if (!exists($self->{ref_chr_len}) || !defined($self->{ref_chr_len})) { 
-	$self->{ref_chr_len} = '';
+    if ( !exists( $self->{ref_chr_len} ) || !defined( $self->{ref_chr_len} ) ) {
+        $self->{ref_chr_len} = '';
     }
     return $self->{ref_chr_len};
 }
@@ -1267,7 +1283,9 @@ sub set_cM {
 
 sub get_cM {
     my $self = shift;
-    if ( !exists( $self->{cM}) || !defined($self->{cM}) ) { $self->{cM} = 0; }
+    if ( !exists( $self->{cM} ) || !defined( $self->{cM} ) ) {
+        $self->{cM} = 0;
+    }
     return $self->{cM};
 }
 
@@ -1287,7 +1305,10 @@ sub get_cM {
 sub set_zoom {
     my $self = shift;
     $self->{zoom} = shift;
-    if ( !exists( $self->{zoom} ) || !defined($self->{zoom}) || $self->{zoom} eq "" ) {
+    if (   !exists( $self->{zoom} )
+        || !defined( $self->{zoom} )
+        || $self->{zoom} eq "" )
+    {
         $self->{zoom} = 0;
     }
     if ( $self->{zoom} == 0 ) { $self->{zoom} = 1; }
@@ -1307,7 +1328,9 @@ sub set_zoom {
 
 sub get_zoom {
     my $self = shift;
-    if ( !exists( $self->{zoom} ) || !defined($self->{zoom}) ) { $self->{zoom} = 1; }
+    if ( !exists( $self->{zoom} ) || !defined( $self->{zoom} ) ) {
+        $self->{zoom} = 1;
+    }
     return $self->{zoom};
 }
 
@@ -1326,8 +1349,8 @@ sub get_zoom {
 
 sub get_clicked {
     my $self = shift;
-    if (!exists($self->{clicked}) || !defined($self->{clicked})) { 
-	$self->{clicked} = 0;
+    if ( !exists( $self->{clicked} ) || !defined( $self->{clicked} ) ) {
+        $self->{clicked} = 0;
     }
     return $self->{clicked};
 }
@@ -1350,7 +1373,9 @@ sub set_clicked {
 
 sub get_show_ruler {
     my $self = shift;
-    if ( !exists( $self->{show_ruler}) || !defined($self->{show_ruler}) ) { $self->{show_ruler} = 0; }
+    if ( !exists( $self->{show_ruler} ) || !defined( $self->{show_ruler} ) ) {
+        $self->{show_ruler} = 0;
+    }
     return $self->{show_ruler};
 }
 
@@ -1401,7 +1426,9 @@ sub set_show_IL {
 
 sub get_show_IL {
     my $self = shift;
-    if ( !exists( $self->{show_IL}) || !defined($self->{show_IL}) ) { $self->{show_IL} = 0; }
+    if ( !exists( $self->{show_IL} ) || !defined( $self->{show_IL} ) ) {
+        $self->{show_IL} = 0;
+    }
     return $self->{show_IL};
 }
 
@@ -1436,7 +1463,11 @@ sub set_show_physical {
 
 sub get_show_physical {
     my $self = shift;
-    if ( !exists( $self->{show_physical}) || !defined($self->{show_physical}) ) { $self->{show_physical} = 0; }
+    if (   !exists( $self->{show_physical} )
+        || !defined( $self->{show_physical} ) )
+    {
+        $self->{show_physical} = 0;
+    }
     return $self->{show_physical};
 }
 
@@ -1452,8 +1483,9 @@ sub get_show_physical {
 
 sub get_show_offsets {
     my $self = shift;
-    if (!exists($self->{show_offsets}) || !defined($self->{show_offsets})) { 
-	$self->{show_offsets}=0;
+    if ( !exists( $self->{show_offsets} ) || !defined( $self->{show_offsets} ) )
+    {
+        $self->{show_offsets} = 0;
     }
     return $self->{show_offsets};
 }
@@ -1476,7 +1508,9 @@ sub set_show_offsets {
 
 sub get_size {
     my $self = shift;
-    if ( !exists( $self->{size} ) or !defined($self->{size}) ) { $self->{size} = 0; }
+    if ( !exists( $self->{size} ) or !defined( $self->{size} ) ) {
+        $self->{size} = 0;
+    }
     return $self->{size};
 }
 
@@ -1515,7 +1549,7 @@ sub set_size {
 =cut
 
 sub set_hilite {
-    my $self   = shift;
+    my $self = shift;
     my $hilite = shift || '';
     $hilite =~ tr/\,\.\:\;\// /;
     $hilite =~ s/\s+/ /;
@@ -1536,7 +1570,9 @@ sub set_hilite {
 
 sub get_hilite {
     my $self = shift;
-    if ( !exists( $self->{hilite}) || !defined($self->{hilite}) ) { $self->{hilite} = ""; }
+    if ( !exists( $self->{hilite} ) || !defined( $self->{hilite} ) ) {
+        $self->{hilite} = "";
+    }
     return $self->{hilite};
 }
 
@@ -1553,10 +1589,10 @@ sub get_hilite {
 =cut
 
 sub set_confidence {
-    my $self       = shift;
+    my $self = shift;
     my $confidence = shift || '';
     $confidence =~ s/[A-Za-z]//g;
-    if (!defined($confidence) || $confidence eq "" ) { $confidence = -2; }
+    if ( !defined($confidence) || $confidence eq "" ) { $confidence = -2; }
     $confidence = $confidence + 0;
     $self->{confidence} = $confidence;
 }
@@ -1583,7 +1619,9 @@ sub set_confidence {
 
 sub get_confidence {
     my $self = shift;
-    if ( !exists( $self->{confidence}) || !defined($self->{confidence}) ) { $self->{confidence} = -2; }
+    if ( !exists( $self->{confidence} ) || !defined( $self->{confidence} ) ) {
+        $self->{confidence} = -2;
+    }
     return $self->{confidence};
 }
 
@@ -1613,7 +1651,9 @@ sub set_display_marker_type {
 
 sub get_display_marker_type {
     my $self = shift;
-    if ( !exists( $self->{display_marker_type}) || !defined($self->{display_marker_type}) ) {
+    if (   !exists( $self->{display_marker_type} )
+        || !defined( $self->{display_marker_type} ) )
+    {
         $self->{display_marker_type} = "";
     }
     return $self->{display_marker_type};
@@ -1649,7 +1689,9 @@ sub set_show_zoomed {
 
 sub get_show_zoomed {
     my $self = shift;
-    if ( !exists( $self->{show_zoomed}) || !defined($self->{show_zoomed}) ) { $self->{show_zoomed} = 0; }
+    if ( !exists( $self->{show_zoomed} ) || !defined( $self->{show_zoomed} ) ) {
+        $self->{show_zoomed} = 0;
+    }
     return $self->{show_zoomed};
 }
 
@@ -1676,11 +1718,15 @@ sub set_hilite_zoomed {
 
 sub get_hilite_zoomed {
     my $self = shift;
-    if (!exists($self->{hilite_zoom_start}) || !defined($self->{hilite_zoom_start})) { 
-	$self->{hilite_zoom_start} = '';
+    if (   !exists( $self->{hilite_zoom_start} )
+        || !defined( $self->{hilite_zoom_start} ) )
+    {
+        $self->{hilite_zoom_start} = '';
     }
-    if (!exists($self->{hilite_zoom_end}) || !defined($self->{hilite_zoom_end})) { 
-	$self->{hilite_zoom_end} = '';
+    if (   !exists( $self->{hilite_zoom_end} )
+        || !defined( $self->{hilite_zoom_end} ) )
+    {
+        $self->{hilite_zoom_end} = '';
     }
     return ( $self->{hilite_zoom_start}, $self->{hilite_zoom_end} );
 }
@@ -1714,7 +1760,9 @@ sub set_color_model {
 
 sub get_color_model {
     my $self = shift;
-    if ( !exists( $self->{color_model}) || !defined($self->{color_model}) ) { $self->{color_model} = ""; }
+    if ( !exists( $self->{color_model} ) || !defined( $self->{color_model} ) ) {
+        $self->{color_model} = "";
+    }
     return $self->{color_model};
 }
 
@@ -1825,11 +1873,11 @@ sub get_marker_map_links {
       . ( $self->get_ref_chr() ) . "\" />
 	<input type=\"hidden\" name=\"map_version_id\" value=\""
       . ( $self->get_map_version_id() ) . "\" />
-	<input type=\"hidden\" name=\"zoom\" value=\"" . ( $self->get_zoom()  ) . "\" />
+	<input type=\"hidden\" name=\"zoom\" value=\"" . ( $self->get_zoom() ) . "\" />
 	<input type=\"hidden\" name=\"show_ruler\" value=\""
       . ( $self->get_show_ruler() ) . "\" />
 	<input type=\"hidden\" name=\"show_IL\" value=\""
-      . ( $self->get_show_IL()  ) . "\" />
+      . ( $self->get_show_IL() ) . "\" />
         <input type=\"hidden\" name=\"show_offsets\" value=\""
       . ( $self->get_show_offsets() ) . "\" />
         <input type=\"hidden\" name=\"cM_start\" value=\""
@@ -1847,8 +1895,7 @@ sub get_marker_map_links {
         <input type=\"hidden\" name=\"hilite\" value=\""
       . ( $self->get_hilite() ) . "\" />
         <input type=\"hidden\" name=\"marker_type\" value=\""
-      . ( $self->get_display_marker_type() )
-      . "\" /> ";
+      . ( $self->get_display_marker_type() ) . "\" /> ";
 
     my @options =
       $self->get_ref_map()->get_chromosome_connections( $self->get_ref_chr() );
@@ -1860,8 +1907,10 @@ sub get_marker_map_links {
 
  #	print STDERR $o->{map_version_id}, $o->{chr_nr}, $o->{short_name}."<br />\n";
             my $selected = "";
-	    
-            if (defined($self->get_comp_map_version_id()) &&  $o->{map_version_id} == $self->get_comp_map_version_id() ) {
+
+            if ( defined( $self->get_comp_map_version_id() )
+                && $o->{map_version_id} == $self->get_comp_map_version_id() )
+            {
                 $selected = "selected=\"selected\"";
             }
 
@@ -1887,9 +1936,11 @@ qq {  <option value="$o->{map_version_id} $o->{lg_name}" $selected>Map $o->{shor
 }
 
 sub append_error {
-    my $self   = shift;
+    my $self = shift;
     my $append = shift || '';
-    if ( !exists( $self->{errors}) || !defined($self->{errors}) ) { $self->{errors} = ""; }
+    if ( !exists( $self->{errors} ) || !defined( $self->{errors} ) ) {
+        $self->{errors} = "";
+    }
     $self->{errors} .= $append;
 }
 
@@ -2149,7 +2200,7 @@ sub display_toolbar {
 
     my $toggle_size_select = qq { <select name="size" > };
 
-    my @selected = ('', '', '');
+    my @selected = ( '', '', '' );
     if    ( $self->{size} =~ /small/i ) { $selected[0] = qq { selected="1" }; }
     elsif ( $self->{size} =~ /large/i ) { $selected[2] = qq { selected="1" }; }
     else                                { $selected[1] = qq { selected="1" }; }
