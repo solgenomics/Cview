@@ -28,7 +28,7 @@ sub new {
 
     my @chr_lens;
     foreach my $f (@files) {
-
+        next unless -e $f;
         # use length in pixels as map length
         my $length = `file $f`;
         $length =~ s/.*x (.\d+),.*/$1/;
