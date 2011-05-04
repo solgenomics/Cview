@@ -86,7 +86,8 @@ sub render {
     }
 
 
-    my $unit_eq = ($image_height-2*$top_margin) /$longest_length;
+    # Prevent division by zero, but does it make sense?
+    my $unit_eq = $longest_length ? ($image_height-2*$top_margin) / $longest_length : 0;
     #print STDERR "unit_eq = $unit_eq\n";
 
     my @clean_markers = ();
