@@ -245,7 +245,7 @@ sub get_marker_count {
             my ( $project, $start, $end, $count, $dir, $clone_name ) =
               split /\t/;
 
-            if ( $dir =~ /R|F/i ) {
+            if ( $dir && $dir =~ /R|F/i ) {
                 $marker_count++;
             }
 
