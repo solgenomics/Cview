@@ -51,7 +51,9 @@ sub new {
     my $args = shift;
 
     my $db_version_id = get_db_id($dbh, $id);
-    my $self = $class -> SUPER::new($dbh, $db_version_id);
+    my $self = $class->SUPER::new($dbh, $db_version_id);
+
+    die "Failed to create object via parent class CXGN::Cview::Map::SGN::Genetic" unless $self;
 
     $self->set_preferred_chromosome_width(18);
     $self->set_short_name($args->{short_name});
