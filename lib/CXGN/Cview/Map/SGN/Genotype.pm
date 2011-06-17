@@ -99,7 +99,6 @@ sub get_chromosome_lengths {
 sub get_chromosome { 
     my $self = shift;
     my $chr_nr = shift;
-    
     my $c = CXGN::Cview::Chromosome->new();
     $c->set_caption($chr_nr);
     
@@ -114,7 +113,7 @@ sub get_chromosome {
                  JOIN sgn.linkage_group ON (genotype_region.lg_id=linkage_group.lg_id)
                  WHERE map_version.current_version='t' 
                    AND genotype_region.marker_id_ns=sgn.marker_experiment.marker_id
-                 AND stock_id =? and genotype_experiment.preferred='t' and linkage_group.lg_name =? ORDER BY position";
+                 AND stock_id =? and genotype_experiment.preferred='t' and linkage_group.lg_name =? ORDER BY position limit 1";
 
     my $query3 = "SELECT linkage_group.lg_name, position  FROM phenome.genotype
                  JOIN phenome.genotype_region USING(genotype_id) 
@@ -126,7 +125,7 @@ sub get_chromosome {
                  WHERE map_version.current_version='t' 
                    -- AND phenome.genotype_region.lg_id=sgn.linkage_group.lg_id
                    AND marker_id_sn=sgn.marker_experiment.marker_id
-                 AND stock_id =? and genotype_experiment.preferred='t' and linkage_group.lg_name=? ORDER BY position";
+                 AND stock_id =? and genotype_experiment.preferred='t' and linkage_group.lg_name=? ORDER BY position limit 1";
 
 
     my $sth2 = $self->get_dbh()->prepare($query2);
@@ -136,7 +135,7 @@ sub get_chromosome {
     $sth3->execute($self->get_id, $chr_nr);
     
     while (my ($chr1, $top_marker, $type, $zygocity_code) = $sth2->fetchrow_array()) { 
-	my ($chr2, $bottom_marker) = $sth3->fetchrow_array();
+        my ($chr2, $bottom_marker) = $sth3->fetchrow_array();
     
 	if ($type eq "map") { 
 	    my $m = CXGN::Cview::Marker->new($c);
