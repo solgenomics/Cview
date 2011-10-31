@@ -79,7 +79,16 @@ sub fetch {
 
     # get the map metadata
     #
-    my $query = "SELECT map_version_id, map_type, short_name, long_name, abstract, public.organism.common_name, organismgroup.name FROM sgn.map JOIN sgn.map_version using(map_id) LEFT JOIN sgn.accession on(parent_1=accession.accession_id) LEFT JOIN public.organism on (public.organism.organism_id=accession.chado_organism_id) LEFT JOIN sgn.organismgroup_member on (public.organism.organism_id=organismgroup_member.organism_id) join sgn.organismgroup using(organismgroup_id)  WHERE map_version_id=?";
+    my $query = "
+         SELECT map_version_id, map_type, short_name, long_name, 
+                abstract, public.organism.species, organismgroup.name 
+         FROM sgn.map JOIN sgn.map_version using(map_id) 
+              LEFT JOIN public.stock on(parent1_stock_id=stock.stock_id)
+              LEFT JOIN public.organism on (stock.organism_id=public.organism.organism_id) 
+              LEFT JOIN sgn.organismgroup_member on (stock.organism_id=organismgroup_member.organism_id) 
+              LEFT JOIN sgn.organismgroup using(organismgroup_id) 
+         WHERE map_version_id=?";
+
     my $sth = $self->get_dbh()->prepare($query);
     $sth->execute($self->get_id());
     my ($map_version_id, $map_type, $short_name, $long_name, $abstract, $organism_name, $common_name) = $sth->fetchrow_array();
