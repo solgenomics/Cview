@@ -80,7 +80,8 @@ sub fetch {
     # get the map metadata
     #
     my $query = "
-         SELECT map_version_id, map_type, short_name, long_name, 
+         SELECT map_version_id, map_type, short_name, long_name,
+                parent1_stock_id, parent2_stock_id,
                 abstract, public.organism.species, organismgroup.name 
          FROM sgn.map JOIN sgn.map_version using(map_id) 
               LEFT JOIN public.stock on(parent1_stock_id=stock.stock_id)
@@ -91,11 +92,13 @@ sub fetch {
 
     my $sth = $self->get_dbh()->prepare($query);
     $sth->execute($self->get_id());
-    my ($map_version_id, $map_type, $short_name, $long_name, $abstract, $organism_name, $common_name) = $sth->fetchrow_array();
+    my ($map_version_id, $map_type, $short_name, $long_name, $parent1_stock_id, $parent2_stock_id, $abstract, $organism_name, $common_name) = $sth->fetchrow_array();
     $self->set_id($map_version_id);
     $self->set_type($map_type);
     $self->set_short_name($short_name);
     $self->set_long_name($long_name);
+    $self->set_parent1_stock_id($parent1_stock_id);
+    $self->set_parent2_stock_id($parent2_stock_id);
     $self->set_abstract($abstract);
     $self->set_organism($organism_name);
     $self->set_common_name($common_name);
@@ -114,7 +117,7 @@ sub fetch {
     $self->set_chromosome_count(scalar(@names));
     $self->set_preferred_chromosome_width(20);
 
-    # get the location of the centromeres
+    # get the location of  the centromeres
     #
     my $centromere_q = "SELECT lg_name, min(position) as north_centromere, max(position) as south_centromere FROM linkage_group left join marker_location on (north_location_id=location_id or south_location_id=location_id) where linkage_group.map_version_id=? group by linkage_group.lg_id, linkage_group.map_version_id, lg_order, lg_name order by lg_order";
     my $centromere_h = $self->get_dbh()->prepare($centromere_q);
@@ -809,6 +812,26 @@ sub set_marker_color {
 
 sub can_overlay {
     return 1;
+}
+
+sub get_stock_name { 
+    my $self = shift;
+    my $id = shift;
+    my $q = "SELECT name FROM stock WHERE stock_id=?";
+    my $h = $self->get_dbh()->prepare($q);
+    $h->execute($id);
+    my ($name) = $h->fetchrow_array();
+    return $name;
+}
+
+sub get_parent1_stock_name { 
+    my $self = shift;
+    return $self->get_stock_name($self->get_parent1_stock_id);
+}
+
+sub get_parent2_stock_name { 
+    my $self = shift;
+    return $self->get_stock_name($self->get_parent2_stock_id);
 }
 
 

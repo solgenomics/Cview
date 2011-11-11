@@ -947,6 +947,86 @@ sub can_overlay {
     return 0;
 }
 
+=head2 accessors get_parent1_stock_id, set_parent1_stock_id
+
+ Usage:
+ Desc:
+ Property
+ Side Effects:
+ Example:
+
+=cut
+
+sub get_parent1_stock_id {
+  my $self = shift;
+  return $self->{parent1_stock_id}; 
+}
+
+sub set_parent1_stock_id {
+  my $self = shift;
+  $self->{parent1_stock_id} = shift;
+}
+
+=head2 accessors get_parent2_stock_id, set_parent2_stock_id
+
+ Usage:
+ Desc:
+ Property
+ Side Effects:
+ Example:
+
+=cut
+
+sub get_parent2_stock_id {
+  my $self = shift;
+  return $self->{parent2_stock_id}; 
+}
+
+sub set_parent2_stock_id {
+  my $self = shift;
+  $self->{parent2_stock_id} = shift;
+}
+
+=head2 accessors get_parent1_stock_name, set_parent1_stock_name
+
+ Usage:
+ Desc:
+ Property
+ Side Effects:
+ Example:
+
+=cut
+
+sub get_parent1_stock_name {
+  my $self = shift;
+  return $self->{parent1_stock_name}; 
+}
+
+sub set_parent1_stock_name {
+  my $self = shift;
+  $self->{parent1_stock_name} = shift;
+}
+
+=head2 accessors get_parent2_stock_name, set_parent2_stock_name
+
+ Usage:
+ Desc:
+ Property
+ Side Effects:
+ Example:
+
+=cut
+ 
+sub get_parent2_stock_name {
+  my $self = shift;
+  return $self->{parent2_stock_name}; 
+}
+
+sub set_parent2_stock_name {
+  my $self = shift;
+  $self->{parent2_stock_name} = shift;
+}
 
 
-return 1;
+
+1;
