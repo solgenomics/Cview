@@ -1,0 +1,223 @@
+
+<%doc>
+
+=head1 NAME
+
+/cview/map/index.mas - a Mason component to display top level map web page
+
+=head1 DESCRIPTION
+
+This Mason component displays a web page with an overview graph of a map, an abstract and some statistics about the map, using map_id or map_version_id as a parameter. 
+
+This component is based on older Perl scripts that accepted other parameters, such as the mysterious legacy_id or the more cumbersome map short name, and a 'physical' parameter that then somehow displayed a physical map. Support for these has been scrapped. Sorry!
+
+On the other hand, a new parameter was added, called "force", which, if set to true, will force the cached images and stats to be re-calculated. Normally, the map overview image and associated image map and the map statistics are cached.
+
+Parameters summary:
+
+=over 15
+
+=item overview_image
+
+The img tag and associated html to display the overview graphics [html]
+
+=item map_version_id
+
+the map_version_id of the map to display.
+
+=item abstract
+
+the abstract of the map [text]
+
+=item hilite
+
+a space separated, url-encoded string that gives the markers to be highlighted.
+
+=item size
+
+the size of the map to display. 0 denotes the standard size (smallest), 10 denotes the largest size.
+
+=item map_items
+
+items to add to the map, as a multi-line string with chr offset name
+
+=item map_url
+
+=item chr_url
+
+=item comp_map_url
+
+=item referer
+
+the page (uri + args) that this component is called from (to be able to construct links back from the page comment feature)
+
+=item map_stats
+
+
+
+=item basepath
+
+the basepath of the installation
+
+=item force
+
+if set to true, force the image and map stats caches to be re-calculated.
+
+=item can_overlay
+
+whether the map knows how to overlay information on the map [boolean]
+
+=item private
+
+whether the map is private [boolean]. Will cause the map to be shown only for logged in users who own the map.
+
+=item parent1_stock_id
+
+the stock_id of parent1
+
+=item parent1_stock_name
+
+the name of stock parent1
+
+=item parent2_stock_id
+
+the stock_id of parent2
+
+=item parent2_stock_name
+
+the name of stock parent2
+
+=back
+
+=head1 AUTHORS
+
+Adapted to Mason by Lukas Mueller. Early Perl-only versions were written by Robert Ahrens, with later additions by Lukas Mueller and John Binns <zombieite@gmail.com>.
+
+Currently maintained by Lukas Mueller <lam87\@cornell.edu>.
+
+=cut
+
+</%doc>
+
+<%args>
+$map_id => undef
+$map_version_id => undef
+$hilite => undef
+$size => 1
+$map_items
+$short_name => "untitled map"
+$long_name => "untitled map"
+$force => 0
+$physical => undef
+$referer
+$abstract => ''
+$tempdir
+$basepath
+$map_url
+$chr_url
+$comp_maps_url => ''
+$default_map_id => 9
+$private => ''
+@hilite_markers => ()
+$marker_stats => ''
+$chromosome_stats => ''
+$message => ''
+$overview_image
+$can_overlay => 0
+$parent1_stock_id => ''
+$parent1_stock_name => '(unknown)'
+$parent2_stock_id => ''
+$parent2_stock_name => '(unknown)'
+</%args>
+
+<%perl>
+
+
+# Historic Perl comment by Robert Ahrens, ca. 2003
+#
+# sub hack_abstract ($$$) {    
+#     # Look.  This is a total hack and that's that.  Let's make no
+#     # bones about it. There is doubtlessly a good way to handle this,
+#     # but in the meantime this sub will allow us to swap in a decent
+#     # abstract for the physical mapping project w/o having to redesign
+#     # code.
+#     my ($abstract, $map, $physical) = @_;
+
+</%perl>
+
+<& /page/page_title.mas, title=> $short_name &>
+
+<div id="pagetitle2"><center><h3><%$long_name%></h3></center></div>
+
+% if ($private) {
+% print $private;
+% return;
+%} 
+
+% if ($message) { 
+%    print "<div class=\"boxbgcolor5\"><b>NOTE:</b><br />$message</div>\n";
+% }
+
+<& /cview/map/overview.mas,
+  map_version_id => $map_version_id,
+  overview_image => $overview_image,
+  size => $size,
+  hilite_markers => [ @hilite_markers ],
+  map_items=> $map_items,
+  basepath => $basepath,
+  tempdir => $tempdir,
+  map_url => $map_url,
+  chr_url => $chr_url,
+&>
+
+<& /cview/map/overlay_form.mas, 
+  map_version_id => $map_version_id,
+  can_overlay    => $can_overlay,
+  map_items      => $map_items,
+  size           => $size,
+  hilite         => $hilite,
+  map_url        => $map_url,
+&>
+
+
+% if ($abstract) { 
+
+<&| /page/info_section.mas, title=>"Abstract", collapsible=>1, collapsed=>0 &>
+<% $abstract %>
+</&>
+
+% }
+
+% my ($stock1_link, $stock2_link) = ("", "");
+% $parent1_stock_id ?  $stock1_link='' : $stock1_link = "/stock/$parent1_stock_id/view";
+% $parent2_stock_id ?  $stock2_link='' : $stock2_link = "/stock/$parent2_stock_id/view";
+<&| /page/info_section.mas, title=>"Parents of mapping population" &>
+Parent 1 <a href="<% $stock1_link %>"><% $parent1_stock_name %></a><br />
+Parent 2 <a href="<% $stock2_link %>"><% $parent2_stock_name %></a><br />
+</&>
+
+
+% my $total = 0; 
+% my $html = '<table><tr><td></td><td width="30">&nbsp;</td><td>markers</td></tr>';
+% foreach (@$chromosome_stats) { $html .= "<tr><td>$_->[0]&nbsp;</td><td></td><td>$_->[1]</td></tr>"; $total += $_->[2];  }
+% $html .= '<tr><td colspan="3"></td></tr>';
+% $html .= '<tr><td><b>Total:</b></td><td></td><td>'.$total.'</td></tr>';
+% $html .= '</table>';
+<&| /page/info_section.mas, 
+  title => 'Map statistics',
+  collapsible => 1,
+  collapsed => 0,
+ &>
+<table><tr>
+<td>
+<% $html %>
+
+</td>
+<td width="40">&nbsp;</td>
+<td><% $marker_stats %></td>
+</tr></table>
+</&>
+
+
+
+

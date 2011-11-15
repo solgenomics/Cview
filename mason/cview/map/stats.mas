@@ -1,0 +1,62 @@
+
+<%doc>
+
+Arguments: $map - an object implementing the CXGN::Cview::Map interface.
+
+</%doc>
+
+<%args>
+$chr_url
+$marker_stats
+$map_version_id
+@chromosome_stats
+@chromosome_names
+$force => 0
+
+</%args>
+
+<& /util/import_javascript.mas, classes => ['MochiKit.Async', 'CXGN.Effects'] &>
+
+  
+  <table summary="map stats" align="center" border="0">
+  <tr>
+  <td valign="middle"><b>Click to view a given chromosome<br /><br /></b></td>
+  <td width="70">&nbsp;</td>
+  <td><b>Marker collections:</b><br /><br /></td>
+  </tr>
+  
+  
+  <tr><td>
+  
+  <table summary="marker stats table" >
+  <tr><td>&nbsp;</td><td>\# markers</td></tr>
+  
+
+<%perl>
+
+my %marker_info = ();
+
+my $total_markers=0;
+for (my $i=0; $i<@chromosome_names; $i++) { 
+  $map_stats .= "<tr><td><a href=\"<% $chr_url %>?map_version_id=$map_version_id&amp;chr_nr=$chromosome_names[$i]&amp;hilite=$hilite_encoded\"><b>Chromosome $chromosome_names[$i]</b></a></td><td align=\"right\"><a href=\"/search/markers/markersearch.pl?w822_nametype=starts+with&w822_marker_name=&w822_mapped=on&w822_species=Any&w822_protos=Any&w822_colls=Any&w822_pos_start=&w822_pos_end=&w822_confs=Any&w822_submit=Search&w822_chromos=$chromosome_names[$i]&w822_maps=$map_id\">$marker_info{$hash_key}</a></td></tr>\n";
+  $total_markers += $marker_info{$hash_key};
+  
+  $map_stats .= qq { <tr><td colspan="2">&nbsp;</td></tr><tr><td><b>Total mapped:</b></td><td align=\"right\"><b>$total_markers</b></td></tr>\n };
+$map_stats .=  "</table>\n";
+  my $marker_type_table = "";
+  if (!exists($marker_info{$map_version_id}) || $force) { 
+    $marker_info{$map_version_id} = $map->get_map_stats();
+  }
+}
+</%perl>
+
+    </td><td>&nbsp;</td><td valign="middle"><% $marker_info{$map_version_id} %></td></tr>
+    </table>
+    <br /><br />
+
+
+
+
+
+
+

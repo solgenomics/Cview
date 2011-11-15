@@ -1,0 +1,12 @@
+
+<html>
+<head>
+<title>Cview
+</title>
+</head>
+<body>
+ 
+% $m->call_next;
+
+</body>
+</html>
