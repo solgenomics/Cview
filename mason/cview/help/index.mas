@@ -12,9 +12,9 @@
           cellspacing="0" border="0">
             <tr>
               <td>
-                The <a href="/cview/view_chromosome.pl">comparative
-                viewer</a> is a tool for displaying, browsing, and
-                comparing map information on SGN.
+                The <i>Cview <a href="/cview/view_chromosome.pl">comparative
+                viewer</a></i> is a tool for displaying, browsing, and
+                comparing map information.
 
     <h3>Map overview page</h3>
 
@@ -159,3 +159,13 @@
 <img src="/documents/img/cview_maps3s.png" border="0" /><br />
 </center>
 </div>
+
+<h3>Publication</h3>
+
+If you find the Cview comparative viewer useful, please cite the following publication:<br /><br />
+<div class="boxbgcolor4">
+
+Mueller LA, Mills AA, Skwarecki B, Buels RM, Menda N., Tanksley, SD. <i>The SGN comparative mapviewer</i> Bioinformatics 1:24 422-3.
+</div>
+
+

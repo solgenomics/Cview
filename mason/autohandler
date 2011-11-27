@@ -3,10 +3,27 @@
 <head>
 <title>Cview
 </title>
+
+<link rel="stylesheet" href="/inc/sgn.css" type="text/css" />
+<!-- script include="/root/js/CXGN/Effects.js" / -->
 </head>
 <body>
- 
-% $m->call_next;
+<center>
+<table width="800">
+<tr><td>
+<span style="font-weight:bold;font-family:arial,helvetica;font-size:12;color:purple"><i>Cview</i></span>&nbsp;&nbsp;<a href="/cview/">maps</a> | <a href="/cview/help/map_submission">submit</a> | <a href="/cview/help/">help</a>
 
+<hr />
+</td></tr>
+
+<tr><td> 
+% $m->call_next;
+</td></tr>
+<tr><td>
+<hr>
+Copyright &copy; 2011 SGN
+</td></tr>
+</table>
+</center>
 </body>
 </html>
