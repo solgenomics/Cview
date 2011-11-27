@@ -142,7 +142,7 @@ foreach my $id ($left_map_version_id, $center_map_version_id, $right_map_version
 } 
 
 print STDERR "MARKER BLABLA\n";
-my $vm = CXGN::Cview::ViewMaps -> new($dbh, $c->get_conf('basepath'), File::Spec->catfile($c->get_conf('tempfiles_subdir'), 'cview'));
+my $vm = CXGN::Cview::ViewMaps -> new($dbh, $c->config->{basepath}, File::Spec->catfile($c->config->{tempfiles_subdir}, 'cview'));
 
 
 $vm -> set_maps(@maps);
