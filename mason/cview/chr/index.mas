@@ -74,8 +74,8 @@ use CXGN::Cview::ChromosomeViewer;
 
 my $viewer = CXGN::Cview::ChromosomeViewer -> new($dbh);
 
-$viewer -> set_temp_dir(File::Spec->catfile($c->get_conf('tempfiles_subdir'), "cview"));
-$viewer -> set_basedir($c->get_conf('basepath'));
+$viewer -> set_temp_dir(File::Spec->catfile($c->config->{tempfiles_subdir}, "cview"));
+$viewer -> set_basedir($c->config->{basepath});
 
 $viewer -> set_show_offsets($show_offsets);
 $viewer -> set_map_id($map_id);
