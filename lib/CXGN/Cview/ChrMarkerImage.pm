@@ -83,6 +83,7 @@ sub new {
     my @markers= $chromosome->get_markers();
   
     foreach my $m(@markers) {
+        no warnings 'uninitialized';
 	if ($m->get_name() eq $self->get_marker_name()) { 
 	    $m->hilite();
 	    $m->set_label_spacer(20);
