@@ -216,6 +216,8 @@ sub create {
 					       temp_dir => $temp_dir ,
 					       basedir       => $c->config->{"basepath"},
 					       documents_subdir => $c->config->{"tempfiles_subdir"},
+					       file => $c->config->{"static_content_path"}."/cview/agp/scaffolds/S_lycopersicum_chromosomes_from_scaffolds.2.40.agp",
+					       cache_dir => $c->config->{"basepath"}."/".$c->config->{tempfiles_subdir}."/cview/cache_file/",
 
 					       },
 	    );

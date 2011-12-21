@@ -4,7 +4,10 @@ use strict;
 use warnings;
 
 use File::Spec;
+use Cache::File;
+
 use CXGN::Cview::Chromosome::AGP;
+use CXGN::Cview::Marker::Physical;
 use CXGN::Cview::Map::Tools;
 use CXGN::Genomic::Clone;
 use CXGN::Genomic::BACMarkerAssoc;
@@ -22,22 +25,21 @@ sub new {
     my $self = $class->SUPER::new($dbh);
 
     $self->set_id($id);
-    $self->set_chromosome_names( 1 .. 12 );
-    my @lengths = ();
 
-    $self->set_chromosome_count(12);
-    $self->set_short_name( $args->{short_name} );
+    $self->set_short_name($args->{short_name});
     $self->set_long_name( $args->{long_name} );
     $self->set_abstract( $args->{abstract} );
     $self->set_temp_dir( $args->{temp_dir} || "/tmp" );
+    $self->set_file( $args->{file} );
     $self->set_units("MB");
+    $self->{chr}={};
+    $self->{cache_dir} = $args->{cache_dir};
+    
+    my @lengths;
+    my @names;
 
-    # we need to cache the chromosome length information on the filesystem...
-    $self->cache_chromosome_lengths();
-
-#print STDERR "FILENAMES = ". (join " ", (map  {$_.":".$self->get_files()->{$_} } keys %{$self->get_files()}) ) ."\n";
-#print STDERR "Constructor: generating AGP chr ".$self->get_name()."\n";
-
+    $self->get_basic_stats();
+    
     return $self;
 }
 
@@ -45,78 +47,184 @@ sub get_chromosome {
     my $self   = shift;
     my $chr_nr = shift;
 
-    if ( exists( $self->{chr}->{$chr_nr} ) ) {
-        return $self->{chr}->{$chr_nr};
+    print STDERR "Getting chr $chr_nr..\n";
+    
+    # manufacture a new chromosome based on cached data...
+    my $chr = $self->fetch_chromosome($chr_nr);
+    $chr->set_height(100);
+    
+    $chr->_calculate_chromosome_length();
+    $chr->_calculate_scaling_factor();
+
+    return $chr;
+}
+
+
+sub get_basic_stats { 
+    my $self = shift;
+    
+    my $cache = Cache::File->new(cache_root=>$self->{cache_dir});
+    if ($cache->exists($self->get_id())) { 
+	my $entry = $cache->entry($self->get_id());
+	my $p = $entry->thaw();
+	
+	$self->set_chromosome_lengths(@{$p->{chromosome_lengths}});
+	$self->set_chromosome_names(@{$p->{chromosome_names}});
+	$self->set_chromosome_count(scalar(@{$p->{chromosome_lengths}}));
     }
-
-    $self->get_files();
-
-    #print STDERR "Getting associated markers...\n";
-    my $assoc = CXGN::Genomic::BACMarkerAssoc->new( $self->get_dbh() );
-
-#print STDERR "get_chromosome with $chr_nr. File: ".($self->get_files()->{$chr_nr})."\n";
-
-    my $chromosome =
-      CXGN::Cview::Chromosome::AGP->new( $chr_nr, 1, 1, 1,
-        $self->get_files()->{$chr_nr} );
-    if ( !$chromosome->get_markers() ) {
-        $self->append_messages(
-            "No AGP file seems to be available for chr $chr_nr. ");
+    else { 
+	$self->calculate_basic_stats();
+	my $p;
+	$cache->set($self->get_id());
+	my $entry = $cache->entry($self->get_id());
+	@{$p->{chromosome_lengths}} = $self->get_chromosome_lengths();
+	@{$p->{chromosome_names}}   = $self->get_chromosome_names();
+	$entry->freeze($p);
     }
+}
 
-    my $files = $self->get_files();
-
-    #print STDERR "FILE: $files->{$chr_nr}\n";
-    if ( $files->{$chr_nr} && $files->{$chr_nr} =~ /sgn/ ) {
-        $self->append_messages(
-"This AGP map was automatically generated at SGN because no AGP file was submitted by the sequencing partner. It may be missing BACs or represent the information incorrectly. It is given as an approximate working reference"
-        );
+sub calculate_basic_stats { 
+    my $self = shift;
+    open(my $F, '<', $self->get_file()) || die "Can't open file ".$self->get_file();
+    my $old_chr = "";
+    my @chr_names;
+    my @chr_len;
+    my $max_len = 0;
+    my ($chr, $start, $end);
+    while (<$F>) { 
+	chomp;
+	($chr, $start, $end) = split /\t/;
+	if ($end>$max_len) { $max_len=$end; }
+	if ($chr ne $old_chr && $old_chr) { 
+	    #print STDERR "$chr pushed... $max_len..\n";
+	    push @chr_names, $old_chr;
+	    push @chr_len, $max_len / 1_000_000;
+	    $max_len=0;
+	}
+	$old_chr=$chr;
     }
+   push @chr_len, $max_len / 1_000_000;
+    push @chr_names, $chr;
+    $self->set_chromosome_lengths(@chr_len);
+    $self->set_chromosome_names(@chr_names);
+    $self->set_chromosome_count(scalar(@chr_len));
+}
 
-    $chromosome->rasterize(0);
-    $chromosome->set_rasterize_link("");
 
-    #print STDERR "Getting bac names and clone_ids...\n";
+sub fetch_chromosome { 
+    my $self = shift;
+    my $chr_nr = shift;
 
-    foreach my $bac ( $chromosome->get_markers() ) {
-        my $clone = CXGN::Genomic::Clone->retrieve_from_clone_name(
-            $bac->get_label()->get_name() );
-        $bac->get_label()
-          ->set_url( $self->get_marker_link( $clone->clone_id() ) );
+    open (my $AGP, '<', $self->get_file()) || die "Can't open file ".$self->get_file().": $!";
+    my $largest_offset = 0;
+    my $old_chr = "";
+    my $chr;
+    my $count=-1;
 
-        #	$bac->set_label_side("left");
-        #	$bac->get_label()->align_right();
-        my @markers = $assoc->get_markers_with_clone_id( $clone->clone_id() );
-        if (@markers) {
-            $bac->set_id( $markers[0]->{marker_id} );
-        }
-        $bac->set_tooltip( $bac->get_marker_name() );
-        $bac->hide_label();
+    #print STDERR "Generating new chromosome $chr_nr\n";
+    $chr = CXGN::Cview::Chromosome::AGP->new($chr_nr, 100, 20, 20);    
+    
+    while (<$AGP>) { 
+	chomp;
+	last if /END OF DRAFT/;
+	next if /^\s*\#/;
+	
+	my ($chr_name, $start, $end, $count, $dir, $size_or_clone_name, $overlap_or_type, $clone_size_or_yesno, $orientation) = split /\t/;
+	
+	next if ($chr_nr ne $chr_name);
+
+	
+	my $gap_size = 0;
+	my $clone_name = "";
+	if ($size_or_clone_name =~ /^\d+$/) { 
+	    $gap_size = $size_or_clone_name;
+	}
+	else { 
+	    $clone_name = $size_or_clone_name;
+	}
+	
+	my $overlap = 0;
+	my $type = "";
+	if ($overlap_or_type =~ /clone|contig/i) { 
+	    $type=$overlap_or_type;
+	}
+	else { 
+	    $overlap = $overlap_or_type;
+	}
+	
+	my $yesno = "";
+	my $clone_size = 0;
+	if ($clone_size_or_yesno =~/Y|N/i) { 
+	    $yesno = $clone_size_or_yesno;
+	}
+	else { 
+	    $clone_size = $clone_size_or_yesno;
+	}	
+	
+	if ($dir eq "W") { 
+	    # if dir is not N (meaning it is R or F), then add
+	    # a marker. Otherwise we deal with a gap.
+	    #print STDERR "READ AGP file line: $start\t$end\$count\t$dir\n";
+	    my $bac = CXGN::Cview::Marker::Physical->new($chr);
+	    $bac->set_hilite_chr_region(1);
+	    my $offset = ($start+$end)/2;
+	    
+	    # convert numbers to MBases
+	    #
+	    my $MB = 1e6;
+	    $offset = $offset / $MB;
+	    $start = $start / $MB;
+	    $end = $end / $MB ;
+	    
+	    if ($offset > $largest_offset) { $largest_offset = $offset; }
+	    
+	    $bac->set_offset($offset);
+	    $bac->set_north_range($offset-$start);
+	    $bac->set_south_range($end-$offset);
+	    $bac->set_marker_name($clone_name);
+	    $bac->get_label()->set_name($clone_name);
+	    # to do: $bac->set_url();
+	    
+	    $chr->add_marker($bac);
+	    
+	    #print STDERR "Added a bac at $offset, north = ".($offset-$start).", end = ".($end-$offset)." to $chr_name\n";
+	}
+	else { 
+	    # also include gaps in the calculation of the largest offset
+	    my $gap_offset = int(($start+$end)/2);
+	    $gap_offset = $gap_offset/1_000_000;
+	    
+	    if ($gap_offset>$largest_offset) { 
+		$largest_offset = $gap_offset;
+	    }
+	    
+	}
     }
-
-    $chromosome->set_name();
-    $chromosome->set_caption();
-    $chromosome->set_height(100);
-
-    return $chromosome;
+    
+    $chr->set_length($largest_offset);
+    $chr->set_height(100);
+    close($AGP);
+    return $chr;
 }
 
 sub get_overview_chromosome {
     my $self   = shift;
     my $chr_nr = shift;
-
+    
+    #print STDERR "Generating overview chromosome for chr $chr_nr\n";
     my $chr = $self->get_chromosome($chr_nr);
 
     foreach my $m ( $chr->get_markers() ) {
         $m->hide_label();
-        $m->set_show_tick(0);
+       $m->set_show_tick(0);
         $m->set_url("");
+       
     }
     if ( !$chr->get_markers() ) {
 
         #	 $chr->set_url("");
     }
-
+    $chr->set_name($chr_nr=~s/.*(\d+)$/$1/g);
     return $chr;
 }
 
@@ -143,81 +251,28 @@ sub show_stats {
     return 1;
 }
 
-=head2 accessors set_files, get_files
 
-  Property:	a hashref that stores chromosme name keys and file names
-                as the hash values.
-  Setter Args:	
-  Getter Args:	
-  Getter Ret:	
-  Side Effects:	
-  Description:	
+=head2 accessors get_file, set_file
+
+ Usage:
+ Desc:         the agp file to be used for display, containing all the 
+               chromosomes.
+ Property
+ Side Effects:
+ Example:
 
 =cut
 
-sub get_files {
-    my $self = shift;
-
-    if ( exists( $self->{files} ) && defined( $self->{files} ) ) {
-        return $self->{files};
-    }
-
-    my $files_dir = "/data/prod/public/tomato_genome/agp";
-
-    my %unversioned_filenames = ();
-
-    foreach my $chr ( 1 .. 12 ) {
-        my $filename =
-          File::Spec->catfile( $files_dir,
-            "chr" . ( sprintf '%02d', $chr ) . ".v*.agp" );
-
-        #print STDERR "Unversioned filename: $filename\n";
-        chomp($filename);
-        $unversioned_filenames{$chr} = $filename;
-
-    }
-
-    my %versioned_filenames = ();
-    my %sgn_files           = ();
-    foreach my $k ( keys %unversioned_filenames ) {
-
-        $sgn_files{$k} =
-          File::Spec->catfile( $files_dir,
-            "sgn_chr" . ( sprintf "%02d", $k ) . ".agp" );
-
-        #print STDERR "SGN FILE: $sgn_files{$k}\n";
-        $versioned_filenames{$k} =
-          $self->get_filename( $unversioned_filenames{$k} );
-
-     # if the projects have not supplied a file, let's look for an SGN generated
-     # file that is prefixed with "sgn_".
-     #
-        if ( !($versioned_filenames{$k} && -e $versioned_filenames{$k}) ) {
-            if ( -e $sgn_files{$k} ) {
-                $versioned_filenames{$k} = $sgn_files{$k};
-
-                #print STDERR "USING SGN FILE: $sgn_files{$k}\n";
-            }
-            else {
-
-                #print STDERR "No file found for chr $k\n";
-
-            }
-        }
-
-        #print STDERR "Final file used: $versioned_filenames{$k}\n";
-    }
-
-    $self->set_files( \%versioned_filenames );
-
-    return $self->{files};
-
+sub get_file {
+  my $self = shift;
+  return $self->{file}; 
 }
 
-sub set_files {
-    my $self = shift;
-    $self->{files} = shift;
+sub set_file {
+  my $self = shift;
+  $self->{file} = shift;
 }
+
 
 sub get_marker_type_stats {
     my $self = shift;
@@ -231,61 +286,8 @@ sub get_map_stats {
 sub get_marker_count {
     my $self   = shift;
     my $chr_nr = shift;
-
-    my $marker_count = 0;
-    if ( exists( $self->get_files()->{$chr_nr} )
-        && $self->get_files()->{$chr_nr} )
-    {
-        open( my $F, '<', $self->get_files()->{$chr_nr} )
-          || die "Can't open agp definition file for chr $chr_nr [ "
-          . $self->get_files()->{$chr_nr}
-          . " ] : $!";
-        while (<$F>) {
-            chomp;
-            my ( $project, $start, $end, $count, $dir, $clone_name ) =
-              split /\t/;
-
-            if ( $dir && $dir =~ /R|F/i ) {
-                $marker_count++;
-            }
-
-        }
-    }
-    return ($marker_count);
-
-}
-
-# an internal function to calculate chromosome lengths. Not to be confused with
-#
-sub _determine_chromosome_length {
-    my $self   = shift;
-    my $chr_nr = shift;
-
-    my $longest = 1; # prevent division by zero errors in a braindead way
-
-    if ( exists( $self->get_files()->{$chr_nr} )
-        && $self->get_files()->{$chr_nr} )
-    {
-        open( my $F, '<', $self->get_files()->{$chr_nr} )
-          || die "Can't open agp definition file for chr $chr_nr [ "
-          . $self->get_files()->{$chr_nr}
-          . " ] : $!";
-
-        while (<$F>) {
-            chomp;
-            if (/$ENDMARKER/) {
-                last();
-            }
-            my ( $project, $start, $end ) = split /\t/;
-            $end ||= 0;
-
-            if ( $end > $longest ) {
-                $longest = $end;
-            }
-
-        }
-    }
-    return ( $longest / 1000000 );
+    my @markers = $self->get_chromosome($chr_nr)->get_markers();
+    return scalar(@markers);
 
 }
 
@@ -308,35 +310,6 @@ sub can_zoom {
     return 1;
 }
 
-sub cache_chromosome_lengths {
-    my $self = shift;
-    my $chr_len_cache =
-      File::Spec->catfile( $self->get_temp_dir(), "agp_chr_len_cache.txt" );
-
-    my $LENCACHE;
-    my @lengths = ();
-    if ( -e $chr_len_cache ) {
-        open( $LENCACHE, '<', $chr_len_cache )
-          or die "Can't open the agp cache $chr_len_cache: $!";
-        while (<$LENCACHE>) {
-            chomp;
-            my ( $chr, $len ) = split /\t/;
-            push @lengths, $len;
-        }
-        $self->set_chromosome_lengths(@lengths);
-        close($LENCACHE);
-        return;
-    }
-    open( $LENCACHE, '>', $chr_len_cache )
-      or die "Can't open the agp chr len cache file $chr_len_cache: $!";
-    for my $chr_nr ( $self->get_chromosome_names() ) {
-        my $len = $self->_determine_chromosome_length($chr_nr);
-        print $LENCACHE "$chr_nr\t$len\n";
-        push @lengths, $len;
-    }
-    close($LENCACHE);
-    $self->set_chromosome_lengths(@lengths);
-}
 
 =head2 get_chromosome_connections
 
@@ -361,10 +334,15 @@ sub get_chromosome_connections {
         lg_name        => $chr_nr,
         marker_count   => "?",
         short_name     => "F2-2000"
-
     };
     return ($connections);
-
 }
 
-return 1;
+
+
+sub initial_zoom_height { 
+    return 5.0;
+}
+
+
+1;
