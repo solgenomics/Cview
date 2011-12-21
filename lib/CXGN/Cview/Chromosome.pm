@@ -614,6 +614,19 @@ sub _calculate_scaling_factor {
     return $self->{scaling_factor};
 }
 
+=head2 get_scaling_factor
+
+ Usage:
+ Desc:         returns the current scaling factor
+               (pixels / map_units)
+               use _calculate_scaling_factor to set it.
+ Ret:
+ Args:
+ Side Effects:
+ Example:
+
+=cut
+
 sub get_scaling_factor {
     my $self = shift;
     if (!exists($self->{scaling_factor})) { 
