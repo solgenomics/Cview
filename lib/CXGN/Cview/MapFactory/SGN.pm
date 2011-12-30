@@ -118,7 +118,7 @@ sub create {
     #print STDERR "Hashref = map_id => $hashref->{map_id}, map_version_id => $hashref->{map_version_id}\n";
 
     my $c = $self->{context};
-    my $temp_dir = $c->path_to( $c->tempfiles_subdir('cview') );
+    my $temp_dir = $c->path_to( $c->config->{tempfiles_subdir} );
 
     if (!exists($hashref->{map_id}) && !exists($hashref->{map_version_id})) {
 	die "[CXGN::Cview::MapFactory] Need either a map_id or map_version_id.\n";
@@ -152,7 +152,7 @@ sub create {
 	}
 	elsif ($map_type =~ /fish/) {
 	    #print STDERR "Creating a fish map...\n";
-	    return CXGN::Cview::Map::SGN::Fish->new($self->get_dbh(), $id, { pachytene_file => $self->{context}->get_conf('basepath')."/documents/cview/pachytene/pachytene_stack.txt", });
+	    return CXGN::Cview::Map::SGN::Fish->new($self->get_dbh(), $id, { pachytene_file => $c->config->{'basepath'}."/documents/cview/pachytene/pachytene_stack.txt", });
 	}
 	elsif ($map_type =~ /seq/) {
 	    #print STDERR "Creating a seq map...\n";
@@ -214,8 +214,10 @@ sub create {
 					       long_name => "Tomato (Solanum lycopersicum) Accessioned Golden Path map",
 					       abstract => "<p>The AGP map shows the sequencing progress of the international tomato genome sequencing project by listing all finished clones by estimated physical map position . Each sequencing center generates one or more AGP (Accessioned Golden Path) files and uploads them to SGN. These files contain all the sequenced BACs, their position on the chromosome, the overlaps with other BACs and other information. For a complete specification, please refer to the <a href=\"http://www.sanger.ac.uk/Projects/C_elegans/DOCS/agp_files.shtml\">Sanger AGP specification</a>. The AGP files can also be downloaded from the SGN FTP site, at <a href=\"ftp://ftp.sgn.cornell.edu/tomato_genome/agp/\">ftp://ftp.sgn.cornell.edu/tomato_genome/agp/</a>.</p> <p>Note that this map is in testing (beta), and not all features may be functional.</p>" ,
 					       temp_dir => $temp_dir ,
-					       basedir       => $self->{context}->get_conf("basepath"),
-					       documents_subdir => $self->{context}->get_conf("tempfiles_subdir")."/cview"
+					       basedir       => $c->config->{"basepath"},
+					       documents_subdir => $c->config->{"tempfiles_subdir"},
+					       file => $c->config->{"static_content_path"}."/cview/agp/scaffolds/S_lycopersicum_chromosomes_from_scaffolds.2.40.agp",
+					       cache_dir => $c->config->{"basepath"}."/".$c->config->{tempfiles_subdir}."/cview/cache_file/",
 
 					       },
 	    );
@@ -289,8 +291,8 @@ sub create {
 	return CXGN::Cview::Map::SGN::User->new($self->get_dbh(), $id);
     }
     elsif ($id =~ /pachy/i) { 
-	my $image_dir = $self->{context}->get_conf('image_path');
-	print STDERR "**** IMAGE DIR = $image_dir\n";
+	my $image_dir = $c->config->{'image_path'};
+	#print STDERR "**** IMAGE DIR = $image_dir\n";
 	my $map = CXGN::Cview::Map::SGN::Image->new(
 	    $self->get_dbh(),
 	    $id,
