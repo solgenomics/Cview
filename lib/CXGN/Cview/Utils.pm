@@ -91,7 +91,12 @@ sub get_maps_select {
     my $dbh = shift;
     my $selected_map_version = shift;
     my $field_name = shift;
+    my $db_backend = shift;
     my $add_empty_selection =1;
+
+
+    print STDERR "DB BACKEND IS $db_backend\n";
+
     if (!$field_name) { $field_name = "map_version_id"; }
 
     #    my $query = "select map.map_id, short_name from map join "
@@ -101,7 +106,7 @@ sub get_maps_select {
 
     my $select = qq { <select name="$field_name" > };
     my $selected="";
-    my $map_factory = CXGN::Cview::MapFactory->new($dbh);
+    my $map_factory = CXGN::Cview::MapFactory->new($dbh, $db_backend);
     my @maps = $map_factory->get_all_maps();
 
     if ($add_empty_selection) { 

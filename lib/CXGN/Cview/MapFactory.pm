@@ -96,9 +96,11 @@ sub new {
      my $mf_name = $db_backend ?     $db_backend eq 'cxgn_and_cmap' ? 'CviewAndCmap'
                                       : $db_backend eq 'cmap'          ? 'Cmap'
                                       : $db_backend eq 'cxgn'          ? 'SGN'
+				      : $db_backend eq 'Cassava'       ? 'Cassava'
                                       : croak "invalid cview backend $db_backend"
 				      : 'SGN';
-
+    
+    print STDERR "Using cview backend $mf_name (conf has is $conf_hash_ref->{cview_db_backend}\n";
     
     # try to load the mapfactory class
     my $mf_class = __PACKAGE__."::$mf_name";
