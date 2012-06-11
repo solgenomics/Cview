@@ -209,7 +209,8 @@ sub create {
     }
 
     elsif ($id =~ /^agp$/i) {
-	return CXGN::Cview::Map::SGN::AGP->new($self->get_dbh(), $id, {
+	my $map;
+	eval {  $map = CXGN::Cview::Map::SGN::AGP->new($self->get_dbh(), $id, {
 					       short_name => "Tomato AGP map",
 					       long_name => "Tomato (Solanum lycopersicum) Accessioned Golden Path map",
 					       abstract => "<p>The AGP map shows the sequencing progress of the international tomato genome sequencing project by listing all finished clones by estimated physical map position . Each sequencing center generates one or more AGP (Accessioned Golden Path) files and uploads them to SGN. These files contain all the sequenced BACs, their position on the chromosome, the overlaps with other BACs and other information. For a complete specification, please refer to the <a href=\"http://www.sanger.ac.uk/Projects/C_elegans/DOCS/agp_files.shtml\">Sanger AGP specification</a>. The AGP files can also be downloaded from the SGN FTP site, at <a href=\"ftp://ftp.sgn.cornell.edu/tomato_genome/agp/\">ftp://ftp.sgn.cornell.edu/tomato_genome/agp/</a>.</p> <p>Note that this map is in testing (beta), and not all features may be functional.</p>" ,
@@ -221,6 +222,9 @@ sub create {
 
 					       },
 	    );
+	};
+	if ($@) { print STDERR "Map agp could not be created\n"; return undef; }
+	else { return $map; }
 
     }
 #     elsif ($id =~ /^itag$/i) {
