@@ -990,6 +990,27 @@ sub get_map_id {
     return $self->{map_id};
 }
 
+=head2 accessors get_default_map_id, set_default_map_id
+
+ Usage:
+ Desc:
+ Property
+ Side Effects:
+ Example:
+
+=cut
+
+sub get_default_map_id {
+  my $self = shift;
+  return $self->{default_map_id}; 
+}
+
+sub set_default_map_id {
+  my $self = shift;
+  $self->{default_map_id} = shift;
+}
+
+
 =head2 accessors get_map_version_id(), set_map_version_id()
 
  Usage:
@@ -1857,14 +1878,15 @@ sub get_marker_map_links {
 # query the database for maps and chromosome that any of the markers of the current chromosome lie on.
 #
     my $chr_nr  = $self->get_ref_chr();
-    my $F2_2000 = CXGN::Cview::Map::SGN::Genetic->new(
+    my $default_map = CXGN::Cview::Map::SGN::Genetic->new(
         $self->get_dbh(),
         CXGN::Cview::Map::Tools::find_current_version(
-            $self->get_dbh(), CXGN::Cview::Map::Tools::current_tomato_map_id()
-        )
+            $self->get_dbh(), #CXGN::Cview::Map::Tools::current_tomato_map_id()
+	    $self->get_default_map_id(),
+        ),
     );
 
-    my $F2_2000_version_id = $F2_2000->get_id();
+    my $default_map_version_id = $default_map->get_id();
 
     my $form =
       "<form style=\"margin-bottom:0\" action=\"/cview/view_chromosome.pl\">
@@ -2217,7 +2239,7 @@ sub display_toolbar {
 
     $self->{maps_select} =
       CXGN::Cview::Utils::get_maps_select( $self->get_dbh(),
-        $self->get_ref_map()->get_id() );
+        $self->get_ref_map()->get_id(), undef, $self->get_db_backend);
 
     my $view_entire_map_link = "&nbsp;View entire comparative map";
     if ( $self->get_comp_map_version_id() ) {
