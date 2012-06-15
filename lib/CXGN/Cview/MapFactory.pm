@@ -100,7 +100,7 @@ sub new {
                                       : croak "invalid cview backend $db_backend"
 				      : 'SGN';
     
-    print STDERR "Using cview backend $mf_name (conf has is $conf_hash_ref->{cview_db_backend}\n";
+#    print STDERR "Using cview backend $mf_name (conf has is $conf_hash_ref->{cview_db_backend}\n";
     
     # try to load the mapfactory class
     my $mf_class = __PACKAGE__."::$mf_name";
