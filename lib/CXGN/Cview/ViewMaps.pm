@@ -1,4 +1,5 @@
 package CXGN::Cview::ViewMaps;
+
 use strict;
 use warnings;
 
@@ -12,7 +13,6 @@ use CXGN::Tools::WebImageCache;
 use CXGN::Map;
 
 use base qw | CXGN::DB::Object |;
-
 
 
 =head2 function new()
@@ -32,6 +32,7 @@ sub new {
     my $dbh = shift;
     my $basepath = shift;
     my $temp_dir = shift;
+    my $db_backend = shift;
 
     my $self = bless {}, $class;
     $self->set_dbh($dbh);
@@ -45,9 +46,11 @@ sub new {
     #
     my $cache = CXGN::Tools::WebImageCache->new();
     $self->set_cache($cache);
+    $self->set_db_backend($db_backend);
+
     $cache->set_basedir($basepath);
     $cache->set_temp_dir($temp_dir);
-
+    
     return $self;
 }
 
@@ -101,6 +104,25 @@ sub set_cache {
     $self->{cache}=shift;
 }
 
+=head2 accessors get_db_backend, set_db_backend
+
+ Usage:
+ Desc:
+ Property
+ Side Effects:
+ Example:
+
+=cut
+
+sub get_db_backend {
+  my $self = shift;
+  return $self->{db_backend}; 
+}
+
+sub set_db_backend {
+  my $self = shift;
+  $self->{db_backend} = shift;
+}
 
 
 
@@ -262,10 +284,10 @@ sub get_select_toolbar {
     my @selects = ();
     for (my $i=0; $i< 3; $i++) { 
 	if ( defined(($self->get_maps())[$i])) { 
-	    push @selects,  CXGN::Cview::Utils::get_maps_select($self->get_dbh(), ($self->get_maps())[$i]->get_id(), $names[$i], 1);
+	    push @selects,  CXGN::Cview::Utils::get_maps_select($self->get_dbh(), ($self->get_maps())[$i]->get_id(), $names[$i], $self->get_db_backend());
 	}
 	else { 
-	    push @selects, CXGN::Cview::Utils::get_maps_select($self->get_dbh(), undef, $names[$i], 1);
+	    push @selects, CXGN::Cview::Utils::get_maps_select($self->get_dbh(), undef, $names[$i], "cxgn");
 	}
     }
 #    my $center_select = CXGN::Cview::Utils::get_maps_select($self, !$center_map || $center_map->get_id(), "center_map_version_id", 1);
