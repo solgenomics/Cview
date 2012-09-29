@@ -251,35 +251,13 @@ sub generate_image {
 	$self->get_cache()->set_map_name("viewmap");
 	$self->get_cache()->set_image_data($self->{map}->render_png_string());
 	$self->get_cache()->set_image_map_data($self->{map}->get_image_map("viewmap"));
-	
-# 	# show the ruler if requested
-# 	#
-# 	if ($self->{show_ruler}) { 
-# 	    my $r = ruler->new($x_distance-20, $row_height * $row_count + $y_distance, $chr_height, 0, $self->{c}{$track}[$i]->get_chromosome_length());
-# 	    $self->{map}->add_ruler($r);
-# 	}
-    }
-    
-
-	# my $filename = "cview".(rand())."_".$$.".png";
-    
-#     $self->{image_path} = $vhost_conf->get_conf('basepath').$vhost_conf->get_conf('tempfiles_subdir')."/cview/$filename";
-#     $self->{image_url} = $vhost_conf->get_conf('tempfiles_subdir')."/cview/$filename";
-    
-#     $self->{map} -> render_png_file($self->{image_path});
-    
-#     $self->{imagemap} = $self->{map}->get_image_map("imagemap");
-
-    
+	    
 }
 
     
 sub get_select_toolbar { 
     my $self = shift;
     
-#    $left_map = $self->get_left_map() || 0;
-#    $center_map = $self->get_center_map() || 0;
-#    $right_map = $self->get_right_map || 0;
     my @names = ("left_map_version_id", "center_map_version_id", "right_map_version_id");
     my @selects = ();
     for (my $i=0; $i< 3; $i++) { 
@@ -287,11 +265,9 @@ sub get_select_toolbar {
 	    push @selects,  CXGN::Cview::Utils::get_maps_select($self->get_dbh(), ($self->get_maps())[$i]->get_id(), $names[$i], $self->get_db_backend());
 	}
 	else { 
-	    push @selects, CXGN::Cview::Utils::get_maps_select($self->get_dbh(), undef, $names[$i], "cxgn");
+	    push @selects, CXGN::Cview::Utils::get_maps_select($self->get_dbh(), undef, $names[$i], $self->get_db_backend());
 	}
     }
-#    my $center_select = CXGN::Cview::Utils::get_maps_select($self, !$center_map || $center_map->get_id(), "center_map_version_id", 1);
-#    my $right_select = CXGN::Cview::Utils::get_maps_select($self, !$right_map || $right_map->get_id(), "right_map_version_id", 1);
 
     return join '', map "$_\n", (
 	'<form action="#">',
@@ -305,43 +281,6 @@ sub get_select_toolbar {
         '</form>',
         );
 }
-
-# =head2 function display()
-
-#   Synopsis:	
-#   Arguments:	
-#   Returns:	
-#   Side effects:	
-#   Description:	composes the page and displays it.
-
-# =cut
-
-# sub display {
-#     my $self = shift;
-    
-
-#     $self->{page}->header("SGN comparative mapviewer");
-#     my $width = int($self->{map_width}/3);
-    
-#     my $select = $self->get_select_toolbar();
-    
-#     print "$select";
-
-#     if (!$self->get_maps()) { 
-# 	print "<br /><br /><center>Note: No maps are selected. Please select maps from the pull down menus above.</center>\n";
-#     }
-
-#     print $self->get_cache()->get_image_html();
-
-# #    print "<img src=\"$self->{image_url}\" usemap=\"#chr_comp_map\" border=\"0\" alt=\"\" />\n";
-
-# #    print $self->{map}->get_image_map("chr_comp_map");
-
-#     $self->{page}->footer();
-
-    
-    
-# }
 
 =head2 function error_message_page()
 
@@ -380,4 +319,4 @@ sub clean_up {
 }
 
 
-return 1;
+1;
