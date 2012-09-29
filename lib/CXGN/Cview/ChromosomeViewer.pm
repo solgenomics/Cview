@@ -147,7 +147,7 @@ sub _adjust_parameters {
     # generate the map objects
     #
     my $map_factory =
-      CXGN::Cview::MapFactory->new( $self->get_dbh(), $self->get_db_backend() );
+      CXGN::Cview::MapFactory->new( $self->get_dbh(), { cview_db_backend=>$self->get_db_backend() });
 
 #    print STDERR "Generating MapFactory with id ".$self->get_map_version_id()."\n";
 #    print STDERR "IS A ".ref($map_factory)."\n";
@@ -481,7 +481,7 @@ sub generate_image {
     if ( $self->get_show_IL() && $self->get_ref_map()->has_IL() ) {
         my $map_factory =
           CXGN::Cview::MapFactory->new( $self->get_dbh(),
-            $self->get_db_backend() );
+            { cview_db_backend => $self->get_db_backend()} );
 
         #print STDERR "Current map_id = ".$self->get_map_id()."\n";
         my $IL_map = $map_factory->create(
@@ -510,7 +510,7 @@ sub generate_image {
     if ( $self->get_show_physical() ) {
         my $map_factory =
           CXGN::Cview::MapFactory->new( $self->get_dbh(),
-            $self->get_db_backend() );
+            { cview_db_backend => $self->get_db_backend()} );
 
         my $physical_map = $map_factory->create( { map_version_id => "p9" } );
 
@@ -2875,7 +2875,7 @@ sub set_basedir {
 
 sub get_db_backend {
     my $self = shift;
-    return $self->{db_backend};
+    return $self->{db_backend} || 'cxgn';
 }
 
 sub set_db_backend {
