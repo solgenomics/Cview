@@ -145,8 +145,8 @@ sub generate_image {
     $self->get_cache()->set_key("view_maps".(join "-", map { $_->get_id() } ($self->get_maps())));
     
     $self->get_cache()->set_expiration_time(86400);
-
-
+    
+    
     if (! $self->get_cache()->is_valid()) { 
 	my $map_width = $self->{map_width} = 720;    
 	my $x_distance = $map_width/4; # the number of pixels the different elements are spaced
@@ -251,7 +251,8 @@ sub generate_image {
 	$self->get_cache()->set_map_name("viewmap");
 	$self->get_cache()->set_image_data($self->{map}->render_png_string());
 	$self->get_cache()->set_image_map_data($self->{map}->get_image_map("viewmap"));
-	    
+	
+    }
 }
 
     
@@ -268,7 +269,7 @@ sub get_select_toolbar {
 	    push @selects, CXGN::Cview::Utils::get_maps_select($self->get_dbh(), undef, $names[$i], $self->get_db_backend());
 	}
     }
-
+    
     return join '', map "$_\n", (
 	'<form action="#">',
         info_table_html(
@@ -276,10 +277,11 @@ sub get_select_toolbar {
             'Center' => $selects[1],
             'Right' => $selects[2],
             __border => 0,
-            ),
+	),
         '<input style="width: 10em; line-height: 2; font-size: 120%" type="submit" value="set" />',
         '</form>',
-        );
+    );
+    
 }
 
 =head2 function error_message_page()
