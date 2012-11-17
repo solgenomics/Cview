@@ -225,8 +225,11 @@ sub get_chromosome {
     my %marker_info = ();
 
     my ($marker_id, $marker_name, $marker_type, $confidence, $order_in_loc, $location_subscript, $offset, $loc_type);
+    my $previous_name = '';
+    my %synonyms = ();
     while (($marker_id, $marker_name, $marker_type, $confidence, $order_in_loc, $location_subscript, $offset, $loc_type) = $sth->fetchrow_array()) {
-	
+
+	push @{$synonyms{$marker_id}}, $marker_name;
 	$marker_info{$marker_id} = { marker_name        => $marker_name,
 				     marker_type        => $marker_type,
 				     confidence         => $confidence, 
@@ -234,9 +237,8 @@ sub get_chromosome {
 				     location_subscript => $location_subscript,
 	                             offset             => $offset,
 				     loc_type           => $loc_type,
-				     synonyms           => $marker_name.",".$marker_info{$marker_id}->{synonyms},
-				     
-	}
+	};
+	
     }
     foreach my $marker_id (keys %marker_info) { 
 
@@ -253,7 +255,7 @@ sub get_chromosome {
 					   $marker_info{$marker_id}->{loc_type}, 
 					   0);
 
-	$m->set_synonyms( [ split ",", $marker_info{$marker_id}->{synonyms} ] );
+	$m->set_synonyms( $synonyms{$marker_id} );
 
 	#print STDERR "dataadapter baccount = $bac_count!\n";
 	if ($loc_type == 100) { $m -> set_frame_marker(); }

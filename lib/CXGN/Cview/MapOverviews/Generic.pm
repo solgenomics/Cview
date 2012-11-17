@@ -137,8 +137,8 @@ sub render {
             my $marker_id = $m->get_id();
 	    foreach my $label ($marker_name, $marker_name_suffix, $m->get_synonyms()) { 
 		#if (($hilite_markers =~ /\b($marker_name)\b|\b($marker_name_suffix)\b/i)) {
-		if ($hilite_markers =~ /\b$label\b/) { 
-		    my $match = $1 || $2; 
+		if ($hilite_markers =~ /\b($label)\b/) { 
+		    my $match = $1;
 		    #print STDERR "MATCH:$match\n";
 		    $marker_found{$match}=1;
 		    $m->set_label_spacer(15);
