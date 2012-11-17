@@ -135,14 +135,18 @@ sub render {
 	    my $marker_name_suffix = $m->get_marker_name();
 	    my $marker_name = $m->get_name();
             my $marker_id = $m->get_id();
-	    if (($hilite_markers =~ /\b($marker_name)\b|\b($marker_name_suffix)\b/i)) {
-		my $match = $1 || $2; 
-		#print STDERR "MATCH:$match\n";
-		$marker_found{$match}=1;
-		$m->set_label_spacer(15);
-		#$m->set_url("/search/markers/markerinfo.pl?marker_id=$marker_id");
-		$m->show_label();
-		$m->hilite();
+	    foreach my $label ($marker_name, $marker_name_suffix, $m->get_synonyms()) { 
+		#if (($hilite_markers =~ /\b($marker_name)\b|\b($marker_name_suffix)\b/i)) {
+		if ($hilite_markers =~ /\b$label\b/) { 
+		    my $match = $1 || $2; 
+		    #print STDERR "MATCH:$match\n";
+		    $marker_found{$match}=1;
+		    $m->set_label_spacer(15);
+		    #$m->set_url("/search/markers/markerinfo.pl?marker_id=$marker_id");
+		    $m->show_label();
+		    $m->get_label()->set_label_text($label);
+		    $m->hilite();
+		}
 	    }
 	}
 	

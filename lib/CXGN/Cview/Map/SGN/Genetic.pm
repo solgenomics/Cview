@@ -209,7 +209,7 @@ sub get_chromosome {
         WHERE
             map_version.map_version_id=?
             and lg_name=?
-            and preferred='t'
+            
          ORDER BY
             position,
             confidence_id desc
@@ -220,9 +220,41 @@ sub get_chromosome {
     my $sth =  $self->get_dbh -> prepare($query);
     $sth -> execute($self->get_id(), $chr_nr);
 
-    while (my ($marker_id, $marker_name, $marker_type, $confidence, $order_in_loc, $location_subscript, $offset, $loc_type) = $sth->fetchrow_array()) {
+
+    # hairy code to group all the synonyms correctly
+    my %marker_info = ();
+
+    my ($marker_id, $marker_name, $marker_type, $confidence, $order_in_loc, $location_subscript, $offset, $loc_type);
+    while (($marker_id, $marker_name, $marker_type, $confidence, $order_in_loc, $location_subscript, $offset, $loc_type) = $sth->fetchrow_array()) {
+	
+	$marker_info{$marker_id} = { marker_name        => $marker_name,
+				     marker_type        => $marker_type,
+				     confidence         => $confidence, 
+				     order_in_loc       => $order_in_loc,
+				     location_subscript => $location_subscript,
+	                             offset             => $offset,
+				     loc_type           => $loc_type,
+				     synonyms           => $marker_name.",".$marker_info{$marker_id}->{synonyms},
+				     
+	}
+    }
+    foreach my $marker_id (keys %marker_info) { 
+
 	#print STDERR "Marker Read: $marker_id\t$marker_name\t$marker_type\t$offset\n";
-	my $m = CXGN::Cview::Marker -> new($chromosome, $marker_id, $marker_name, $marker_type, $confidence, $order_in_loc, $location_subscript, $offset, undef , $loc_type, 0);
+	my $m = CXGN::Cview::Marker -> new($chromosome, 
+					   $marker_id, 
+					   $marker_info{$marker_id}->{marker_name}, 
+					   $marker_info{$marker_id}->{marker_type}, 
+					   $marker_info{$marker_id}->{confidence}, 
+					   $marker_info{$marker_id}->{order_in_loc}, 
+					   $marker_info{$marker_id}->{location_subscript}, 
+					   $marker_info{$marker_id}->{offset},
+					   undef , 
+					   $marker_info{$marker_id}->{loc_type}, 
+					   0);
+
+	$m->set_synonyms( [ split ",", $marker_info{$marker_id}->{synonyms} ] );
+
 	#print STDERR "dataadapter baccount = $bac_count!\n";
 	if ($loc_type == 100) { $m -> set_frame_marker(); }
 	$m -> set_url( $self->get_marker_link($m->get_id()));
@@ -236,6 +268,8 @@ sub get_chromosome {
 	    $chromosome->add_marker($seq_bac{$marker_id});
 	}
     }
+
+    
 
 
     foreach my $mi ($self->get_map_items()) {

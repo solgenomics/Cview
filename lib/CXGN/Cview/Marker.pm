@@ -186,6 +186,30 @@ sub set_marker_name {
     $self->{marker_name}=$name;
 }
 
+=head2 accessors get_synonyms, set_synonyms
+
+ Usage:
+ Desc:
+ Property
+ Side Effects:
+ Example:
+
+=cut
+
+sub get_synonyms {
+  my $self = shift;
+  if (!exists($self->{synonyms})) { 
+      $self->{synonyms} = [];
+  }
+  return @{$self->{synonyms}}; 
+}
+
+sub set_synonyms {
+  my $self = shift;
+  $self->{synonyms} = shift;
+}
+
+
 =head2 functions get_id(), set_id()
 
 gets the unique id associated with the marker.
