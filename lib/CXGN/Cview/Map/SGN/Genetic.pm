@@ -71,6 +71,8 @@ sub new {
 #    $legend->set_mode("marker_types");
     $self->set_legend($legend);
 
+    $self->set_marker_link("/search/markers/markerinfo.pl?marker_id=");
+
     return $self;
 }
 
@@ -750,21 +752,6 @@ sub can_zoom {
     return 1;
 }
 
-=head2 function get_marker_link
-
-  Synopsis:
-  Arguments:
-  Returns:
-  Side effects:
-  Description:
-
-=cut
-
-sub get_marker_link {
-    my $self =shift;
-    my $id = shift;
-    return "/search/markers/markerinfo.pl?marker_id=$id";
-}
 
 
 =head2 function set_marker_color()
