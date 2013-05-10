@@ -37,7 +37,7 @@ This class implements the following functions:
 
 use strict;
 
-package CXGN::Cview::MapFactory::Cassava;
+package CXGN::Cview::MapFactory::Cacao;
 
 use base qw| CXGN::DB::Object |;
 
@@ -127,16 +127,17 @@ sub create {
 	my $sth = $self->get_dbh()->prepare($query);
 	$sth->execute($id);
 	my ($id, $map_type) = $sth->fetchrow_array();
-    $map_type ||= '';
+	$map_type ||= '';
 	if ($map_type =~ /genetic/i) {
 	    return CXGN::Cview::Map::SGN::Genetic->new($self->get_dbh(), $id);
 
 	}
 	
 	elsif ($map_type =~ /seq/) {
-	    #     #print STDERR "Creating a seq map...\n";
+	    print STDERR "Creating a seq map...($map_type, $id)\n";
 	    my $map = CXGN::Cview::Map::SGN::Sequence->new($self->get_dbh(), $id);
 	    $map->set_marker_link("http://gbrowse-cacao.sgn.cornell.edu/gb2/gbrowse/cacao1/?h_feat=");
+	    return $map;
 	}
     }
     
