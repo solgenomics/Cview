@@ -1027,6 +1027,28 @@ sub set_parent2_stock_name {
   $self->{parent2_stock_name} = shift;
 }
 
+=head2 accessors get_link_by_name, set_link_by_name
+
+ Usage:
+ Desc:         set to true if the marker link should be constructed
+               using the marker name instead of the marker id 
+               (useful for linking to gbrowse etc).
+               The map subclass needs to support this.
+ Property
+ Side Effects:
+ Example:
+
+=cut
+
+sub get_link_by_name {
+  my $self = shift;
+  return $self->{link_by_name}; 
+}
+
+sub set_link_by_name {
+  my $self = shift;
+  $self->{link_by_name} = shift;
+}
 
 
 1;

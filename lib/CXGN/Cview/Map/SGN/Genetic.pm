@@ -261,7 +261,12 @@ sub get_chromosome {
 
 	#print STDERR "dataadapter baccount = $bac_count!\n";
 	if ($loc_type == 100) { $m -> set_frame_marker(); }
-	$m -> set_url( $self->get_marker_link($m->get_id()));
+	if ($self->get_link_by_name()) { 
+	    $m->set_url($self->get_marker_link($m->get_marker_name));
+	}
+	else { 
+	    $m -> set_url( $self->get_marker_link($m->get_id()));
+	}
 	$self->set_marker_color($m, $self->get_legend()->get_mode());
 
 	#print STDERR "CURRENT MODE IS: ".$self->get_legend()->get_mode()."\n";
@@ -406,7 +411,13 @@ sub get_chromosome_section {
 	my $seq_bac_id="";
 	if (!$plausible || $plausible == 0)  { $bac_count = 0; }
 	my $m = CXGN::Cview::Marker -> new($chromosome, $marker_id, $marker_name, $marker_type, $confidence, $order_in_loc, $location_subscript, $offset, , $loc_type, 0, $overgo, $bac_count);
-	$m->set_url($self->get_marker_link($m->get_id()));
+
+	if ($self->get_link_by_name()) { 
+	    $m->set_url($self->get_marker_link($m->get_marker_name()));
+	}
+	else { 
+	    $m->set_url($self->get_marker_link($m->get_id()));
+	}
 	$self->set_marker_color($m, $self->get_legend()->get_mode());
 	#print STDERR "dataadapter baccount = $bac_count!\n";
 	if ($loc_type == 100) { $m -> set_frame_marker(); }

@@ -136,7 +136,8 @@ sub create {
 	elsif ($map_type =~ /seq/) {
 	    print STDERR "Creating a seq map...($map_type, $id)\n";
 	    my $map = CXGN::Cview::Map::SGN::Sequence->new($self->get_dbh(), $id);
-	    $map->set_marker_link("http://gbrowse-cacao.sgn.cornell.edu/gb2/gbrowse/cacao1/?h_feat=");
+	    $map->set_marker_link("http://gbrowse-cacao.sgn.cornell.edu/gb2/gbrowse/cacao1/?q=");
+	    $map->set_link_by_name(1);
 	    return $map;
 	}
     }
