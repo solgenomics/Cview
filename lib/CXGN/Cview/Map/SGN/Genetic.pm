@@ -260,7 +260,7 @@ sub get_chromosome {
 	$m->set_synonyms( $synonyms{$marker_id} );
 
 	#print STDERR "dataadapter baccount = $bac_count!\n";
-	if ($loc_type == 100) { $m -> set_frame_marker(); }
+	if (defined($loc_type) && ($loc_type == 100)) { $m -> set_frame_marker(); }
 	if ($self->get_link_by_name()) { 
 	    $m->set_url($self->get_marker_link($m->get_marker_name));
 	}
