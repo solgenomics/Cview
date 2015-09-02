@@ -1923,7 +1923,7 @@ sub get_marker_map_links {
 
     if (@options) {
 
-        $form .= "<select name=\"map_chr_select\">";
+        $form .= "<select class=\"form-control\" name=\"map_chr_select\">";
         foreach my $o (@options) {
 
  #	print STDERR $o->{map_version_id}, $o->{chr_nr}, $o->{short_name}."<br />\n";
@@ -1943,7 +1943,7 @@ qq {  <option value="$o->{map_version_id} $o->{lg_name}" $selected>Map $o->{shor
         $self->{compare_disabled} = "";
     }
     else {
-        $form .= "<select name=\"map_chr_select\" disabled=\"disabled\" >";
+        $form .= "<select class=\"form-control\" name=\"map_chr_select\" disabled=\"disabled\" >";
         $form .=
 "<option value=\"\" disabld=\"disabled\" >No maps to compare to</option>";
         $form .= "</select>\n";
@@ -1951,7 +1951,7 @@ qq {  <option value="$o->{map_version_id} $o->{lg_name}" $selected>Map $o->{shor
     }
 
     $form .=
-"<input type=\"submit\" value=\"Compare\" $self->{compare_disabled} /></form>";
+"<button class=\"btn btn-default btn-sm\" type=\"submit\" value=\"Compare\" $self->{compare_disabled} >Compare</button></form>";
 
     return $form;
 }
@@ -2219,7 +2219,7 @@ sub display_toolbar {
     my $toggle_IL       = !( $self->{show_IL} );
     my $toggle_offsets  = !( $self->get_show_offsets() );
 
-    my $toggle_size_select = qq { <select name="size" > };
+    my $toggle_size_select = qq { <select class="form-control" name="size" > };
 
     my @selected = ( '', '', '' );
     if    ( $self->{size} =~ /small/i ) { $selected[0] = qq { selected="1" }; }
@@ -2460,8 +2460,8 @@ w822_pos_start="
 	    <input type="hidden" name="hilite" value="$hilite" />
 	    <input type="hidden" name="marker_type" value="$display_marker_type" />
 
-	    <b>zoom range:</b> <input name="cM_start" size="3" value="$cM_start" /> to <input name="cM_end" size="3" value="$cM_end" />
-	    <input type="submit" value="show" />
+	    <b>Zoom Range: </b> <input type="text" class="form-control" name="cM_start" size="3" value="$cM_start" /> to <input type="text" class="form-control" name="cM_end" size="3" value="$cM_end" />
+	    <button class="btn btn-default btn-sm" type="submit" value="show" >Show</button>
 	    </form>
 	};
 
@@ -2487,7 +2487,7 @@ w822_pos_start="
 
 <table summary="" cellpadding="0" cellspacing="0"><tr><td>
 
-$scroll_up_html
+    $scroll_up_html
 
 
     </td><td>
@@ -2524,7 +2524,7 @@ $scroll_up_html
     </tr></table>
 
 	<table summary="" cellpadding="0" cellspacing="0" border="0">
-	<tr><td valign="middle" width="120"><b>Compare map to:</b>&nbsp;</td><td valign="middle">$self->{marker_map_links}</td></tr>
+	<tr><td valign="middle" width="120"><b>Compare Map To:</b>&nbsp;</td><td valign="middle">$self->{marker_map_links}</td></tr>
 	</table>
 
 	<table summary="" cellpadding="0" cellspacing="0">
@@ -2557,8 +2557,8 @@ $scroll_up_html
 
 	 <table summary="" cellpadding="0" border="0" cellspacing="0">
 	 <tr valign="middle"><td valign="middle" width="120">
-	 <b>Jump to map:</b></td><td>$self->{maps_select}</td><td valign="middle">&nbsp;chr&nbsp;</td><td>
-         <input type="text" name="chr_nr" value="$chr_nr" size="2" />
+	 <b>Jump To Map:</b></td><td>$self->{maps_select}</td><td valign="middle">&nbsp;chr&nbsp;</td><td>
+         <input class="form-control" type="text" name="chr_nr" value="$chr_nr" size="2" />
 	 <input type="hidden" name="zoom" value="$zoom" />
 	 <!-- <input type="hidden" name="cM" value="$cM" /> -->
 	<input type="hidden" name="cM_start" value="$cM_start" />
@@ -2575,7 +2575,7 @@ $scroll_up_html
 	 <input type="hidden" name="confidence" value="$confidence" />
 	 <input type="hidden" name="hilite" value="$hilite" />
 	 <input type="hidden" name="marker_type" value="$display_marker_type" />
-	 <input type="submit" value="Jump" />
+	 <button class="btn btn-default btn-sm" type="submit" value="Jump" >Jump</button>
 	 </td>
          </tr>
          </table>
@@ -2587,8 +2587,8 @@ $scroll_up_html
          <td>
 	<form  style="margin-bottom:0" action="/cview/view_chromosome.pl">
         <b>Highlight marker:</b>
-        <input type="text" name="hilite" value="$hilite" size="5" />
-	<input type="submit" value="Highlight" />
+        <input class="form-control" type="text" name="hilite" value="$hilite" size="5" />
+	<button class="btn btn-default btn-sm" type="submit" value="Highlight" >Highlight</button>
 	<input type="hidden" name="zoom" value="$zoom" />
 	<!-- <input type="hidden" name="cM" value="$cM" /> -->
 	<input type="hidden" name="cM_start" value="$cM_start" />
@@ -2709,7 +2709,7 @@ BUTTONS
 
 	<form  style="margin-bottom:0" action="/cview/view_chromosome.pl">
 	$toggle_size_select
-	<input type="submit" value="change" />
+	<button class="btn btn-default btn-sm" type="submit" value="change" >Change</button>
 	<input type="hidden" name="zoom" value="$zoom" />
 	<input type="hidden" name="cM_start" value="$cM_start" />
 	<input type="hidden" name="cM_end" value="$cM_end" />
@@ -3028,9 +3028,9 @@ sub render_string {
         $disabled = "";
     }
     $s .=
-        "<input type=\"submit\" value=\""
+        "<button class=\"btn btn-default btn-sm\" type=\"submit\" value=\""
       . $self->get_name()
-      . "\" $disabled />\n";
+      . "\" $disabled >".$self->get_name()."</button>\n";
     $s .= "</form>\n";
     return $s;
 }

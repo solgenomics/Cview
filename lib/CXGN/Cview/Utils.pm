@@ -104,7 +104,7 @@ sub get_maps_select {
     #     my $sth = $self -> prepare($query);
     #     $sth -> execute();
 
-    my $select = qq { <select name="$field_name" > };
+    my $select = qq { <select class="form-control" name="$field_name" > };
     my $selected="";
     my $map_factory = CXGN::Cview::MapFactory->new($dbh, { cview_db_backend=>$db_backend });
     my @maps = $map_factory->get_all_maps();
