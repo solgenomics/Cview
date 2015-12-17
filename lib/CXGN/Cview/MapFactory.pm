@@ -98,6 +98,7 @@ sub new {
                                       : $db_backend eq 'cxgn'          ? 'SGN'
 				      : $db_backend eq 'Cassava'       ? 'Cassava'
 				      : $db_backend eq 'Cacao'         ? 'Cacao'
+				      : $db_backend eq 'Ricebase'         ? 'Ricebase'
                                       : croak "invalid cview backend $db_backend"
 				      : 'SGN';
     
