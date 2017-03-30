@@ -347,8 +347,10 @@ sub create {
 
 						  });
     }
-
-
+    elsif ($id =~ /^g\d+$/i) { 
+	return CXGN::Cview::Map::Genotype->new($self->get_dbh(), $id);
+    }
+    
 
 
     return;
