@@ -74,6 +74,7 @@ use CXGN::Cview::Map::SGN::Contig;
 use CXGN::Cview::Map::SGN::Scaffold;
 use CXGN::Cview::Map::SGN::Image;
 use CXGN::Cview::Map::SGN::QTL;
+use CXGN::Cview::Map::Genotype;
 
 =head2 function new()
 
@@ -348,6 +349,7 @@ sub create {
 						  });
     }
     elsif ($id =~ /^g\d+$/i) { 
+	print STDERR "Instantiating genotype map...\n";
 	return CXGN::Cview::Map::Genotype->new($self->get_dbh(), $id);
     }
     
