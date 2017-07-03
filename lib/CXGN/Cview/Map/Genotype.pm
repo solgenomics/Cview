@@ -10,6 +10,31 @@ use CXGN::Cview::Marker::Genotype;
 use base qw | CXGN::Cview::Map |;
 
 
+sub new_minimal { 
+    my $class = shift;
+    my $dbh = shift;
+    my $id = shift;
+    my $schema = Bio::Chado::Schema->connect( sub { $dbh } );
+    
+    my $database_id =$id;
+    $database_id =~ s/g(\d+)/$1/i;
+    my $row = $schema->resultset("Genetic::Genotypeprop")->find( { genotypeprop_id => $database_id });
+    
+    if (!$row) { 
+	die "The specified genotype does not exist!\n";
+    }
+
+    my $self = $class->SUPER::new($dbh, $id, @_);
+    
+    $self->set_id($id);
+    $self->set_chromosome_lengths([ 0 ]);
+    $self->set_chromosome_names( [ 'unknown ']);
+    $self->set_short_name("genotype$id");
+    $self->set_long_name("genotype$id");
+    $self->set_units('bp');
+    return $self;
+}
+
 sub new { 
     my $class = shift;
     my $dbh = shift;
@@ -25,9 +50,8 @@ sub new {
 	die "The specified genotype does not exist!\n";
     }
 
+    
     my $json = $row->value();
-
-    print STDERR $json;
 
     my $marker_data = JSON::Any->decode($json);
     
@@ -43,17 +67,17 @@ sub new {
 	my $offset = $m;
 	$offset =~ s/S\d+\_(\d+)/$1/i;
 	my $score = $marker_data->{$m};
-	print STDERR "$chr_nr, $offset, $score\n";
+
 	if (! exists($chromosomes{$chr_nr})) { 
-	    print STDERR "Generating new chr $chr_nr...\n";
+	    #print STDERR "Generating new chr $chr_nr...\n";
 	    $chromosome = CXGN::Cview::Chromosome->new();
 	    $chromosome->set_name($chr_nr);
 	    $chromosome->set_units('bp');
 	    push @chromosome_names, $chr_nr;	    
 	    $chromosomes{$chr_nr}=$chromosome;
-	    print STDERR "Pushed chromosome $chr_nr.\n";
+	    #print STDERR "Pushed chromosome $chr_nr.\n";
 	}
-	print STDERR "Adding marker $m to chromosome $chr_nr...\n";
+	#print STDERR "Adding marker $m to chromosome $chr_nr...\n";
 	my $marker = CXGN::Cview::Marker::Genotype->new($chromosome);
 	$marker->set_offset($offset);
 	$marker->set_name($m);
@@ -75,7 +99,7 @@ sub new {
     $self->set_chromosome_names(\@chromosome_names);
     $self->set_chromosome_lengths(\@chromosome_lengths);
     
-    print STDERR "chromosomes: ".join(", ", keys(%chromosomes))."\n";
+    #print STDERR "chromosomes: ".join(", ", keys(%chromosomes))."\n";
     
     $self->{chromosomes} = \%chromosomes;
 

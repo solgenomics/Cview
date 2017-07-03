@@ -349,8 +349,15 @@ sub create {
 						  });
     }
     elsif ($id =~ /^g\d+$/i) { 
-	print STDERR "Instantiating genotype map...\n";
-	return CXGN::Cview::Map::Genotype->new($self->get_dbh(), $id);
+	
+	if ($hashref->{minimal} == 1) { 
+	    print STDERR "Instantiating minimal map version for map with id $id...\n";
+	    return CXGN::Cview::Map::Genotype->new_minimal($self->get_dbh(), $id);
+	}
+	else { 
+	    print STDERR "Instantiating normal map version for map with id $id...\n";
+	    return CXGN::Cview::Map::Genotype->new($self->get_dbh(), $id);
+	}
     }
     
 
@@ -374,8 +381,9 @@ sub get_all_maps {
     my $self = shift;
 
     my @system_maps = $self->get_system_maps();
-    my @user_maps = $self->get_user_maps();
-    my @maps = (@system_maps, @user_maps);
+    my @user_maps = (); #$self->get_user_maps();
+    my @genotype_maps = $self->get_genotype_maps();
+    my @maps = (@system_maps, @user_maps, @genotype_maps);
     return @maps;
 
 }
@@ -409,7 +417,7 @@ sub get_system_maps {
 
     # push il, physical, contig, and agp map
     #
-    foreach my $id ("il6.5", "il6.9", "p9", "c9", "agp", "pachy") {
+    foreach my $id ("il6.5", "il6.9", "p9", "c9", "agp") { # "pachy") {
 	my $map = $self->create( {map_id=>$id} );
 	if ($map) { push @maps, $map; }
     }
@@ -451,6 +459,19 @@ sub get_user_maps {
     return @maps;
 }
 
+sub get_genotype_maps { 
+    my $self = shift;
+    my @maps = ();
+    my $q = "SELECT genotypeprop_id FROM genotypeprop";
+    my $h = $self->get_dbh()->prepare($q);
+    $h -> execute();
+
+    while (my ($id) = $h->fetchrow_array()) { 
+	my $map = $self->create( { map_id=> "g".$id, minimal => 1 } );
+	push @maps, $map;
+    }
+    return @maps;
+}
 
 sub get_db_ids {
     my $self = shift;
