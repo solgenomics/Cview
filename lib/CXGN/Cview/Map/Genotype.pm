@@ -81,7 +81,8 @@ sub new {
 	#print STDERR "Adding marker $m to chromosome $chr_nr...\n";
 	my $marker = CXGN::Cview::Marker::Genotype->new($chromosome);
 	$marker->set_offset($offset);
-	$marker->set_name($m);
+	$marker->set_marker_name($m);
+	$marker->set_id($m);
 	$marker->set_score($score);
 	$chromosomes{$chr_nr}->add_marker($marker);    
 	$marker_counts{$chr_nr}++;
