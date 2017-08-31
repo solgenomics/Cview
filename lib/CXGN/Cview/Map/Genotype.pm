@@ -61,11 +61,12 @@ sub new {
     my %marker_counts;
     my %chromosomes;
 
+    my $self = $class->SUPER::new($dbh, $id, @_);
     foreach my $m (keys %$marker_data) { 
 	my $chr_nr = $m;
-	$chr_nr =~ s/(S\d+)\_\d+/$1/i;
+	$chr_nr =~ s/((S|C)\d+)\_\d+/$1/i;
 	my $offset = $m;
-	$offset =~ s/S\d+\_(\d+)/$1/i;
+	$offset =~ s/(S|C)\d+\_(\d+)/$2/i;
 	my $score = $marker_data->{$m};
 
 	if (! exists($chromosomes{$chr_nr})) { 
@@ -84,8 +85,11 @@ sub new {
 	$marker->set_score($score);
 	$chromosomes{$chr_nr}->add_marker($marker);    
 	$marker_counts{$chr_nr}++;
+	print "Dealing with offset $offset on chr $chr_nr...\n";
 	if ($offset > $chromosome_lengths{$chr_nr}) { 
+	    print STDERR "$offset is larger than $chromosome_lengths{$chr_nr}...(on chr $chr_nr)\n";
 	    $chromosome_lengths{$chr_nr}=$offset;
+	    $chromosomes{$chr_nr}->set_length($offset);
 	}
     }
     
@@ -94,18 +98,16 @@ sub new {
 	push @chromosome_lengths, $chromosome_lengths{$n};
     }
     
-    my $self = $class->SUPER::new($dbh, $id, @_);
+
     
-    $self->set_chromosome_names(\@chromosome_names);
-    $self->set_chromosome_lengths(\@chromosome_lengths);
-    
-    #print STDERR "chromosomes: ".join(", ", keys(%chromosomes))."\n";
-    
+    $self->set_chromosome_names(@chromosome_names);
+    $self->set_chromosome_lengths(@chromosome_lengths);
+
     $self->{chromosomes} = \%chromosomes;
 
-    foreach my $n (@chromosome_names) { 
-	print STDERR join ("\t", ($n, $chromosome_lengths{$n}, $marker_counts{$n}))."\n";
-    }
+#    foreach my $n (@chromosome_names) { 
+#	print STDERR join ("\t", ($n, $chromosome_lengths{$n}, $marker_counts{$n}))."\n";
+#    }
     
     return $self;
 }
@@ -116,5 +118,9 @@ sub get_chromosome {
 
     return $self->{chromosomes}->{$id};
 }
+
+    
+    
+
 
 1;
