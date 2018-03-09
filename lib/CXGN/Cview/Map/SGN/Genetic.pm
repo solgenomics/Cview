@@ -67,6 +67,11 @@ sub new {
 
     if ($self->get_chromosome_count() == 0) { return undef; }
 
+    my $query2 = "SELECT count(marker_id) FROM sgn.linkage_group JOIN sgn.marker_location USING(lg_id) WHERE linkage_group.map_version_id=?";
+    my $sth2 = $self->get_dbh()->prepare($query);
+    my ($marker_count) = $sth2->fetchrow_array();
+    $self->set_marker_count($marker_count);
+
     my $legend = CXGN::Cview::Legend::Genetic->new($self);
 #    $legend->set_mode("marker_types");
     $self->set_legend($legend);
