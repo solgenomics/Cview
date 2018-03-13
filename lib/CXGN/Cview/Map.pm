@@ -426,6 +426,11 @@ sub get_marker_count {
     return "?";
 }
 
+sub get_map_marker_count { 
+    my $self = shift;
+    return "?";
+}
+
 =head2 function get_marker_type_stats()
 
   Synopsis:
