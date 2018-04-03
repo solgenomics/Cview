@@ -149,7 +149,6 @@ sub create {
     $map_type ||= '';
 	if ($map_type =~ /genetic/i) {
 	    return CXGN::Cview::Map::SGN::Genetic->new($self->get_dbh(), $id);
-
 	}
 	elsif ($map_type =~ /fish/) {
 	    #print STDERR "Creating a fish map...\n";
@@ -381,13 +380,12 @@ sub get_all_maps {
     my $self = shift;
 
     my @system_maps = $self->get_system_maps();
-    my @user_maps = (); #$self->get_user_maps();
-    my @genotype_maps = $self->get_genotype_maps();
-    my @maps = (@system_maps, @user_maps, @genotype_maps);
+    #my @user_maps = (); #$self->get_user_maps();
+    #my @genotype_maps = $self->get_genotype_maps();
+    my @maps = (@system_maps); #@user_maps, @genotype_maps);
     return @maps;
 
 }
-
 
 =head2 get_system_maps
 
