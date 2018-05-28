@@ -58,7 +58,7 @@ sub new {
     # set some defaults
     #
     $self->set_preferred_chromosome_width(20);
-    $self->set_type("generic");
+    $self->set_type("genetic");
     $self->set_units("cM");
     $self->set_short_name("unknown map");
     $self->set_long_name("");
