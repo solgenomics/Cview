@@ -136,10 +136,10 @@ sub create {
 	#     #print STDERR "Creating a fish map...\n";
 	#     return CXGN::Cview::Map::SGN::Fish->new($self->get_dbh(), $id, { pachytene_file => $c->config->{'basepath'}."/documents/cview/pachytene/pachytene_stack.txt", });
 	# }
-	# elsif ($map_type =~ /seq/) {
-	#     #print STDERR "Creating a seq map...\n";
-	#     return CXGN::Cview::Map::SGN::Sequence->new($self->get_dbh(), $id);
-	# }
+	 elsif ($map_type =~ /seq/) {
+	     #print STDERR "Creating a seq map...\n";
+	     return CXGN::Cview::Map::SGN::Sequence->new($self->get_dbh(), $id);
+	 }
 	# elsif ($map_type =~ /qtl/i) { 
 	    
 	#     my $qtl = CXGN::Cview::Map::SGN::QTL->new($self->get_dbh(), $id);
