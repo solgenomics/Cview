@@ -114,7 +114,9 @@ sub get_image_filename {
 
     my $vhost_conf=CXGN::Cview::Config->new;
     my $dir = $vhost_conf->get_conf('basepath').$vhost_conf->get_conf('tempfiles_subdir')."/cview/";
-    
+    if ( !-d $dir ) {
+        mkdir $dir;
+    }
 
     my $template = 'tempXXXX'; #not needed. The function tempfile seems to generate a default TEMPLATE 'XXXXXXXXXX$suffix'
     my $suffix = '.png';
