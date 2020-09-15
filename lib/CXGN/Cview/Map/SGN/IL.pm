@@ -77,7 +77,7 @@ sub new {
     # data
     #
     my $lg_name_q =
-"SELECT distinct(lg_name), lg_order FROM phenome.population join phenome.individual using(population_id) join phenome.genotype using (individual_id) JOIN phenome.genotype_experiment using(genotype_experiment_id) JOIN sgn.map_version on (genotype_experiment.reference_map_id=map_version.map_id) JOIN sgn.linkage_group using (map_version_id) WHERE population_id=? and genotype_experiment.reference_map_id=? and map_version.current_version='t' ORDER BY lg_order, lg_name";
+"SELECT distinct(lg_name), lg_order FROM phenome.population join phenome.individual using(population_id) join phenome.phenome_genotype using (individual_id) JOIN phenome.genotype_experiment using(genotype_experiment_id) JOIN sgn.map_version on (genotype_experiment.reference_map_id=map_version.map_id) JOIN sgn.linkage_group using (map_version_id) WHERE population_id=? and genotype_experiment.reference_map_id=? and map_version.current_version='t' ORDER BY lg_order, lg_name";
     my $lg_name_h = $self->get_dbh()->prepare($lg_name_q);
     if ( $id =~ /il(\d+)/ ) {
         $id = $1;
@@ -373,7 +373,7 @@ sub get_marker_count {
     my $self   = shift;
     my $chr_nr = shift;
     my $query =
-"SELECT count(distinct(individual.individual_id)) FROM phenome.genotype JOIN phenome.genotype_experiment using(genotype_experiment_id) JOIN phenome.genotype_region on (genotype.genotype_id=genotype_region.genotype_id) JOIN sgn.linkage_group on (genotype_region.lg_id=linkage_group.lg_id) JOIN phenome.individual on (individual.individual_id=genotype.individual_id) WHERE population_id=? AND lg_name=? AND zygocity_code='h'";
+"SELECT count(distinct(individual.individual_id)) FROM phenome.phenome_genotype JOIN phenome.genotype_experiment using(genotype_experiment_id) JOIN phenome.genotype_region on (phenome_genotype.phenome_genotype_id=genotype_region.genotype_id) JOIN sgn.linkage_group on (genotype_region.lg_id=linkage_group.lg_id) JOIN phenome.individual on (individual.individual_id=phenome_genotype.individual_id) WHERE population_id=? AND lg_name=? AND zygocity_code='h'";
     my $sth = $self->get_dbh()->prepare($query);
     my ( $pop_id, $map_id ) = $self->get_db_ids();
 

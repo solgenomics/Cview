@@ -42,7 +42,7 @@ sub get_chromosome_names {
     }
     if (!@{$self->{chromosome_names}}) { 
 
-	my $chr_q = "SELECT distinct(linkage_group.lg_name), linkage_group.lg_order FROM phenome.genotype
+	my $chr_q = "SELECT distinct(linkage_group.lg_name), linkage_group.lg_order FROM phenome.phenome_genotype
                  JOIN phenome.genotype_experiment using (genotype_experiment_id) 
                  JOIN sgn.map_version ON (genotype_experiment.reference_map_id=sgn.map_version.map_id)
                  JOIN sgn.linkage_group using (map_version_id)
@@ -73,8 +73,8 @@ sub get_chromosome_lengths {
                    JOIN sgn.marker_location using (lg_id)
                    JOIN sgn.map_version on (map_version.map_version_id=linkage_group.map_version_id)
                    JOIN phenome.genotype_experiment on (map_version.map_id=genotype_experiment.reference_map_id)
-                   JOIN phenome.genotype using (genotype_experiment_id)
-                   WHERE genotype.stock_id=?
+                   JOIN phenome.phenome_genotype using (genotype_experiment_id)
+                   WHERE phenome_genotype.stock_id=?
                          AND map_version.current_version='t'
 
                    GROUP BY lg_name, map_version.map_id, lg_order
@@ -104,8 +104,8 @@ sub get_chromosome {
     
     # now get the fragments to be highlighted
     #
-    my $query2 = "SELECT linkage_group.lg_name, position, type, zygocity_code FROM phenome.genotype
-                 JOIN phenome.genotype_region USING(genotype_id) 
+    my $query2 = "SELECT linkage_group.lg_name, position, type, zygocity_code FROM phenome.phenome_genotype
+                 JOIN phenome.genotype_region USING(phenome_genotype_id) 
                  JOIN phenome.genotype_experiment USING (genotype_experiment_id)
                  JOIN sgn.map_version ON (genotype_experiment.reference_map_id=sgn.map_version.map_id)
                  JOIN sgn.marker_location using(map_version_id)
@@ -115,8 +115,8 @@ sub get_chromosome {
                    AND genotype_region.marker_id_ns=sgn.marker_experiment.marker_id
                  AND stock_id =? and genotype_experiment.preferred='t' and linkage_group.lg_name =? ORDER BY position limit 1";
 
-    my $query3 = "SELECT linkage_group.lg_name, position  FROM phenome.genotype
-                 JOIN phenome.genotype_region USING(genotype_id) 
+    my $query3 = "SELECT linkage_group.lg_name, position  FROM phenome.phenome_genotype
+                 JOIN phenome.genotype_region USING(phenome_genotype_id) 
                  JOIN phenome.genotype_experiment USING (genotype_experiment_id)
                  JOIN sgn.map_version ON (genotype_experiment.reference_map_id=sgn.map_version.map_id)
                  JOIN sgn.marker_location using(map_version_id)
