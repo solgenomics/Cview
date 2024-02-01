@@ -373,7 +373,7 @@ sub get_marker_count {
     my $self   = shift;
     my $chr_nr = shift;
     my $query =
-"SELECT count(distinct(individual.individual_id)) FROM phenome.phenome_genotype JOIN phenome.genotype_experiment using(genotype_experiment_id) JOIN phenome.genotype_region on (phenome_genotype.phenome_genotype_id=genotype_region.genotype_id) JOIN sgn.linkage_group on (genotype_region.lg_id=linkage_group.lg_id) JOIN phenome.individual on (individual.individual_id=phenome_genotype.individual_id) WHERE population_id=? AND lg_name=? AND zygocity_code='h'";
+"SELECT count(distinct(individual.individual_id)) FROM phenome.phenome_genotype JOIN phenome.genotype_experiment using(genotype_experiment_id) JOIN phenome.genotype_region on (phenome_genotype.phenome_genotype_id=genotype_region.phenome_genotype_id) JOIN sgn.linkage_group on (genotype_region.lg_id=linkage_group.lg_id) JOIN phenome.individual on (individual.individual_id=phenome_genotype.individual_id) WHERE population_id=? AND lg_name=? AND zygocity_code='h'";
     my $sth = $self->get_dbh()->prepare($query);
     my ( $pop_id, $map_id ) = $self->get_db_ids();
 
