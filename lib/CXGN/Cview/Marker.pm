@@ -47,8 +47,6 @@ Original version July 2004
 
 =cut
 
-return 1;
-
 use strict;
 use warnings;
 use CXGN::Cview::ImageObject;
@@ -523,7 +521,7 @@ Hides the marker completely from the chromosome.
 
 sub hide {
     my $self = shift;
-    #$self -> {hidden} = 1;
+    $self->{hidden} = 1;
     $self->get_label()->set_hidden(1);
 }
 
@@ -535,7 +533,7 @@ Unhides the marker.
 
 sub unhide {
     my $self = shift;
-    #$self -> {hidden} = 0;
+    $self->{hidden} = 0;
     $self->get_label()->set_hidden(0);
 }
 
@@ -595,11 +593,9 @@ Returns the image map for this label as a string. Usually the chromosome object 
 sub get_image_map {
     my $self = shift;
     #print STDERR "get_image_mapo marker\n";
-#    my $coords = join ",", ($self -> get_label_rect());
     my $s = "";
-    if ($self->get_url()) {
+    if ($self->get_url() && $self->is_label_visible()) {
 	$s = $self->get_label()->get_image_map();
-#	$s = "<area shape=\"rect\" coords=\"".$coords."\" href=\"".$self->get_url()."\" alt=\"\" />\n";
     }
     if ($self->get_show_mark()) { 
 	$s .= "<area shape=\"rect\" coords=\"".(join(",", $self->get_mark_rect()))."\" href=\"".$self->get_mark_link()."\" alt=\"\" title=\"".($self->get_tooltip())."\"  />\n";
@@ -1054,12 +1050,12 @@ sub set_offset_label {
 =cut
 
 sub show_offset_label {
-    my $self = shift; 
+    my $self = shift;
     my $show = shift;
-    if ($show != undef) { 
-	my $self->{show_offset_label}=$show;
+    if (defined $show) {
+	$self->{show_offset_label}=$show;
     }
-    else { 
+    else {
 	return $self->{show_offset_label};
     }
 }
